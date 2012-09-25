@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pie Chart</title>
+    <script type="text/javascript" src="d3/d3.v2.js"></script>
+    <script type="text/javascript" src="data.js"></script>
+<link rel="stylesheet" href="vis-gen.css" />
+    <style type="text/css">
+
+body {
+  font: 10px sans-serif;
+}
+
+circle.scale {
+  fill: none;
+  stroke: #777;
+}
+
+.wedge {
+  opacity: 0.8;
+}
+    </style>
+  </head>
+  <body>
+<div style="float:right;">
+
+<input type="button" onClick="javascript:update(data_aus_revenue);" value="Cth Revenue"/><br />
+  <input type="button" onClick="javascript:update(data_aus_rev_exp);" value="Cth Revenue &amp; Expenditure"/><br />
+  <input type="button" onClick="javascript:update(data_aus_real);" value="Cth R.E.A.L."/><br />
+<br/>
+
+  Revenue: <input type="text" name="revenue"/><br />
+  Expenditure: <input type="text" name="expenditure"/><br />
+  Assets: <input type="text" name="assets"/><br />
+  Liabilities: <input type="text" name="liabilities"/><br />
+
+  <br />
+  <input type="button" value="Update" onClick="javascript:updateFromFields()" />
+  </div>
+  <script type="text/javascript" src="vis.js"></script>
+
+  </body>
+</html>

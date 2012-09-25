@@ -1,0 +1,29 @@
+@charset "utf-8";
+body {
+	background-color: #f7e9bf;
+}
+
+#revenue {
+	fill: #00995e;
+}
+
+#assets {
+	fill: #00759d;
+}
+
+#liabilities {
+	fill: #be2900;
+}
+
+#expenses {
+	fill: #8b003d;
+}
+
+text {
+	fill: black;
+	opacity: 1;
+}
+
+text.label {
+	text-anchor: middle;
+}
