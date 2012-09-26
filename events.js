@@ -16,13 +16,13 @@ document.onkeydown = function (e) {
 	var position = viewstate.position.map(viewstate.scaler);
 
 	if (e.keyCode == left_arrow_key) {
-		position[0] += delta;
-	} else if (e.keyCode == up_arrow_key) {
-		position[1] += delta;
-	} else if (e.keyCode == right_arrow_key) {
 		position[0] -= delta;
-	} else if (e.keyCode == down_arrow_key) {
+	} else if (e.keyCode == up_arrow_key) {
 		position[1] -= delta;
+	} else if (e.keyCode == right_arrow_key) {
+		position[0] += delta;
+	} else if (e.keyCode == down_arrow_key) {
+		position[1] += delta;
 	}
 
 	viewstate.moveTo( position.map(viewstate.scaler.invert) );
