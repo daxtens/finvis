@@ -21,12 +21,16 @@
 
    parent : either a viewObj, or at the root level, a viewstate 
 
-   position : an (x, y) pair
+   position : an (x$, y$) pair
 */
+ViewObj.prototype = new ParentingObject();
 function ViewObj( data, parent, position ) {
 	
 	this._data = data;
+	
 	this.parent = parent;
+	this.parent.addChild(this);
+	
 	this.position = position;
 
 	/* getter and setter for data
@@ -58,7 +62,6 @@ function ViewObj( data, parent, position ) {
 		ViewObjRenderers[this.renderMode](this);
 	}
 
-
 }
 
 /* Renderers go here. 
@@ -83,23 +86,21 @@ ViewObjRenderers.defaultRenderer = function (viewObj) {
 	viewObj.renderData = {};
 	var data = viewObj.data();
 	
-	console.log(data);
 
 	var donut = d3.layout.pie().value( function(d) { return d.internal.wedgeSize; } ).startAngle(-Math.PI/2).endAngle(3*Math.PI/2);
 	var arc = d3.svg.arc()
 		.innerRadius(0)
-		.outerRadius( function(d) {return scaler(d.data.value); } );
+		.outerRadius( function(d) {return viewstate.scaler(d.data.value); } );
 
 	var maxValue=-1;
 	for (var d in data) {
 		if (data[d].value>maxValue) maxValue = data[d].value;
 	}
-	console.log(maxValue);
 	var exponent = Math.floor(Math.log(maxValue)/Math.LN10);
 	
 	var niceMaxValue = Math.ceil(maxValue/Math.pow(10, exponent))*Math.pow(10, exponent);
 
-	var scaler = d3.scale.sqrt().domain([0,niceMaxValue]).range([0,maxOuterRadius]);
+	var centerOffset = viewstate.scaler(niceMaxValue);
 
 	// create the scale background
 	var backdata = d3.range( 1, 9 ).map( function (d) { return d*Math.pow(10, exponent - 1); } );
@@ -117,11 +118,13 @@ ViewObjRenderers.defaultRenderer = function (viewObj) {
 	circles
 		.enter().append("circle")
 		.classed('axis_circle', true)
-		.attr("r",function(d) { return scaler(d); } )
-		.attr("transform", "translate(" + maxOuterRadius + "," + maxOuterRadius + ")")
+		.attr("r",function(d) { return viewstate.scaler(d); } )
+		.attr("transform", "translate(" + centerOffset + "," + centerOffset + ")");
 	
-	circles.attr("r",function(d) { return scaler(d); } );
-	
+	circles
+		.attr("r",function(d) { return viewstate.scaler(d); } )
+		.attr("transform", "translate(" + centerOffset + "," + centerOffset + ")");
+
 	circles.exit().remove();
 
 	// label them!
@@ -130,12 +133,12 @@ ViewObjRenderers.defaultRenderer = function (viewObj) {
 	labels.enter().append("text")
 		.text(formatDollarValue)
 		.classed("axis_label", true)
-		.attr("transform", function(d) {return "translate("+maxOuterRadius+","+(maxOuterRadius-scaler(d))+")"} )
+		.attr("transform", function(d) {return "translate("+centerOffset+","+(centerOffset-viewstate.scaler(d))+")"} )
 		.attr("dy","1em")
 	
 	labels
 		.text(formatDollarValue)
-		.attr("transform", function(d) {return "translate("+maxOuterRadius+","+(maxOuterRadius-scaler(d))+")"} );
+		.attr("transform", function(d) {return "translate("+centerOffset+","+(centerOffset-viewstate.scaler(d))+")"} );
 	
 	labels.exit().remove();
 
@@ -145,7 +148,7 @@ ViewObjRenderers.defaultRenderer = function (viewObj) {
 	paths.enter().append("path")
 		.classed("wedge", true)
 		.attr("id", function(d) {return d.data.internal.cssId;} )
-		.attr("transform", "translate(" + maxOuterRadius + "," + maxOuterRadius + ")")
+		.attr("transform", "translate(" + centerOffset + "," + centerOffset + ")")
 		.attr("d", arc);
 	
 	paths.exit().remove();
@@ -153,7 +156,8 @@ ViewObjRenderers.defaultRenderer = function (viewObj) {
 	// update arcs, ergh
 	paths
 		.attr("d", arc)
-		.attr("id", function(d) {return d.data.internal.cssId;} );
+		.attr("id", function(d) {return d.data.internal.cssId;} )
+		.attr("transform", "translate(" + centerOffset + "," + centerOffset + ")");
 	
 	/*arcs.append("text")
 	  .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
