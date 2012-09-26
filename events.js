@@ -13,7 +13,8 @@ document.onkeydown = function (e) {
 		
 	var delta = 20;
 
-	var position = viewstate.position.map(viewstate.scaler);
+	var position = viewstate.position;
+	var move = true;
 
 	if (e.keyCode == left_arrow_key) {
 		position[0] -= delta;
@@ -23,8 +24,10 @@ document.onkeydown = function (e) {
 		position[0] += delta;
 	} else if (e.keyCode == down_arrow_key) {
 		position[1] += delta;
+	} else {
+		move = false;
 	}
 
-	viewstate.moveTo( position.map(viewstate.scaler.invert) );
+	if (move) viewstate.moveTo( position );
 }
 

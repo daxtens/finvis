@@ -27,7 +27,7 @@ ViewState.prototype.calculateSize = function (scaleMax) {
 
 ViewState.prototype.centerView = function () {
 	this.calculateSize(tril);
-	this.moveTo([-this._svg.attr("width")/2, -this._svg.attr("height")/2].map(this.scaler.invert));
+	this.moveTo([-this._svg.attr("width")/2, -this._svg.attr("height")/2]);
 }
 
 ViewState.prototype.zoom = function (factor) {
@@ -37,11 +37,11 @@ ViewState.prototype.zoom = function (factor) {
 }
 
 /***** movement */
-// units are dollars
+// units are not! dollars
 ViewState.prototype.moveTo = function (position) {
 	if (arguments.length == 2) position = arguments;
 	this.position = position;
-	this.svg.attr("transform","translate("+this.scaler(-this.position[0])+","+this.scaler(-this.position[1])+")")
+	this.svg.attr("transform","translate("+-this.position[0]+","+-this.position[1]+")")
 }
 
 ViewState.prototype.move = function (position) {
