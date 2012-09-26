@@ -90,7 +90,11 @@ var ViewObjRenderers = {};
 
 ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
-	/***** Process the data */
+	/***** Constants */
+	var minPtsForAxisLabelDisplay = 75;
+	var minPtsForSectorLabelDisplay = 80;
+
+	/***** Pre-process the data */
 	var data = JSON.parse(JSON.stringify(viewObj.data()));
 
 	// which aggregates are we interested in?
@@ -104,11 +108,7 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 			return ref[a.metadata.cssClass] - ref[b.metadata.cssClass];
 		})
 
-	var donut = d3.layout.pie().value( function(d) { return 1; } ).startAngle(-Math.PI/2).endAngle(3*Math.PI/2);
-	var arc = d3.svg.arc()
-		.innerRadius(0)
-		.outerRadius( function(d) {return viewstate.scaler(d.data.periods[viewObj.period()].value); } );
-
+	/***** Calculate ranges etc */
 	var maxValue=-1;
 	for (var d in data['aggregates']) {
 		if (data['aggregates'][d].periods[viewObj.period()].value>maxValue) maxValue = data['aggregates'][d].periods[viewObj.period()].value;
@@ -119,6 +119,7 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
 	//var centerOffset = viewstate.scaler(niceMaxValue);
 
+	/***** Start laying things out */
 	// create the scale background
 	var backdata = d3.range( 1, 9 ).map( function (d) { return d*Math.pow(10, exponent - 1); } );
 	var backdata2 = d3.range( 1, Math.ceil(maxValue/Math.pow(10, exponent))+1 ).
@@ -152,16 +153,24 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 		.classed("axis_label", true)
 //		.attr("transform", function(d) {return "translate("+centerOffset+","+(centerOffset-viewstate.scaler(d))+")"} )
 		.attr("transform", function(d) {return "translate("+0+","+(0-viewstate.scaler(d))+")"} )
+		.attr("display",function (d) { return viewstate.scaler(niceMaxValue) > minPtsForAxisLabelDisplay ? null : "none" })
 		.attr("dy","1em")
+		.attr("dx",function (d) { return -this.getComputedTextLength()/2 })
 	
 	labels
 		.text(formatDollarValue)
 //		.attr("transform", function(d) {return "translate("+centerOffset+","+(centerOffset-viewstate.scaler(d))+")"} );
+		.attr("display",function (d) { return viewstate.scaler(niceMaxValue) > minPtsForAxisLabelDisplay ? null : "none" })
 		.attr("transform", function(d) {return "translate("+0+","+(0-viewstate.scaler(d))+")"} );
 	
 	labels.exit().remove();
 
 	// create the wedges
+	var donut = d3.layout.pie().value( function(d) { return 1; } ).startAngle(-Math.PI/2).endAngle(3*Math.PI/2);
+	var arc = d3.svg.arc()
+		.innerRadius(0)
+		.outerRadius( function(d) {return viewstate.scaler(d.data.periods[viewObj.period()].value); } );
+
 	var paths = viewObj.svg.selectAll("path.wedge").data(donut(data['aggregates']));
 
 	var enterer = paths.enter().append("path")
@@ -187,6 +196,137 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 	}
 
 
+	/* Create section labels */
+
+	// special case if this is a bubble...
+
+	// General Case
+	// ... utility functions
+	function isTop( d ) {
+		if (d.data.metadata.cssClass == "revenue" || d.data.metadata.cssClass == "assets") {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	function isBottom(d) {return !isTop(d);}
+
+	function horizSide( d ) {
+		if (data['aggregates'].length == 2) {
+			return 'middle';
+		} else {
+			if (d.data.metadata.cssClass == "revenue" || d.data.metadata.cssClass == "expenses") {
+				return 'right';
+			} else {
+				return 'left';
+			}
+		}
+	}
+
+	var wedgeInnerLabels = viewObj.svg.selectAll('text.wedgeLabel.inner').data(donut(data['aggregates']));
+	var wedgeOuterLabels = viewObj.svg.selectAll('text.wedgeLabel.outer').data(donut(data['aggregates']));
+
+	function innerLabelsText( d ) {
+		if (!isTop(d)) {
+			return d.data.name.toUpperCase();	
+		} else {
+			return formatDollarValue( d.data.periods[viewObj.period()].value );
+		}
+	}
+
+	function outerLabelsText( d ) {
+		if (isTop(d)) {
+			return d.data.name.toUpperCase();	
+		} else {
+			return formatDollarValue( d.data.periods[viewObj.period()].value );
+		}
+	}
+
+	function labelsX( d ) {
+		var horiz = horizSide(d);
+		if (horiz == 'left') {
+			return -(this.getComputedTextLength()+15);
+		} else if (horiz == 'middle') {
+			return -(this.getComputedTextLength())/2;
+		} else { // assume right
+			return 15;
+		}
+	}
+
+	function innerLabelsY( d ) {
+		// safety switch: getBBox fails if scaled too hard
+		if (viewstate.scaler(niceMaxValue) <= minPtsForSectorLabelDisplay) return 0;
+		var height = this.getBBox()['height'];
+		// save the value for the outer label
+		d.data.metadata.computedTextHeight = height;
+		if (isTop(d)) {
+			return -15;
+		} else {
+			return (height+10);
+		}
+	}
+
+	function outerLabelsY( d ) {
+		// safety switch: getBBox fails if scaled too hard
+		if (viewstate.scaler(niceMaxValue) <= minPtsForSectorLabelDisplay) return 0;
+		var height = this.getBBox()['height'];
+		if (isTop(d)) {
+			return -8-d.data.metadata.computedTextHeight;
+		} else {
+			return d.data.metadata.computedTextHeight+height+4;
+		}
+	}
+
+	var scaleFactor=1/d3.scale.sqrt().domain([0,tril]).range([0,1])(viewstate.scaleMax);
+
+	wedgeInnerLabels.enter()
+	// inner text: for top labels this is the money value, for bottom lables this is the name
+	// we determine what's what by virtue of the section's css class
+	    .append("text")
+		.classed('wedgeLabel', true)
+		.classed('inner', true)
+		.classed('value', isTop)
+		.classed('name', isBottom)
+		.text(innerLabelsText)
+		.attr("transform", function (d) {return "scale(" + tril/viewstate.scaleMax + ")"; })
+		.attr("x", labelsX)
+		.attr("y", innerLabelsY)
+		.attr("display",function (d) { return viewstate.scaler(niceMaxValue) > minPtsForSectorLabelDisplay ? null : "none" })
+
+	wedgeInnerLabels//.attr("transform", function (d) {return "translate(" + arc.centroid(d) + ")"; })
+		.attr("display",function (d) { return viewstate.scaler(niceMaxValue) > minPtsForSectorLabelDisplay ? null : "none" })
+		.text(innerLabelsText)
+		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
+		.attr("x", labelsX)
+		.attr("y", innerLabelsY)
+
+	wedgeInnerLabels.exit().remove();
+
+	wedgeOuterLabels.enter()
+	// outer text: vice versa
+	    .append("text")
+		.classed('wedgeLabel', true)
+		.classed('outer', true)
+		.classed('value', isBottom)
+		.classed('name', isTop)
+		.text(outerLabelsText)
+		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
+		.attr("x", labelsX)
+		.attr("y", outerLabelsY)
+		//.attr("transform", function (d) {return "translate(" + arc.centroid(d) + ")"; })
+		.attr("display",function (d) { return viewstate.scaler(niceMaxValue) > minPtsForSectorLabelDisplay ? null : "none" })
+
+	wedgeOuterLabels//.attr("transform", function (d) {return "translate(" + arc.centroid(d) + ")"; })
+		.attr("display",function (d) { return viewstate.scaler(niceMaxValue) > minPtsForSectorLabelDisplay ? null : "none" })
+		.text(outerLabelsText)
+		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
+		.attr("x", labelsX)
+		.attr("y", outerLabelsY)
+
+	wedgeOuterLabels.exit().remove();
+
+
 	/*arcs.append("text")
 	  .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
 	  .attr("dy", ".35em")
@@ -194,8 +334,6 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 	  .attr("display", function(d) { return d.value > .15 ? null : "none"; })
 	  .text(function(d, i) { return d.data.label; });*/
 	
-	// arcs.selectAll("path").attr('d',arc)
-
 	/**************************************** Formatters */
 
 	function formatDollarValue( d ) {

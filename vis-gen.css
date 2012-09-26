@@ -27,3 +27,17 @@ text {
 text.label {
 	text-anchor: middle;
 }
+
+text.wedgeLabel {
+	fill: white;
+	stroke: grey;
+	stroke-width: 0.5;
+}
+
+text.wedgeLabel.value {
+	font-size: 32px;
+}
+
+text.wedgeLabel.name {
+	font-size: 14px;
+}
