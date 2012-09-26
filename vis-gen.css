@@ -3,19 +3,19 @@ body {
 	background-color: #f7e9bf;
 }
 
-#revenue {
+.revenue {
 	fill: #00995e;
 }
 
-#assets {
+.assets {
 	fill: #00759d;
 }
 
-#liabilities {
+.liabilities {
 	fill: #be2900;
 }
 
-#expenses {
+.expenses {
 	fill: #8b003d;
 }
 

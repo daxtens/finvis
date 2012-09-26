@@ -1,54 +1,72 @@
-bil = 1000000000
-mil = 1000000
+mil  = 1000000;
+bil  = 1000*mil;
+tril = 1000*bil;
 
+var cssStyles=['revenue','expenses','assets','liabilities'];
 
-data_aus_real = [ 
-	{ 'label': 'Assets',
-      'value': 320.4*bil,
-	  //'value': 100,
-      'internal': { 'wedgeSize': 90,
-				    'cssId': 'assets' }},
-    
-	{ 'label': 'Revenue',
-	  'value': 309.9*bil,
-	  //'value': 200,
-	  'internal': { 'wedgeSize': 90,
-				    'cssId': 'revenue' }},
+var entities = [ cth_fbo ];
 
+var cth_fbo = {
+	'name': 'Commonwealth Final Budget Outcome',
 
-    { 'label': 'Expenses',
-	  'value': 361.4*bil,
-	  //'value': 300,
-	  'internal': { 'wedgeSize': 90,
-				    'cssId': 'expenses' }},
+	'aggregates': [
+		{
+			'name': 'Revenue',
+			'periods': {
+				'2011-12': {
+				  'value': 338.1*bil
+				},
+				'2010-11': {
+				  'value': 309.9*bil
+				}
+			},
+			'metadata': {
+				'cssClass': 'revenue',
+			}
+		},
+		{ 
+			'name': 'Expenses',
+			'periods': {
+				'2011-12': {
+				  'value': 377.7*bil
+				},
+				'2010-11': {
+				  'value': 356.1*bil
+				}
+			},
+			'metadata': {
+				'cssClass': 'expenses',
+			}
+		},
+		{
+			'name': 'Assets',
+			'periods': {
+				'2011-12': {
+				  'value': 332.4*bil
+				},
+				'2010-11': {
+				  'value': 320.4*bil
+				}
+			},
+			'metadata': {
+				'cssClass': 'assets',
+			}
+		},
+		{
+			'name': 'Liabilities',
+			'periods': {
+				'2011-12': {
+				  'value': 579.6*bil
+				},
+				'2010-11': {
+				  'value': 415.8*bil
+				}
+			},
+			'metadata': {
+				'cssClass': 'liabilities',
+			}
+		}
+	],
 
-    { 'label': 'Liabilities',
-	  //'value': 400,
-	  'value': 415.8*bil,
-	  'internal': { 'wedgeSize': 90,
-				    'cssId': 'liabilities' }} 
-];
-
-data_aus_revenue = [
-	{ 'label': 'Revenue',
-	  'value': 309.9*bil,
-	  //'value': 200,
-	  'internal': { 'wedgeSize': 360,
-				    'cssId': 'revenue' }}
-
-];
-
-data_aus_rev_exp = [ 
-    
-	{ 'label': 'Revenue',
-	  'value': 309.9*bil,
-	  //'value': 200,
-	  'internal': { 'wedgeSize': 90,
-				    'cssId': 'revenue' }},
-
-    { 'label': 'Expenses',
-	  'value': 361.4*bil,
-	  //'value': 300,
-	  'internal': { 'wedgeSize': 90,
-				    'cssId': 'expenses' }}
-];
+	'relations':{}
+};

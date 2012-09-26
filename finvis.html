@@ -7,6 +7,7 @@
 	<script type="text/javascript" src="parenting.js"></script>
 	<script type="text/javascript" src="viewstate.js"></script>
     <script type="text/javascript" src="viewobj.js"></script>
+	<script type="text/javascript" src="events.js"></script>
 <link rel="stylesheet" href="vis-gen.css" />
     <style type="text/css">
 
@@ -28,25 +29,21 @@ circle.axis_circle {
 <div style="float:right;">
 <a href="#" onClick="javascript:viewstate.zoom(4/3); return false;">Zoom in</a><br/>
 <a href="#" onClick="javascript:viewstate.zoom(3/4); return false;">Zoom out</a><br/>
-<input type="button" onClick="javascript:update(data_aus_revenue);" value="Cth Revenue"/><br />
-  <input type="button" onClick="javascript:update(data_aus_rev_exp);" value="Cth Revenue &amp; Expenditure"/><br />
-  <input type="button" onClick="javascript:update(data_aus_real);" value="Cth R.E.A.L."/><br />
+Arrow keys scroll the view.
+<hr />
+<input type="button" onClick="javascript:priviewobj.render({'name':'defaultSectorRenderer','aggregateFilter':function(aggregate) { return aggregate.name=='Revenue' }});" value="Cth Revenue"/><br />
+  <input type="button" onClick="javascript:priviewobj.render({'name':'defaultSectorRenderer','aggregateFilter':function(aggregate) { return aggregate.name=='Revenue' || aggregate.name=='Expenses' }});" value="Cth Revenue &amp; Expenditure"/><br />
+  <input type="button" onClick="javascript:priviewobj.render({'name':'defaultSectorRenderer'});" value="Cth R.E.A.L."/><br />
 <br/>
 
-  Revenue: <input type="text" name="revenue"/><br />
-  Expenditure: <input type="text" name="expenditure"/><br />
-  Assets: <input type="text" name="assets"/><br />
-  Liabilities: <input type="text" name="liabilities"/><br />
-
-  <br />
-  <input type="button" value="Update" onClick="javascript:updateFromFields()" />
   </div>
   <script type="text/javascript">
   
 
   window.viewstate=new ViewState(d3.select("body").append("svg"));
   
-  priviewobj = new ViewObj( data_aus_real, viewstate, [0,0] );
+  priviewobj = new ViewObj( cth_fbo, viewstate, [0,0] );
+  priviewobj.period('2011-12');
   priviewobj.render();
   </script>
 

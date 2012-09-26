@@ -34,13 +34,19 @@ function ViewObj( data, parent, position ) {
 	this.position = position;
 
 	/* getter and setter for data
-	   automatically re-renders if the data has changed 
 	*/
 	this.data = function () {
 		if (arguments.length == 0) return this._data;
 
 		this._data = arguments[0];
-		this.render();
+	}
+
+	/* getter and setter for year/time period
+	*/
+	this.period = function () {
+		if (arguments.length == 0) return this._period;
+
+		this._period = arguments[0];
 	}
 
 	/* Rendering
@@ -53,15 +59,17 @@ function ViewObj( data, parent, position ) {
 	*/
 	this.svg = this.parent.svg.append("g").attr("transform", "translate(" + this.position[0] + "," + this.position[1] + ")");
 
-	this.renderMode = 'defaultRenderer';
+	this.renderMode = {'name': 'defaultSectorRenderer', 
+					   'aggregateFilter': function (aggregate) {return true;} 
+					  };
 
-	this.render = function (mode) {
-		// this is a pretty naive way of handling the transition.
-		// we probably need an 'unrender'/destroy method in the renderers
-		if (mode != null) this.renderMode = mode;
-		ViewObjRenderers[this.renderMode](this);
-	}
+}
 
+ViewObj.prototype.render = function (mode) {
+	// this is a pretty naive way of handling the transition.
+	// we probably need an 'unrender'/destroy method in the renderers
+	if (mode != null) this.renderMode = mode;
+	ViewObjRenderers[this.renderMode['name']](this, this.renderMode);
 }
 
 /* Renderers go here. 
@@ -80,27 +88,39 @@ function ViewObj( data, parent, position ) {
 
 var ViewObjRenderers = {};
 
-ViewObjRenderers.defaultRenderer = function (viewObj) {
+ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
-	
-	viewObj.renderData = {};
-	var data = viewObj.data();
-	
+	console.log('rendering!')
 
-	var donut = d3.layout.pie().value( function(d) { return d.internal.wedgeSize; } ).startAngle(-Math.PI/2).endAngle(3*Math.PI/2);
+	/***** Process the data */
+	var data = JSON.parse(JSON.stringify(viewObj.data()));
+
+	// which aggregates are we interested in?
+	if (renderMode['aggregateFilter']) {
+		data['aggregates'] = data['aggregates'].filter( renderMode['aggregateFilter'] );
+	}
+
+	data['aggregates']
+		.sort(function (a, b) {
+			var ref = { 'assets':0, 'revenue':1, 'expenses':2, 'liabilities':3 };
+			return ref[a.metadata.cssClass] - ref[b.metadata.cssClass];
+		})
+
+	var donut = d3.layout.pie().value( function(d) { return 1; } ).startAngle(-Math.PI/2).endAngle(3*Math.PI/2);
 	var arc = d3.svg.arc()
 		.innerRadius(0)
-		.outerRadius( function(d) {return viewstate.scaler(d.data.value); } );
+		.outerRadius( function(d) {return viewstate.scaler(d.data.periods[viewObj.period()].value); } );
 
 	var maxValue=-1;
-	for (var d in data) {
-		if (data[d].value>maxValue) maxValue = data[d].value;
+	for (var d in data['aggregates']) {
+		console.log(data['aggregates'][d]);
+		if (data['aggregates'][d].periods[viewObj.period()].value>maxValue) maxValue = data['aggregates'][d].periods[viewObj.period()].value;
 	}
 	var exponent = Math.floor(Math.log(maxValue)/Math.LN10);
 	
 	var niceMaxValue = Math.ceil(maxValue/Math.pow(10, exponent))*Math.pow(10, exponent);
 
-	var centerOffset = viewstate.scaler(niceMaxValue);
+	//var centerOffset = viewstate.scaler(niceMaxValue);
 
 	// create the scale background
 	var backdata = d3.range( 1, 9 ).map( function (d) { return d*Math.pow(10, exponent - 1); } );
@@ -119,11 +139,11 @@ ViewObjRenderers.defaultRenderer = function (viewObj) {
 		.enter().append("circle")
 		.classed('axis_circle', true)
 		.attr("r",function(d) { return viewstate.scaler(d); } )
-		.attr("transform", "translate(" + centerOffset + "," + centerOffset + ")");
+		//.attr("transform", "translate(" + centerOffset + "," + centerOffset + ")");
 	
 	circles
 		.attr("r",function(d) { return viewstate.scaler(d); } )
-		.attr("transform", "translate(" + centerOffset + "," + centerOffset + ")");
+		//.attr("transform", "translate(" + centerOffset + "," + centerOffset + ")");
 
 	circles.exit().remove();
 
@@ -133,32 +153,44 @@ ViewObjRenderers.defaultRenderer = function (viewObj) {
 	labels.enter().append("text")
 		.text(formatDollarValue)
 		.classed("axis_label", true)
-		.attr("transform", function(d) {return "translate("+centerOffset+","+(centerOffset-viewstate.scaler(d))+")"} )
+//		.attr("transform", function(d) {return "translate("+centerOffset+","+(centerOffset-viewstate.scaler(d))+")"} )
+		.attr("transform", function(d) {return "translate("+0+","+(0-viewstate.scaler(d))+")"} )
 		.attr("dy","1em")
 	
 	labels
 		.text(formatDollarValue)
-		.attr("transform", function(d) {return "translate("+centerOffset+","+(centerOffset-viewstate.scaler(d))+")"} );
+//		.attr("transform", function(d) {return "translate("+centerOffset+","+(centerOffset-viewstate.scaler(d))+")"} );
+		.attr("transform", function(d) {return "translate("+0+","+(0-viewstate.scaler(d))+")"} );
 	
 	labels.exit().remove();
 
 	// create the wedges
-	var paths = viewObj.svg.selectAll("path.wedge").data(donut(data));
+	var paths = viewObj.svg.selectAll("path.wedge").data(donut(data['aggregates']));
 
-	paths.enter().append("path")
+	var enterer = paths.enter().append("path")
 		.classed("wedge", true)
-		.attr("id", function(d) {return d.data.internal.cssId;} )
-		.attr("transform", "translate(" + centerOffset + "," + centerOffset + ")")
+//		.attr("transform", "translate(" + centerOffset + "," + centerOffset + ")")
 		.attr("d", arc);
+
+	// d3 does not seem to provide a nice way to set dynamic styles...
+	for (var style in cssStyles) {
+		console.log(cssStyles[style])
+		enterer.classed( cssStyles[style], function(d) {return d.data.metadata.cssClass == cssStyles[style];} )
+	}
 	
 	paths.exit().remove();
 
 	// update arcs, ergh
-	paths
+	var updater = paths
 		.attr("d", arc)
-		.attr("id", function(d) {return d.data.internal.cssId;} )
-		.attr("transform", "translate(" + centerOffset + "," + centerOffset + ")");
-	
+//		.attr("transform", "translate(" + centerOffset + "," + centerOffset + ")");
+
+	// d3 does not seem to provide a nice way to set dynamic styles...
+	for (var style in cssStyles) {
+		updater.classed( cssStyles[style], function(d) {return d.data.metadata.cssClass == cssStyles[style];} )
+	}
+
+
 	/*arcs.append("text")
 	  .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
 	  .attr("dy", ".35em")
