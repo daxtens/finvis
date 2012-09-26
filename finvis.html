@@ -12,7 +12,7 @@ body {
   font: 10px sans-serif;
 }
 
-circle.scale {
+circle.axis_circle {
   fill: none;
   stroke: #777;
 }
@@ -38,7 +38,20 @@ circle.scale {
   <br />
   <input type="button" value="Update" onClick="javascript:updateFromFields()" />
   </div>
-  <script type="text/javascript" src="vis.js"></script>
+  <script type="text/javascript">
+  var width = window.innerWidth-300,
+    height = window.innerHeight*0.9,
+    maxOuterRadius = Math.min(width, height) / 2;
+
+  viewstate={};
+  viewstate.svg=d3.select("body").append("svg")
+  .attr("width", width)
+  .attr("height", height);
+
+  
+  priviewobj = new ViewObj( data_aus_real, viewstate, [0,0] );
+  priviewobj.render();
+  </script>
 
   </body>
 </html>

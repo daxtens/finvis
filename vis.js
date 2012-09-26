@@ -1,8 +1,8 @@
 
 
 
-var width = document.width-300,
-    height = document.height*0.9,
+var width = window.innerWidth-300,
+    height = window.innerHeight*0.9,
     maxOuterRadius = Math.min(width, height) / 2,
     innerRadius = 0,
     donut = d3.layout.pie().value( function(d) { return d.internal.wedgeSize; } ).startAngle(-Math.PI/2).endAngle(3*Math.PI/2)
@@ -17,8 +17,13 @@ var arc = d3.svg.arc()
 		.innerRadius(innerRadius)
 		.outerRadius( function(d) {return scaler(d.data.value); } );
 
-var circles_group = vis.append("g");
-var circle_labels_group = vis.append("g");
+/* not very necessary, and not very d3...? */
+var circles_group = vis.select("g.axis_circles");
+if (circles_group.empty()) circles_group=vis.append("g").classed('axis_circles',true);
+
+var circle_labels_group = vis.select("g.axis_circle_labels");
+if (circle_labels_group.empty()) circles_lables_group=vis.append("g").classed('axis_circle_labels',true);
+
 function updateBacking( ) {
 	maxValue=-1;
 	for (d in data) {
