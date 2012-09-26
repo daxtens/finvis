@@ -34,11 +34,20 @@ Arrow keys scroll the view.
 <input type="button" onClick="javascript:priviewobj.render({'name':'defaultSectorRenderer','aggregateFilter':function(aggregate) { return aggregate.name=='Revenue' }});" value="Cth Revenue"/><br />
   <input type="button" onClick="javascript:priviewobj.render({'name':'defaultSectorRenderer','aggregateFilter':function(aggregate) { return aggregate.name=='Revenue' || aggregate.name=='Expenses' }});" value="Cth Revenue &amp; Expenditure"/><br />
   <input type="button" onClick="javascript:priviewobj.render({'name':'defaultSectorRenderer'});" value="Cth R.E.A.L."/><br />
+  <select onChange="javascript:periodChange(this);">
+	<option value="2010-11">2010-11</option>
+	<option value="2011-12" selected="selected">2011-12</option>
+  </select>
 <br/>
 
   </div>
   <script type="text/javascript">
   
+	function periodChange(sel) {
+	  var chosenoption=sel.options[sel.selectedIndex];
+      priviewobj.period(chosenoption.value);
+	  priviewobj.render();
+	}
 
   window.viewstate=new ViewState(d3.select("body").append("svg"));
   
