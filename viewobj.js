@@ -130,7 +130,11 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
 	backdata = backdata.concat( backdata2 );
 
-	var circles = viewObj.svg.selectAll("circle.axis_circle")
+	var backGroup = viewObj.svg.select("g.back");
+	if (backGroup.empty()) backGroup=viewObj.svg.append("g").classed('back',true);
+
+
+	var circles = backGroup.selectAll("circle.axis_circle")
 		.data(backdata);
 
 	circles
@@ -146,7 +150,7 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 	circles.exit().remove();
 
 	// label them!
-	var labels=viewObj.svg.selectAll("text.axis_label").data(backdata2);
+	var labels=backGroup.selectAll("text.axis_label").data(backdata2);
 	
 	labels.enter().append("text")
 		.text(formatDollarValue)
@@ -165,13 +169,17 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 	
 	labels.exit().remove();
 
-	// create the wedges
+	// create the wedges/sectors
+	var sectorsGroup = viewObj.svg.select("g.sections");
+	if (sectorsGroup.empty()) sectorsGroup=viewObj.svg.append("g").classed('sections',true);
+
+
 	var donut = d3.layout.pie().value( function(d) { return 1; } ).startAngle(-Math.PI/2).endAngle(3*Math.PI/2);
 	var arc = d3.svg.arc()
 		.innerRadius(0)
 		.outerRadius( function(d) {return viewstate.scaler(d.data.periods[viewObj.period()].value); } );
 
-	var paths = viewObj.svg.selectAll("path.wedge").data(donut(data['aggregates']));
+	var paths = sectorsGroup.selectAll("path.wedge").data(donut(data['aggregates']));
 
 	var enterer = paths.enter().append("path")
 		.classed("wedge", true)
@@ -197,6 +205,9 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
 
 	/* Create section labels */
+	var labelsGroup = viewObj.svg.select("g.labels");
+	if (labelsGroup.empty()) labelsGroup=viewObj.svg.append("g").classed('labels',true);
+
 
 	// special case if this is a bubble...
 
@@ -224,8 +235,12 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 		}
 	}
 
-	var wedgeInnerLabels = viewObj.svg.selectAll('text.wedgeLabel.inner').data(donut(data['aggregates']));
-	var wedgeOuterLabels = viewObj.svg.selectAll('text.wedgeLabel.outer').data(donut(data['aggregates']));
+	function donutKey(d) {
+		return d.data.name;
+	}
+
+	var wedgeInnerLabels = labelsGroup.selectAll('text.wedgeLabel.inner').data(donut(data['aggregates']),donutKey);
+	var wedgeOuterLabels = labelsGroup.selectAll('text.wedgeLabel.outer').data(donut(data['aggregates']),donutKey);
 
 	function innerLabelsText( d ) {
 		if (!isTop(d)) {
