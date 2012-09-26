@@ -90,8 +90,6 @@ var ViewObjRenderers = {};
 
 ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
-	console.log('rendering!')
-
 	/***** Process the data */
 	var data = JSON.parse(JSON.stringify(viewObj.data()));
 
@@ -113,7 +111,6 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
 	var maxValue=-1;
 	for (var d in data['aggregates']) {
-		console.log(data['aggregates'][d]);
 		if (data['aggregates'][d].periods[viewObj.period()].value>maxValue) maxValue = data['aggregates'][d].periods[viewObj.period()].value;
 	}
 	var exponent = Math.floor(Math.log(maxValue)/Math.LN10);
@@ -174,7 +171,6 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
 	// d3 does not seem to provide a nice way to set dynamic styles...
 	for (var style in cssStyles) {
-		console.log(cssStyles[style])
 		enterer.classed( cssStyles[style], function(d) {return d.data.metadata.cssClass == cssStyles[style];} )
 	}
 	
