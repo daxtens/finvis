@@ -8,6 +8,7 @@
 	<script type="text/javascript" src="viewstate.js"></script>
     <script type="text/javascript" src="viewobj.js"></script>
 	<script type="text/javascript" src="events.js"></script>
+<script type="text/javascript" src="tour.js"></script>
 <link rel="stylesheet" href="vis-gen.css" />
     <style type="text/css">
 
@@ -45,10 +46,14 @@ Arrow keys scroll the view.
 <input type="button" onClick="javascript:priviewobj.render({'name':'defaultSectorRenderer','aggregateFilter':function(aggregate) { return aggregate.name=='Revenue' }});" value="Cth Revenue"/><br />
   <input type="button" onClick="javascript:priviewobj.render({'name':'defaultSectorRenderer','aggregateFilter':function(aggregate) { return aggregate.name=='Revenue' || aggregate.name=='Expenses' }});" value="Cth Revenue &amp; Expenditure"/><br />
   <input type="button" onClick="javascript:priviewobj.render({'name':'defaultSectorRenderer'});" value="Cth R.E.A.L."/><br />
-  <select onChange="javascript:periodChange(this);">
+  <select onChange="javascript:periodChange(this);" id="periodSelector">
 	<option value="2010-11">2010-11</option>
 	<option value="2011-12" selected="selected">2011-12</option>
   </select>
+  <hr/>
+  Or, take the tour...
+  <input type="button" value="&lt;-" / onClick="tour.prev()" id="prevBtn" disabled="disabled" />
+  <input type="button" value="-&gt;" / onClick="tour.next()" id="nextBtn" />
 <br/>
 
   </div>
@@ -56,18 +61,17 @@ Arrow keys scroll the view.
   
 	function periodChange(sel) {
 	  var chosenoption=sel.options[sel.selectedIndex];
-      viewObjs.map(function(obj) {obj.period(chosenoption.value);});
-	  viewObjs.map(function(obj) {obj.render();});
+      viewstate.children().map(function(obj) {obj.period(chosenoption.value);});
+	  viewstate.children().map(function(obj) {obj.render();});
 	}
 
   window.viewstate=new ViewState(d3.select("body").append("svg"));
 
-  window.viewObjs = [];
-  priviewobj = new ViewObj( cth_fbo, viewstate, [0,0] );
-  priviewobj.period('2011-12');
-  priviewobj.render();
-  window.viewObjs.push(priviewobj);
-  </script>
+  var vo = new ViewObj( cth_fbo, viewstate, [0,0] );
+  vo.period('2011-12');
+  vo.render();
 
+  </script>
+<p id="tourCaption"></p>
   </body>
 </html>

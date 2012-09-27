@@ -4,7 +4,7 @@ tril = 1000*bil;
 
 var cssStyles=['revenue','expenses','assets','liabilities'];
 
-var entities = [ cth_fbo, wa_fbo ];
+var entities = [ cth_fbo, wa_fbo, bhp ];
 
 var cth_fbo = {
 	'name': 'Commonwealth Final Budget Outcome',
@@ -207,3 +207,105 @@ var wa_fbo = {
 
 	'relations':{}
 };
+
+var bhp = {
+	'name': 'BHP Billiton',
+
+	'aggregates': [
+		{
+			'name': 'Revenue',
+			'periods': {
+				'2011-12': {
+					'value': 72226*mil
+				}
+			},
+			'metadata': {
+				'cssClass': 'revenue'
+			}
+		},
+		{
+			'name': 'Expenses',
+			'periods': {
+				'2011-12': {
+					'value': 57600*mil
+				}
+			},
+			'metadata': {
+				'cssClass': 'expenses'
+			}
+		},
+		{
+			'name': 'Assets',
+			'periods': {
+				'2011-12': {
+					'value': 129273*mil
+				}
+			},
+			'metadata': {
+				'cssClass': 'assets'
+			}
+		},
+		{
+			'name': 'Liabilities',
+			'periods': {
+				'2011-12': {
+					'value': 62188*mil
+				}
+			},
+			'metadata': {
+				'cssClass': 'liabilities'
+			}
+		}
+	]
+}
+
+var usa = {
+	'name': 'United States Government Statements of Operations and Changes in Net Position',
+
+	'aggregates': [
+		{
+			'name': 'Receipts',
+			'periods': {
+				'2010-11': {
+					'value': 2363.8*bil
+				}
+			},
+			'metadata': {
+				'cssClass': 'revenue'
+			}
+		},
+		{
+			'name': 'Outlays',
+			'periods': {
+				'2010-11': {
+					'value': 3660.8*bil
+				}
+			},
+			'metadata': {
+				'cssClass': 'expenses'
+			}
+		},
+		{
+			'name': 'Assets',
+			'periods': {
+				'2010-11': {
+					'value': 2707.3*bil
+				}
+			},
+			'metadata': {
+				'cssClass': 'assets'
+			}
+		},
+		{
+			'name': 'Liabilities',
+			'periods': {
+				'2010-11': {
+					'value': 17492.7*bil
+				}
+			},
+			'metadata': {
+				'cssClass': 'liabilities'
+			}
+		}
+	]
+}

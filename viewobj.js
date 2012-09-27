@@ -72,9 +72,18 @@ ViewObj.prototype.remove = function() {
 	this.svg.remove();
 }
 
-ViewObj.prototype.popOut = function( aggregate ) {
-	this.poppedOut = aggregate;
+ViewObj.prototype.popIn = function () {
 	this.children().map( function (child) { child.remove(); } );
+	this.children().splice(0,this.children().length);
+	this.poppedOut = null;
+}
+
+ViewObj.prototype.popOut = function( aggregate ) {
+
+	this.popIn();
+
+	this.poppedOut = aggregate;
+
 
 	var angleOffset = Math.PI;
 
@@ -118,8 +127,6 @@ ViewObj.prototype.popOut = function( aggregate ) {
 		bubbleAnglesSum += bubbleAngles[item];
 	}
 
-	console.log(bubbleAnglesSum/Math.PI);
-	console.log(bubbleAngles.map(function (x) {return x/Math.PI;}));
 	var angleScaler = d3.scale.linear().domain([0,bubbleAnglesSum]).range([0,2*Math.PI]);
 	var angle = angleOffset-angleScaler(bubbleAngles[0])/2;
 
@@ -461,7 +468,15 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
 	function valueLabelY( d ) {
 		// safety switch: getBBox fails if scaled too hard(?)
 		if (scaleFactor <= minScaleFactorForLabelDisplay) return 0;
-		return this.getBBox()['height']-10;
+		var h;
+		try {
+			h = this.getBBox()['height']-10;
+		} catch (e) {
+			console.log(e);
+			console.log(d);
+			h = 0;
+		}
+		return h;
 	}
 
 	nameLabel.enter().append("text")
