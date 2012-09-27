@@ -23,11 +23,16 @@
 
    position : an (x$, y$) pair
 */
-ViewObj.prototype = new ParentingObject();
+
+//having wacky non-fun with inheritance; children array was being shared!
+//ViewObj.prototype = new ParentingObject();
 function ViewObj( data, parent, position ) {
 	
 	this._data = data;
-	
+
+	this.ParentingObject = ParentingObject;
+	this.ParentingObject();
+
 	this.parent = parent;
 	this.parent.addChild(this);
 	
@@ -59,10 +64,76 @@ function ViewObj( data, parent, position ) {
 	*/
 	this.svg = this.parent.svg.append("g");
 
-	this.renderMode = {'name': 'defaultSectorRenderer', 
-					   'aggregateFilter': function (aggregate) {return true;} 
-					  };
+	this.renderMode = {'name': 'defaultSectorRenderer' };
 
+}
+
+ViewObj.prototype.remove = function() {
+	this.svg.remove();
+}
+
+ViewObj.prototype.popOut = function( aggregate ) {
+	this.poppedOut = aggregate;
+	this.children().map( function (child) { child.remove(); } );
+
+	var angleOffset = Math.PI;
+
+	/* this whole function assumes that there's only one sector being displayed.
+	   This is a bit dodge in some circumstances. Be warned. */
+
+	var items = this.data()['aggregates'][aggregate]['periods'][this.period()]['items'];
+	if (!items) return;
+	items = JSON.parse(JSON.stringify(items));
+	items.sort( function (a, b) { return b.value - a.value; } );
+	
+	var numChildren = items.length;
+	//var angleIncrement = 2*Math.PI/numChildren;
+
+	var innerDollarValue = this.data()['aggregates'][aggregate]['periods'][this.period()]['value'];
+	var exponent = Math.floor(Math.log(innerDollarValue)/Math.LN10);
+	var niceInnerRadius = Math.ceil(innerDollarValue/Math.pow(10, exponent))*Math.pow(10, exponent);
+	
+	/* do maths to figure out how to position and space the bubbles
+	   we figure out angle between:
+	   - the line between the center of the bubble and the center of the sector diagram; and,
+	   - the line from the center of the sector diagram that is tangent to the bubble
+	   doubling this gives us the radial angle taken to draw the bubble
+	   we get the sum of those, (hopefully it's <2Pi!) 
+	   and then scale them over the available space
+
+	   We also do some of the work to figure out the position. 
+	   We can't add dollar values to get the new radius due to sqrt scaling.
+	*/
+	var sectorPtRadius = viewstate.scaler(niceInnerRadius);
+	var bubblePtRadii = [];
+	var bubbleAngles = [];
+	var bubbleAnglesSum = 0;
+
+	for (var item in items) {
+		var itemValue = items[item]['value'];
+		 
+		bubblePtRadii[item] = viewstate.scaler(itemValue);
+
+		bubbleAngles[item] = 2*Math.asin( bubblePtRadii[item] / (bubblePtRadii[item] + sectorPtRadius) );
+		bubbleAnglesSum += bubbleAngles[item];
+	}
+
+	console.log(bubbleAnglesSum/Math.PI);
+	console.log(bubbleAngles.map(function (x) {return x/Math.PI;}));
+	var angleScaler = d3.scale.linear().domain([0,bubbleAnglesSum]).range([0,2*Math.PI]);
+	var angle = angleOffset-angleScaler(bubbleAngles[0])/2;
+
+	for (var item in items) {
+		angle += angleScaler(bubbleAngles[item])/2;
+		var itemPosition = [
+			(sectorPtRadius+bubblePtRadii[item])*Math.cos(angle),
+			(sectorPtRadius+bubblePtRadii[item])*Math.sin(angle)
+		].map(viewstate.scaler.invert);
+		angle += angleScaler(bubbleAngles[item])/2;
+
+		var itemObj = new ViewObj( items[item], this, itemPosition );
+		itemObj.render({'name': 'bubbleRenderer', 'cssClass': this.data()['aggregates'][aggregate]['metadata']['cssClass'] });
+	}
 }
 
 ViewObj.prototype.render = function (mode) {
@@ -74,6 +145,9 @@ ViewObj.prototype.render = function (mode) {
 	// we probably need an 'unrender'/destroy method in the renderers
 	if (mode != null) this.renderMode = mode;
 	ViewObjRenderers[this.renderMode['name']](this, this.renderMode);
+
+	// render all children
+	this.children().map( function (child) { child.render(); } );
 }
 
 /* Renderers go here. 
@@ -96,7 +170,7 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
 	/***** Constants */
 	var minPtsForAxisLabelDisplay = 75;
-	var minPtsForSectorLabelDisplay = 80;
+	var minScaleFactorForLabelDisplay = 0.2;
 
 	/***** Pre-process the data */
 	var data = JSON.parse(JSON.stringify(viewObj.data()));
@@ -121,7 +195,6 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
 	}
 	var exponent = Math.floor(Math.log(maxValue)/Math.LN10);
-	
 	var niceMaxValue = Math.ceil(maxValue/Math.pow(10, exponent))*Math.pow(10, exponent);
 
 	//var centerOffset = viewstate.scaler(niceMaxValue);
@@ -246,6 +319,9 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 		return d.data.name;
 	}
 
+	var scaleFactor=1/(d3.scale.sqrt().domain([0,tril]).range([0,1])(viewstate.scaleMax)/
+					   d3.scale.sqrt().domain([0,250*bil]).range([0,1])(minValue));
+
 	var wedgeInnerLabels = labelsGroup.selectAll('text.wedgeLabel.inner').data(donut(data['aggregates']),donutKey);
 	var wedgeOuterLabels = labelsGroup.selectAll('text.wedgeLabel.outer').data(donut(data['aggregates']),donutKey);
 
@@ -277,8 +353,8 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 	}
 
 	function innerLabelsY( d ) {
-		// safety switch: getBBox fails if scaled too hard
-		if (viewstate.scaler(niceMaxValue) <= minPtsForSectorLabelDisplay) return 0;
+		// safety switch: getBBox fails if not visible
+		if (scaleFactor < minScaleFactorForLabelDisplay) return 0;
 		var height = this.getBBox()['height'];
 		// save the value for the outer label
 		d.data.metadata.computedTextHeight = height;
@@ -290,8 +366,8 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 	}
 
 	function outerLabelsY( d ) {
-		// safety switch: getBBox fails if scaled too hard
-		if (viewstate.scaler(niceMaxValue) <= minPtsForSectorLabelDisplay) return 0;
+		// safety switch: getBBox fails if not visible
+		if (scaleFactor < minScaleFactorForLabelDisplay) return 0;
 		var height = this.getBBox()['height'];
 		if (isTop(d)) {
 			return -8-d.data.metadata.computedTextHeight;
@@ -299,9 +375,6 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 			return d.data.metadata.computedTextHeight+height+4;
 		}
 	}
-	console.log(minValue);
-	var scaleFactor=1/(d3.scale.sqrt().domain([0,tril]).range([0,1])(viewstate.scaleMax)/
-					   d3.scale.sqrt().domain([0,250*bil]).range([0,1])(minValue));
 
 	wedgeInnerLabels.enter()
 	// inner text: for top labels this is the money value, for bottom lables this is the name
@@ -312,13 +385,13 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 		.classed('value', isTop)
 		.classed('name', isBottom)
 		.text(innerLabelsText)
-		.attr("transform", function (d) {return "scale(" + tril/viewstate.scaleMax + ")"; })
+		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
 		.attr("x", labelsX)
 		.attr("y", innerLabelsY)
-		.attr("display",function (d) { return viewstate.scaler(niceMaxValue) > minPtsForSectorLabelDisplay ? null : "none" })
+		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
 
 	wedgeInnerLabels//.attr("transform", function (d) {return "translate(" + arc.centroid(d) + ")"; })
-		.attr("display",function (d) { return viewstate.scaler(niceMaxValue) > minPtsForSectorLabelDisplay ? null : "none" })
+		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
 		.text(innerLabelsText)
 		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
 		.attr("x", labelsX)
@@ -338,10 +411,10 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 		.attr("x", labelsX)
 		.attr("y", outerLabelsY)
 		//.attr("transform", function (d) {return "translate(" + arc.centroid(d) + ")"; })
-		.attr("display",function (d) { return viewstate.scaler(niceMaxValue) > minPtsForSectorLabelDisplay ? null : "none" })
+		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
 
 	wedgeOuterLabels//.attr("transform", function (d) {return "translate(" + arc.centroid(d) + ")"; })
-		.attr("display",function (d) { return viewstate.scaler(niceMaxValue) > minPtsForSectorLabelDisplay ? null : "none" })
+		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
 		.text(outerLabelsText)
 		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
 		.attr("x", labelsX)
@@ -349,29 +422,91 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
 	wedgeOuterLabels.exit().remove();
 
+}
 
-	/*arcs.append("text")
-	  .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
-	  .attr("dy", ".35em")
-	  .attr("text-anchor", "middle")
-	  .attr("display", function(d) { return d.value > .15 ? null : "none"; })
-	  .text(function(d, i) { return d.data.label; });*/
+/************************************************************ Bubble Renderer */
+ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
+
+	/***** Constants */
+	var minScaleFactorForLabelDisplay = 0.2;
+
+	/***** Pre-process the data */
+	var data = JSON.parse(JSON.stringify(viewObj.data()));
+
 	
-	/**************************************** Formatters */
+	// create the bubble
+	var circle = viewObj.svg.selectAll('circle')
+		.data([data], function (d) {return d.name;});
 
-	function formatDollarValue( d ) {
-		if (d >= 1000000000000) {
-			return (d/1000000000000).toFixed(1)+"T";
-		} else if (d >= 1000000000) {
-			return (d/1000000000).toFixed(1)+"B";
-		} else if (d >= 1000000) {
-			return (d/1000000).toFixed(1)+"M";
-		} else if (d >= 1000) {
-			return (d/1000).toFixed(1)+"K";
-		} else {
-			return d.toFixed(1);
-		}
+	circle.enter().append("circle")
+		.attr( "r", function(d) {return viewstate.scaler(d.value);} )
+		.classed( renderMode['cssClass'], true )
+		.classed( 'wedge', true );
+	
+	circle.exit().remove();
+
+	circle.attr( "r", function(d) {return viewstate.scaler(d.value);} )
+
+
+	/* Create section labels */
+	var labelsGroup = viewObj.svg.select("g.labels");
+	if (labelsGroup.empty()) labelsGroup=viewObj.svg.append("g").classed('labels',true);
+
+	var scaleFactor=1/(d3.scale.sqrt().domain([0,tril]).range([0,1])(viewstate.scaleMax)/
+					   d3.scale.sqrt().domain([0,50*bil]).range([0,1])(data.value));
+
+	var nameLabel = labelsGroup.selectAll('text.wedgeLabel.name').data([data]);
+	var valueLabel = labelsGroup.selectAll('text.wedgeLabel.value').data([data]);
+
+	function valueLabelY( d ) {
+		// safety switch: getBBox fails if scaled too hard(?)
+		if (scaleFactor <= minScaleFactorForLabelDisplay) return 0;
+		return this.getBBox()['height']-10;
 	}
 
+	nameLabel.enter().append("text")
+		.text(function (d) {return data.name.toUpperCase();})
+		.attr("x", function (d) { return -(this.getComputedTextLength())/2; })
+		.attr("y", -10)
+		.classed('wedgeLabel', true).classed('name', true)
+		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
+		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" });
 
+	nameLabel.text(function (d) {return data.name.toUpperCase();})
+		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
+		.attr("x", function (d) { return -(this.getComputedTextLength())/2; })
+		.attr("y", -10)
+		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; });
+		
+
+	valueLabel.enter().append("text")
+		.text(function (d) {return formatDollarValue(data.value);})
+		.attr("x", function (d) { return -(this.getComputedTextLength())/2; })
+		.attr("y", valueLabelY)
+		.classed('wedgeLabel', true).classed('value', true)
+		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
+		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" });
+
+	valueLabel
+		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
+		.text(function (d) {return formatDollarValue(data.value);})
+		.attr("x", function (d) { return -(this.getComputedTextLength())/2; })
+		.attr("y", valueLabelY)
+		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; });
+
+}
+
+
+function formatDollarValue( d ) {
+	if (d >= 1000000000000) {
+		return (d/1000000000000).toFixed(1)+"T";
+	} else if (d >= 1000000000) {
+		return (d/1000000000).toFixed(1)+"B";
+	} else if (d >= 1000000) {
+		return (d/1000000).toFixed(1)+"M";
+	} else if (d >= 1000) {
+		return (d/1000).toFixed(1)+"K";
+	} else {
+		return d.toFixed(1);
+	}
 }

@@ -33,7 +33,7 @@ ViewState.prototype.centerView = function () {
 ViewState.prototype.zoom = function (factor) {
 	this.scaleMax /= factor;
 	this.scaler = this.scaler.domain([0,this.scaleMax]);
-	this.children.map( function(child) {child.render()} );
+	this.children().map( function(child) {child.render()} );
 }
 
 /***** movement */

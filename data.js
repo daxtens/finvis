@@ -4,7 +4,7 @@ tril = 1000*bil;
 
 var cssStyles=['revenue','expenses','assets','liabilities'];
 
-var entities = [ cth_fbo ];
+var entities = [ cth_fbo, wa_fbo ];
 
 var cth_fbo = {
 	'name': 'Commonwealth Final Budget Outcome',
@@ -14,7 +14,21 @@ var cth_fbo = {
 			'name': 'Revenue',
 			'periods': {
 				'2011-12': {
-				  'value': 338.1*bil
+					'value': 338.1*bil,
+					'items': [
+						{
+							'name': 'Income Tax',
+							'value': 231.238*bil
+						},
+						{
+							'name': 'Indirect Tax',
+							'value': 85.511*bil
+						},
+						{
+							'name': 'Non-taxation revenue',
+							'value': 21.330*bil
+						}
+					]
 				},
 				'2010-11': {
 				  'value': 309.9*bil
@@ -28,7 +42,65 @@ var cth_fbo = {
 			'name': 'Expenses',
 			'periods': {
 				'2011-12': {
-				  'value': 377.7*bil
+					'value': 377.7*bil,
+					'items': [
+						{
+							'name': 'General public services',
+							'value': 23.153*bil
+						},
+						{
+							'name': 'Defence',
+							'value': 21.692*bil
+						},
+						{
+							'name': 'Public order and safety',
+							'value': 3.999*bil
+						},
+						{
+							'name': 'Education',
+							'value': 29.050*bil
+						},
+						{
+							'name': 'Health',
+							'value': 62.012*bil
+						},
+						{
+							'name': 'Social security and welfare',
+							'value': 126.747*bil
+						},
+						{
+							'name': 'Housing',
+							'value': 6.180*bil
+						},
+						{
+							'name': 'Recreation and culture',
+							'value': 6.464*bil
+						},
+						{
+							'name': 'Fuel and energy',
+							'value': 6.464*bil
+						},
+						{
+							'name': 'Agriculture, forestry and fishing',
+							'value': 2.953*bil
+						},
+						{
+							'name': 'Mining, manufacturing and construction',
+							'value': 2.245*bil
+						},
+						{
+							'name': 'Transport and communication',
+							'value': 9.129*bil
+						},
+						{
+							'name': 'Other economic affairs',
+							'value': 10.054*bil
+						},
+						{
+							'name': 'Other purposes',
+							'value': 70.253*bil
+						}
+					]
 				},
 				'2010-11': {
 				  'value': 356.1*bil

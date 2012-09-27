@@ -2,12 +2,14 @@
 /* A framework for parent/child objects */
 function ParentingObject() {
 	
-	this.parent = null;
+	var _children = new Array();
 
-	this.children=[];
+	this.children = function () {
+		return _children;
+	}
 
 	this.addChild = function (child) {
-		this.children.push(child);
+		_children.push(child);
 	}
 
 }
