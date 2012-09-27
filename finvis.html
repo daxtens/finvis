@@ -45,15 +45,17 @@ Arrow keys scroll the view.
   
 	function periodChange(sel) {
 	  var chosenoption=sel.options[sel.selectedIndex];
-      priviewobj.period(chosenoption.value);
-	  priviewobj.render();
+      viewObjs.map(function(obj) {obj.period(chosenoption.value);});
+	  viewObjs.map(function(obj) {obj.render();});
 	}
 
   window.viewstate=new ViewState(d3.select("body").append("svg"));
-  
+
+  window.viewObjs = [];
   priviewobj = new ViewObj( cth_fbo, viewstate, [0,0] );
   priviewobj.period('2011-12');
   priviewobj.render();
+  window.viewObjs.push(priviewobj);
   </script>
 
   </body>

@@ -57,7 +57,7 @@ function ViewObj( data, parent, position ) {
 	   the heavy lifting is done by the renderers stored in the ViewObjRenders
 	   array. 
 	*/
-	this.svg = this.parent.svg.append("g").attr("transform", "translate(" + this.position[0] + "," + this.position[1] + ")");
+	this.svg = this.parent.svg.append("g");
 
 	this.renderMode = {'name': 'defaultSectorRenderer', 
 					   'aggregateFilter': function (aggregate) {return true;} 
@@ -66,6 +66,10 @@ function ViewObj( data, parent, position ) {
 }
 
 ViewObj.prototype.render = function (mode) {
+
+	this.svg.attr("transform", "translate( " + this.position.map(viewstate.scaler).join(",") + " )")
+
+
 	// this is a pretty naive way of handling the transition.
 	// we probably need an 'unrender'/destroy method in the renderers
 	if (mode != null) this.renderMode = mode;
@@ -110,8 +114,11 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
 	/***** Calculate ranges etc */
 	var maxValue=-1;
+	var minValue=tril*tril;
 	for (var d in data['aggregates']) {
 		if (data['aggregates'][d].periods[viewObj.period()].value>maxValue) maxValue = data['aggregates'][d].periods[viewObj.period()].value;
+		if (data['aggregates'][d].periods[viewObj.period()].value<minValue) minValue = data['aggregates'][d].periods[viewObj.period()].value;
+
 	}
 	var exponent = Math.floor(Math.log(maxValue)/Math.LN10);
 	
@@ -292,8 +299,9 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 			return d.data.metadata.computedTextHeight+height+4;
 		}
 	}
-
-	var scaleFactor=1/d3.scale.sqrt().domain([0,tril]).range([0,1])(viewstate.scaleMax);
+	console.log(minValue);
+	var scaleFactor=1/(d3.scale.sqrt().domain([0,tril]).range([0,1])(viewstate.scaleMax)/
+					   d3.scale.sqrt().domain([0,250*bil]).range([0,1])(minValue));
 
 	wedgeInnerLabels.enter()
 	// inner text: for top labels this is the money value, for bottom lables this is the name
