@@ -440,6 +440,9 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
 	/***** Pre-process the data */
 	var data = JSON.parse(JSON.stringify(viewObj.data()));
 
+	function link( d ) {
+		if (d.href) window.open( d.href, d.target );
+	}
 	
 	// create the bubble
 	var circle = viewObj.svg.selectAll('circle')
@@ -448,7 +451,9 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
 	circle.enter().append("circle")
 		.attr( "r", function(d) {return viewstate.scaler(d.value);} )
 		.classed( renderMode['cssClass'], true )
-		.classed( 'wedge', true );
+		.classed( 'wedge', true )
+		.on('click', link)
+		.classed('link', function (d) { return d.href });
 	
 	circle.exit().remove();
 
@@ -485,7 +490,9 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
 		.attr("y", -10)
 		.classed('wedgeLabel', true).classed('name', true)
 		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
-		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" });
+		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
+		.classed('link', function (d) { return d.href })
+		.on('click', link);
 
 	nameLabel.text(function (d) {return data.name.toUpperCase();})
 		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
@@ -500,7 +507,9 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
 		.attr("y", valueLabelY)
 		.classed('wedgeLabel', true).classed('value', true)
 		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
-		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" });
+		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
+		.classed('link', function (d) { return d.href })
+		.on('click', link);
 
 	valueLabel
 		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })

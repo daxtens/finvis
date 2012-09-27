@@ -45,3 +45,13 @@ text.wedgeLabel.name {
 #tourCaption {
 	font-size: 12pt;
 }
+
+
+.link {
+	cursor: pointer;
+}
+
+text.link {
+	text-decoration: underline; /* haha, doesn't work in firefox; 7 year old bug. https://bugzilla.mozilla.org/show_bug.cgi?id=317196 */
+	fill: blue;
+}

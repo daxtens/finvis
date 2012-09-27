@@ -65,6 +65,18 @@ You can look at different years, or press -&gt; to look at the components.";
 		document.getElementById('periodSelector').selectedIndex=1;
 		document.getElementById('periodSelector').disabled="disabled";
 	},
+	
+	function () {
+		viewstate.children()[0].period('2011-12');
+		viewstate.children()[0].render({'name':'defaultSectorRenderer', 'aggregateFilter':function(aggregate) { return aggregate.name=='Expenses' }});
+		viewstate.children()[0].popOut(1);
+
+		document.getElementById('tourCaption').innerHTML = "You'll notice Defence is blue. It's a link to the Department of Defence's website.</br>\
+The Other Purposes bubble links to some primitive JavaScript.";
+
+		document.getElementById('periodSelector').selectedIndex=1;
+		document.getElementById('periodSelector').disabled="disabled";
+	},
 
 	function () {
 		viewstate.children()[0].render({'name':'defaultSectorRenderer', 'aggregateFilter':function(aggregate) { return aggregate.name=='Expenses'||aggregate.name=='Revenue' }});

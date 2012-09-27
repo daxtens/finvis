@@ -50,7 +50,9 @@ var cth_fbo = {
 						},
 						{
 							'name': 'Defence',
-							'value': 21.692*bil
+							'value': 21.692*bil,
+							'href': 'http://defence.gov.au/',
+							'target': '_blank'
 						},
 						{
 							'name': 'Public order and safety',
@@ -98,7 +100,9 @@ var cth_fbo = {
 						},
 						{
 							'name': 'Other purposes',
-							'value': 70.253*bil
+							'value': 70.253*bil,
+							'href': 'javascript:alert("This item reflects mostly debt-related costs.")',
+							'target': '_self'
 						}
 					]
 				},
