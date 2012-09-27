@@ -46,6 +46,11 @@ text.wedgeLabel.name {
 	font-size: 12pt;
 }
 
+circle.tinyHalo {
+	fill: white;
+	stroke: black;
+	opacity: 0.5;
+}
 
 .link {
 	cursor: pointer;

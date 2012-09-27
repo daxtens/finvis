@@ -429,6 +429,17 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
 	wedgeOuterLabels.exit().remove();
 
+
+	// Halo if the whole thing is just too small to see.
+	
+	var tinyHaloThreshold = 30;
+	var tinyHalo = viewObj.svg.selectAll("circle.tinyHalo").data([backdata.pop()].map(viewstate.scaler));
+	
+	tinyHalo.enter().append('circle').classed('tinyHalo', true)
+		.attr('r', tinyHaloThreshold)
+		.attr("display", function (d) { return d < tinyHaloThreshold ? null : "none" } )
+
+	tinyHalo.attr("display", function (d) { return d < tinyHaloThreshold ? null : "none" } )
 }
 
 /************************************************************ Bubble Renderer */
