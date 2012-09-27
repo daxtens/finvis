@@ -125,7 +125,7 @@ Press -&gt;.";
 	function () {
 		
 		document.getElementById('tourCaption').innerHTML = "BHP is roughly the same size, financially, as the state of WA.<br />\
-All these entities can be added in a simple text format; and a web interface is coming soon. They're extensible to be able to support \
+All these entities can be added in a simple text format; and a web interface is coming soon. <br/>They're extensible to be able to support \
 arbitary metadata in the future.";
 
 		if (!viewstate.children()[2]) {
@@ -147,7 +147,7 @@ arbitary metadata in the future.";
 
 	function () {
 		
-		document.getElementById('tourCaption').innerHTML = "The US - massively in debt.";
+		document.getElementById('tourCaption').innerHTML = "The US - massively in debt. (If you can't find it, it's on the left.)";
 
 		if (!viewstate.children()[3]) {
 			vo = new ViewObj( usa, viewstate, [-30*tril, 0*tril] );

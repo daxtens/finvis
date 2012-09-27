@@ -15,7 +15,7 @@ function ViewState(svg) {
 // calculate the size so something of value scaleMax can fit on screen.
 ViewState.prototype.calculateSize = function (scaleMax) {
 	var width = window.innerWidth-300,
-	height = (window.innerHeight-70)*0.9,
+	height = (window.innerHeight-30),
         maxOuterRadius = Math.min(width, height) / 2;
 	
 	this._svg.attr("width", width).attr("height", height);

@@ -43,9 +43,6 @@ Hi! You seem to be using Internet Explorer 8 or below. Unfortunately this websit
 <a href="#" onClick="javascript:viewstate.zoom(3/4); return false;">Zoom out</a><br/>
 Arrow keys scroll the view.
 <hr />
-<input type="button" onClick="javascript:priviewobj.render({'name':'defaultSectorRenderer','aggregateFilter':function(aggregate) { return aggregate.name=='Revenue' }});" value="Cth Revenue"/><br />
-  <input type="button" onClick="javascript:priviewobj.render({'name':'defaultSectorRenderer','aggregateFilter':function(aggregate) { return aggregate.name=='Revenue' || aggregate.name=='Expenses' }});" value="Cth Revenue &amp; Expenditure"/><br />
-  <input type="button" onClick="javascript:priviewobj.render({'name':'defaultSectorRenderer'});" value="Cth R.E.A.L."/><br />
   <select onChange="javascript:periodChange(this);" id="periodSelector">
 	<option value="2010-11">2010-11</option>
 	<option value="2011-12" selected="selected">2011-12</option>
@@ -72,7 +69,7 @@ Arrow keys scroll the view.
   vo.render();
 
   </script>
-  <div style="height: 70px">
+  <div style="position: absolute; top: 10px; height: 70px">
 <p id="tourCaption"></p>
 	</div>
   </body>
