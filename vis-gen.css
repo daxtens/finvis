@@ -1,6 +1,16 @@
 @charset "utf-8";
 body {
 	background: url("images/back.jpg") repeat scroll 0 0 transparent;
+	font: 10px sans-serif;
+}
+
+circle.axis_circle {
+  fill: none;
+  stroke: #777;
+}
+
+.wedge {
+  opacity: 0.8;
 }
 
 .revenue {

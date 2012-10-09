@@ -10,21 +10,6 @@
 	<script type="text/javascript" src="events.js"></script>
 <script type="text/javascript" src="tour.js"></script>
 <link rel="stylesheet" href="vis-gen.css" />
-    <style type="text/css">
-
-body {
-  font: 10px sans-serif;
-}
-
-circle.axis_circle {
-  fill: none;
-  stroke: #777;
-}
-
-.wedge {
-  opacity: 0.8;
-}
-    </style>
   </head>
   <body>
 <!--[if lt IE 9]>
@@ -37,7 +22,12 @@ Hi! You seem to be using Internet Explorer 8 or below. Unfortunately this websit
   <li><a href="http://www.opera.com/">Opera</a>
   </ul>
   Please try again with one of those.<br />
-<![endif]-->
+  <style type="text/css">
+  #tourCaption {
+  display: none;
+  }
+  </style>
+  <![endif]-->
 <div style="float:right;">
 <a href="#" onClick="javascript:viewstate.zoom(4/3); return false;">Zoom in</a><br/>
 <a href="#" onClick="javascript:viewstate.zoom(3/4); return false;">Zoom out</a><br/>
