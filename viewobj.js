@@ -256,7 +256,7 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 	
 	labels.exit().remove();
 
-	// create the wedges/sectors
+	/***** Create the wedges/sectors */
 	var sectorsGroup = viewObj.svg.select("g.sections");
 	if (sectorsGroup.empty()) sectorsGroup=viewObj.svg.append("g").classed('sections',true);
 
@@ -291,12 +291,12 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 	}
 
 
-	/* Create section labels */
+	/***** Create section labels */
 	var labelsGroup = viewObj.svg.select("g.labels");
 	if (labelsGroup.empty()) labelsGroup=viewObj.svg.append("g").classed('labels',true);
 
 
-	// special case if this is a bubble...
+	// TODO special case if this is a bubble...
 
 	// General Case
 	// ... utility functions
@@ -417,10 +417,9 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
 		.attr("x", labelsX)
 		.attr("y", outerLabelsY)
-		//.attr("transform", function (d) {return "translate(" + arc.centroid(d) + ")"; })
 		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
 
-	wedgeOuterLabels//.attr("transform", function (d) {return "translate(" + arc.centroid(d) + ")"; })
+	wedgeOuterLabels
 		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
 		.text(outerLabelsText)
 		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
@@ -440,6 +439,192 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 		.attr("display", function (d) { return d < tinyHaloThreshold ? null : "none" } )
 
 	tinyHalo.attr("display", function (d) { return d < tinyHaloThreshold ? null : "none" } )
+
+
+	/***** Relations */
+	var revenue, expenses, assets, liabilities;
+	var rVeData, aVlData;
+
+	for (var aggregate in data['aggregates']) {
+		if (data['aggregates'][aggregate]['metadata']['cssClass'] == 'revenue') {
+			revenue = data['aggregates'][aggregate]['periods'][viewObj.period()]['value'];
+		} else if (data['aggregates'][aggregate]['metadata']['cssClass'] == 'expenses') {
+			expenses = data['aggregates'][aggregate]['periods'][viewObj.period()]['value'];
+		} else if (data['aggregates'][aggregate]['metadata']['cssClass'] == 'assets') {
+			assets = data['aggregates'][aggregate]['periods'][viewObj.period()]['value'];
+		} else if (data['aggregates'][aggregate]['metadata']['cssClass'] == 'liabilities') {
+			liabilities = data['aggregates'][aggregate]['periods'][viewObj.period()]['value'];
+		}
+	}
+
+	if (data['relations']['revenueVexpenses'] && revenue !== undefined && expenses !== undefined) {
+		rVeData = revenue - expenses;
+	} else {
+		rVeData = null;
+	}
+
+	if (data['relations']['assetsVliabilities'] && assets !== undefined && liabilities !== undefined) {
+		aVlData = assets - liabilities;
+	} else {
+		aVlData = null;
+	}
+
+	var relations = viewObj.svg.select('g.relations');
+	if (relations.empty()) relations = viewObj.svg.append('g').classed('relations', true);
+
+
+	// FIXME: this is going to break lots where d==0
+	// every time there is a bipartite test, it needs to be made tripartite
+
+	function relationNameText( d ) {
+		if (d.value < 0) {
+			return data['relations'][d.relation]['less'].toUpperCase();
+		} else if (d.value == 0) {
+			return data['relations'][d.relation]['equal'].toUpperCase();
+		} else {
+			return data['relations'][d.relation]['greater'].toUpperCase();
+		}
+	}
+
+	function relationsInnerText( d ) {
+		if (isProfit(d)) { // value
+			return formatDollarValue(d.value);
+		} else {
+			return relationNameText( d );
+		}
+	}
+	
+	function relationsOuterText( d ) {
+		if (isLoss(d)) {
+			return formatDollarValue(-d.value);
+		} else {
+			return relationNameText( d );
+		}
+	}
+
+	function relationInnerY( d ) {
+		// safety switch: getBBox fails if not visible
+		if (scaleFactor < minScaleFactorForLabelDisplay) return 0;
+		var height = this.getBBox()['height'];
+		// save the value for the outer label
+		d.computedTextHeight = height;
+		if (isProfit(d)) {
+			return -15;
+		} else {
+			return (height+10);
+		}
+	}
+
+	function relationOuterY( d ) {
+		// safety switch: getBBox fails if not visible
+		if (scaleFactor < minScaleFactorForLabelDisplay) return 0;
+		var height = this.getBBox()['height'];
+		if (isProfit(d)) {
+			return -9-d.computedTextHeight;
+		} else {
+			return d.computedTextHeight+height+5;
+		}
+	}
+
+
+	function labelX(d) {
+		if (d.relation == 'revenueVexpenses') {
+			return viewstate.scaler((revenue>expenses)?revenue:expenses)/scaleFactor+8;
+		} else {
+			return -viewstate.scaler((assets>liabilities)?assets:liabilities)/scaleFactor-this.getComputedTextLength()-8;
+		}
+	}
+
+	function isProfit(d) {
+		return d.value>0;
+	}
+	function isLoss(d) {
+		return d.value<0;
+	}
+
+	// don't reconstruct the data each time; we'll lose the rendering info stored in it as a side-effect of
+	// getting the y value for the inner label. (ergh, side-effects. FIXME.)
+	var relationsData = [];
+	if (rVeData !== null) relationsData.push({'relation':'revenueVexpenses', 
+											  'value':rVeData, 
+											  'displayStyle': (rVeData>=0?'revenue':'expenses')});
+	if (aVlData !== null) relationsData.push({'relation':'assetsVliabilities', 
+											  'value':aVlData,
+											  'displayStyle': (aVlData>=0?'assets':'liabilities')});
+	
+
+	var innerLabel = relations.selectAll('text.relationLabel.innerLabel').data( relationsData );
+		
+	var enterer = innerLabel.enter().append('text')
+		.text(relationsInnerText)
+		.classed('relationLabel', true)
+		.classed('innerLabel', true)
+		.classed('name', isLoss)
+		.classed('value', isProfit)
+		.classed('revenue', isProfit)
+		.classed('expenses', isLoss)
+		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
+		.attr("transform", function (d) { return "scale(" + scaleFactor + ")"; })
+		.attr('x', labelX )
+		.attr('y', relationInnerY);
+	
+	for (var style in cssStyles) {
+		enterer.classed( cssStyles[style], function(d) {return d.displayStyle == cssStyles[style];} )
+	}
+
+
+	var updater = innerLabel.text(relationsInnerText)
+		.classed('revenue', isProfit)
+		.classed('expenses', isLoss)
+		.classed('name', isLoss)
+		.classed('value', isProfit)
+		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
+		.attr("transform", function (d) { return "scale(" + scaleFactor + ")"; })
+		.attr('x', labelX )
+		.attr('y', relationInnerY)
+	
+	for (var style in cssStyles) {
+		updater.classed( cssStyles[style], function(d) {return d.displayStyle == cssStyles[style];} )
+	}
+
+	innerLabel.exit().remove();
+
+	var outerLabel = relations.selectAll('text.relationLabel.outerLabel').data( relationsData );
+		
+	var enterer = outerLabel.enter().append('text')
+		.text(relationsOuterText)
+		.classed('relationLabel', true)
+		.classed('outerLabel', true)
+		.classed('name', isProfit)
+		.classed('value', isLoss)
+		.classed('revenue', isProfit)
+		.classed('expenses', isLoss)
+		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
+		.attr("transform", function (d) { return "scale(" + scaleFactor + ")"; })
+		.attr('x', labelX )
+		.attr('y', relationOuterY);
+	
+	for (var style in cssStyles) {
+		enterer.classed( cssStyles[style], function(d) {return d.displayStyle == cssStyles[style];} )
+	}
+
+	var updater = outerLabel.text(relationsOuterText)
+		.classed('revenue', isProfit)
+		.classed('expenses', isLoss)
+		.classed('name', isProfit)
+		.classed('value', isLoss)
+		.attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
+		.attr("transform", function (d) { return "scale(" + scaleFactor + ")"; })
+		.attr('x', labelX )
+		.attr('y', relationOuterY)
+
+	for (var style in cssStyles) {
+		updater.classed( cssStyles[style], function(d) {return d.displayStyle == cssStyles[style];} )
+	}
+
+
+	outerLabel.exit().remove();
+
 }
 
 /************************************************************ Bubble Renderer */

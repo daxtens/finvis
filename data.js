@@ -144,7 +144,18 @@ var cth_fbo = {
 		}
 	],
 
-	'relations':{}
+	'relations': {
+		'revenueVexpenses': {
+		  'greater': 'Budget Surplus',
+		  'equal': 'Balanced Budget',
+		  'less': 'Budget Deficit'
+		},
+		'assetsVliabilities': {
+			'greater': 'Net Position',
+			'equal': 'No net debt',
+			'less': 'Net Debt'
+		}
+	}
 };
 
 var wa_fbo = {
@@ -209,7 +220,18 @@ var wa_fbo = {
 		}
 	],
 
-	'relations':{}
+	'relations': {
+		'revenueVexpenses': {
+		  'greater': 'Budget Surplus',
+		  'equal': 'Balanced Budget',
+		  'less': 'Budget Deficit'
+		},
+		'assetsVliabilities': {
+			'greater': 'Net Position',
+			'equal': 'No net debt',
+			'less': 'Net Debt'
+		}
+	}
 };
 
 var bhp = {
@@ -260,7 +282,15 @@ var bhp = {
 				'cssClass': 'liabilities'
 			}
 		}
-	]
+	],
+
+	'relations': {
+		'revenueVexpenses': {
+		  'greater': 'Net Profit after Tax',
+		  'equal': 'No Profit or Loss',
+		  'less': 'Net Loss after Tax'
+		}
+	}
 }
 
 var usa = {
@@ -311,5 +341,17 @@ var usa = {
 				'cssClass': 'liabilities'
 			}
 		}
-	]
+	],
+	'relations': {
+		'revenueVexpenses': {
+		  'greater': 'Budget Surplus',
+		  'equal': 'Balanced Budget',
+		  'less': 'Budget Deficit'
+		},
+		'assetsVliabilities': {
+			'greater': 'Net Position',
+			'equal': 'No net debt',
+			'less': 'Net Debt'
+		}
+	}
 }

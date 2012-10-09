@@ -34,13 +34,24 @@ text.wedgeLabel {
 	stroke-width: 0.5;
 }
 
+text.relationLabel {
+	stroke: grey;
+	stroke-width: 0.5;
+}
+
 text.wedgeLabel.value {
 	font-size: 32px;
 }
 
-text.wedgeLabel.name {
+text.relationLabel.value {
+	font-size: 24px;
+}
+
+text.wedgeLabel.name, text.relationLabel.name {
 	font-size: 14px;
 }
+
+
 
 #tourCaption {
 	font-size: 12pt;
