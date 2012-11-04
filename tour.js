@@ -3,7 +3,7 @@ tour = { 'step': -1 };
 tour.steps=[
 	
 	function () {
-		viewstate.centerView();
+		viewstate.centreView();
 		document.getElementById('tourCaption').innerHTML = 'Welcome to the tour. Press -&gt;';
 	},
 	

@@ -67,6 +67,7 @@ function ViewObj( data, parent, position ) {
 	this.renderMode = {'name': 'defaultSectorRenderer' };
 
     /* Event handling */
+    // dragging is set up here. context menu is set up in render - icky, I know.
     this.mouseData={};
     this.mouseData.isDrag = false;
     this.mouseData.startX = 0;
@@ -124,7 +125,6 @@ function ViewObj( data, parent, position ) {
 
 	}
     }
-
 }
 
 
@@ -165,8 +165,8 @@ ViewObj.prototype.popOut = function( aggregate ) {
 	
 	/* do maths to figure out how to position and space the bubbles
 	   we figure out angle between:
-	   - the line between the center of the bubble and the center of the sector diagram; and,
-	   - the line from the center of the sector diagram that is tangent to the bubble
+	   - the line between the centre of the bubble and the centre of the sector diagram; and,
+	   - the line from the centre of the sector diagram that is tangent to the bubble
 	   doubling this gives us the radial angle taken to draw the bubble
 	   we get the sum of those, (hopefully it's <2Pi!) 
 	   and then scale them over the available space
@@ -214,8 +214,19 @@ ViewObj.prototype.render = function (mode) {
 	if (mode != null) this.renderMode = mode;
 	ViewObjRenderers[this.renderMode['name']](this, this.renderMode);
 
+    // as much as it irks me to do context menus this way, better to include jQuery
+    // than try to write my own context menus!
+    // ... do this before children so they can do their own.
+    var that = this;
+    jQuery( this.svg[0][0] ).find( ".wedge" )
+	.contextMenu( "wedgeMenu", 
+		      { 'bindings': { 'deleteMenuItem' : function() { that.remove() },
+				      'centreViewMenuItem' : function() { viewstate.centreViewOn( that ) },
+				      'duplicateMenuItem': null } } );
+
 	// render all children
 	this.children().map( function (child) { child.render(); } );
+
 }
 
 /* Renderers go here. 
@@ -265,7 +276,7 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 	var exponent = Math.floor(Math.log(maxValue)/Math.LN10);
 	var niceMaxValue = Math.ceil(maxValue/Math.pow(10, exponent))*Math.pow(10, exponent);
 
-	//var centerOffset = viewstate.scaler(niceMaxValue);
+	//var centreOffset = viewstate.scaler(niceMaxValue);
 
 	/***** Start laying things out */
 	// create the scale background
@@ -289,11 +300,11 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 		.enter().append("circle")
 		.classed('axis_circle', true)
 		.attr("r",function(d) { return viewstate.scaler(d); } )
-		//.attr("transform", "translate(" + centerOffset + "," + centerOffset + ")");
+		//.attr("transform", "translate(" + centreOffset + "," + centreOffset + ")");
 	
 	circles
 		.attr("r",function(d) { return viewstate.scaler(d); } )
-		//.attr("transform", "translate(" + centerOffset + "," + centerOffset + ")");
+		//.attr("transform", "translate(" + centreOffset + "," + centreOffset + ")");
 
 	circles.exit().remove();
 
@@ -303,7 +314,7 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 	labels.enter().append("text")
 		.text(formatDollarValue)
 		.classed("axis_label", true)
-//		.attr("transform", function(d) {return "translate("+centerOffset+","+(centerOffset-viewstate.scaler(d))+")"} )
+//		.attr("transform", function(d) {return "translate("+centreOffset+","+(centreOffset-viewstate.scaler(d))+")"} )
 		.attr("transform", function(d) {return "translate("+0+","+(0-viewstate.scaler(d))+")"} )
 		.attr("display",function (d) { return viewstate.scaler(niceMaxValue) > minPtsForAxisLabelDisplay ? null : "none" })
 		.attr("dy","1em")
@@ -311,7 +322,7 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 	
 	labels
 		.text(formatDollarValue)
-//		.attr("transform", function(d) {return "translate("+centerOffset+","+(centerOffset-viewstate.scaler(d))+")"} );
+//		.attr("transform", function(d) {return "translate("+centreOffset+","+(centreOffset-viewstate.scaler(d))+")"} );
 		.attr("display",function (d) { return viewstate.scaler(niceMaxValue) > minPtsForAxisLabelDisplay ? null : "none" })
 		.attr("transform", function(d) {return "translate("+0+","+(0-viewstate.scaler(d))+")"} );
 	
@@ -346,7 +357,7 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 	// update arcs, ergh
 	var updater = paths
 		.attr("d", arc)
-//		.attr("transform", "translate(" + centerOffset + "," + centerOffset + ")");
+//		.attr("transform", "translate(" + centreOffset + "," + centreOffset + ")");
 
 	// d3 does not seem to provide a nice way to set dynamic styles...
 	for (var style in cssStyles) {
