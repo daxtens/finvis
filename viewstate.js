@@ -9,6 +9,11 @@ function ViewState(svg) {
 	this.svg = this._svg.append("g");
 
 	this.centerView();
+
+    this.mouseData = {};
+    this.mouseData.inDrag=false;
+    this.mouseData.startX=0;
+    this.mouseData.startY=0;
 }
 
 /***** size and scaling */
