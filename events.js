@@ -65,7 +65,11 @@ window.onmousewheel = document.onmousewheel = wheel;
 
 document.onmousedown = function ( e ) {
 
-    // at some point we'll need to muck around with draggable objects. For now, however, we don't.
+    if (viewstate.mouseData.isInObjDrag) {
+	// this is a fairly bad sign
+	console.log("mousedown when inObjDrag?!?");
+	return true;
+    }
 
     // make sure this is a left click, otherwise pass it through
     if (e.button != 0) return true;
@@ -74,16 +78,14 @@ document.onmousedown = function ( e ) {
     viewstate.mouseData.startX = e.clientX;
     viewstate.mouseData.startY = e.clientY;
 
-    if (event.preventDefault)
-        event.preventDefault();
-    else
-        event.returnValue= false;
-    return false;
-
 }
 
 document.onmousemove = function ( e ) {
-    if (viewstate.mouseData.isDrag) {
+
+    if (viewstate.mouseData.isInObjDrag) {
+	//hmm, the mouse has escaped.
+	viewstate.mouseData.objMoveHandler(e);
+    } else if (viewstate.mouseData.isDrag) {
 	var moveX = -(e.clientX) + (viewstate.mouseData.startX);
 	var moveY = -(e.clientY) + (viewstate.mouseData.startY);
 
@@ -95,5 +97,9 @@ document.onmousemove = function ( e ) {
 }
 
 document.onmouseup = function ( e ) {
+    if (viewstate.mouseData.isInObjDrag) {
+	//hmm, the mouse has escaped.
+	viewstate.mouseData.objUpHandler(e);
+    }
     viewstate.mouseData.isDrag = false;
 }

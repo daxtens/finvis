@@ -12,6 +12,9 @@ function ViewState(svg) {
 
     this.mouseData = {};
     this.mouseData.inDrag=false;
+    this.mouseData.isInObjDrag=false;
+    this.mouseData.objMoveHandler = function () {};
+    this.mouseData.objUpHandler = function () {};
     this.mouseData.startX=0;
     this.mouseData.startY=0;
 }
