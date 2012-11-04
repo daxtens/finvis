@@ -91,7 +91,6 @@ function ViewObj( data, parent, position ) {
 	    that.mouseData.startX = d3.event.clientX;
 	    that.mouseData.startY = d3.event.clientY;
 	    
-	    d3.event.stopPropagation();
 	    return false;
 	};
     }
@@ -108,8 +107,8 @@ function ViewObj( data, parent, position ) {
 	var that = this;
 	return function(d) {
 	    
-	    if (d.data) e = d3.event
-	    else e = d;
+	    if (d instanceof MouseEvent) e = d
+	    else e = d3.event;
 
 	    if (!that.mouseData.isDrag) return true;
 	    
@@ -123,7 +122,6 @@ function ViewObj( data, parent, position ) {
 	    that.mouseData.startX = e.clientX;
 	    that.mouseData.startY = e.clientY;
 
-	    e.stopPropagation();
 	}
     }
 
@@ -714,7 +712,9 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
 		.attr( "r", function(d) {return viewstate.scaler(d.value);} )
 		.classed( renderMode['cssClass'], true )
 		.classed( 'wedge', true )
-		.on('click', link)
+		.on('mousedown', viewObj.onmousedownMaker() )
+	.on('mousemove', viewObj.onmousemoveMaker() )
+	.on('mouseup', viewObj.onmouseupMaker() )
 		.classed('link', function (d) { return d.href });
 	
 	circle.exit().remove();
