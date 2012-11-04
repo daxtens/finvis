@@ -103,3 +103,16 @@ document.onmouseup = function ( e ) {
     }
     viewstate.mouseData.isDrag = false;
 }
+
+/* Resize */
+var onResizeTimer;
+window.onresize = function () {
+    try { 
+	window.clearTimeout(onResizeTimer); 
+    } catch (err) {}
+    
+    onResizeTimer = window.setTimeout( function() {
+	viewstate.calculateSize(tril);
+	viewstate.children().map( function(child) { child.render() } );
+    }, 50 );
+}
