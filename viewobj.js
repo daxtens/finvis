@@ -325,9 +325,10 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 	function donutKey(d) {
 		return d.data.name;
 	}
-
+    // this is full of magic numbers. le sigh. In short, [0,tril] sets a default scaling factor for
+    // the size of the window, and [0, 400*bil] sets a scale for the smallest value.
 	var scaleFactor=1/(d3.scale.sqrt().domain([0,tril]).range([0,1])(viewstate.scaleMax)/
-					   d3.scale.sqrt().domain([0,250*bil]).range([0,1])(minValue));
+					   d3.scale.sqrt().domain([0,400*bil]).range([0,1])(minValue));
 
 	var wedgeInnerLabels = labelsGroup.selectAll('text.wedgeLabel.inner').data(donut(data['aggregates']),donutKey);
 	var wedgeOuterLabels = labelsGroup.selectAll('text.wedgeLabel.outer').data(donut(data['aggregates']),donutKey);

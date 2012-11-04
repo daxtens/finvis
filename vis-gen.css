@@ -40,13 +40,9 @@ text.label {
 
 text.wedgeLabel {
 	fill: white;
-	stroke: grey;
-	stroke-width: 0.5;
 }
 
 text.relationLabel {
-	stroke: grey;
-	stroke-width: 0.5;
 }
 
 text.wedgeLabel.value {
