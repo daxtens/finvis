@@ -66,7 +66,68 @@ function ViewObj( data, parent, position ) {
 
 	this.renderMode = {'name': 'defaultSectorRenderer' };
 
+    /* Event handling */
+    this.mouseData={};
+    this.mouseData.isDrag = false;
+    this.mouseData.startX = 0;
+    this.mouseData.startY = 0;
+
+    /* we have to attack these to things with substance like wedges, not the overall group 
+       these functions manufacture a suitable function for that. */
+    this.onmousedownMaker = function () {
+	var that = this;
+	return function(d) {
+	    // make sure this is a left click, otherwise pass it through
+	    // TODO: context menu
+	    if (d3.event.button != 0) return true;
+	    
+	    // ergh, protection from when the mouse 'escapes' is messy
+	    viewstate.mouseData.isInObjDrag = true;
+	    viewstate.mouseData.objMoveHandler = that.onmousemoveMaker();
+	    viewstate.mouseData.objUpHandler = that.onmouseupMaker();
+
+
+	    that.mouseData.isDrag = true;
+	    that.mouseData.startX = d3.event.clientX;
+	    that.mouseData.startY = d3.event.clientY;
+	    
+	    return false;
+	};
+    }
+
+    this.onmouseupMaker = function () {
+	var that = this;
+	return function(d) {    
+	    that.mouseData.isDrag = false;
+	    viewstate.mouseData.isInObjDrag = false;
+	};
+    }
+    
+    this.onmousemoveMaker = function (e) {
+	var that = this;
+	return function(d) {
+	    
+	    if (d instanceof MouseEvent) e = d
+	    else e = d3.event;
+
+	    if (!that.mouseData.isDrag) return true;
+	    
+	    that.position = that.position.map( viewstate.scaler );
+	    that.position[0] -= (that.mouseData.startX - e.clientX);
+	    that.position[1] -= (that.mouseData.startY - e.clientY);
+	    that.position = that.position.map( viewstate.scaler.invert );
+	    
+	    that.svg.attr("transform", "translate( " + that.position.map(viewstate.scaler).join(",") + " )")
+	
+	    that.mouseData.startX = e.clientX;
+	    that.mouseData.startY = e.clientY;
+
+	}
+    }
+
 }
+
+
 
 ViewObj.prototype.remove = function() {
 	this.svg.remove();
@@ -145,7 +206,7 @@ ViewObj.prototype.popOut = function( aggregate ) {
 
 ViewObj.prototype.render = function (mode) {
 
-	this.svg.attr("transform", "translate( " + this.position.map(viewstate.scaler).join(",") + " )")
+    this.svg.attr("transform", "translate( " + this.position.map(viewstate.scaler).join(",") + " )");
 
 
 	// this is a pretty naive way of handling the transition.
@@ -270,8 +331,10 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
 	var enterer = paths.enter().append("path")
 		.classed("wedge", true)
-//		.attr("transform", "translate(" + centerOffset + "," + centerOffset + ")")
-		.attr("d", arc);
+		.attr("d", arc)
+	.on('mousedown', viewObj.onmousedownMaker() )
+	.on('mousemove', viewObj.onmousemoveMaker() )
+	.on('mouseup', viewObj.onmouseupMaker() );
 
 	// d3 does not seem to provide a nice way to set dynamic styles...
 	for (var style in cssStyles) {
@@ -325,9 +388,10 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 	function donutKey(d) {
 		return d.data.name;
 	}
-
+    // this is full of magic numbers. le sigh. In short, [0,tril] sets a default scaling factor for
+    // the size of the window, and [0, 400*bil] sets a scale for the smallest value.
 	var scaleFactor=1/(d3.scale.sqrt().domain([0,tril]).range([0,1])(viewstate.scaleMax)/
-					   d3.scale.sqrt().domain([0,250*bil]).range([0,1])(minValue));
+					   d3.scale.sqrt().domain([0,400*bil]).range([0,1])(minValue));
 
 	var wedgeInnerLabels = labelsGroup.selectAll('text.wedgeLabel.inner').data(donut(data['aggregates']),donutKey);
 	var wedgeOuterLabels = labelsGroup.selectAll('text.wedgeLabel.outer').data(donut(data['aggregates']),donutKey);
@@ -648,7 +712,9 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
 		.attr( "r", function(d) {return viewstate.scaler(d.value);} )
 		.classed( renderMode['cssClass'], true )
 		.classed( 'wedge', true )
-		.on('click', link)
+		.on('mousedown', viewObj.onmousedownMaker() )
+	.on('mousemove', viewObj.onmousemoveMaker() )
+	.on('mouseup', viewObj.onmouseupMaker() )
 		.classed('link', function (d) { return d.href });
 	
 	circle.exit().remove();
