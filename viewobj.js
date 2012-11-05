@@ -141,6 +141,8 @@ ViewObj.prototype.popIn = function () {
 
 ViewObj.prototype.popOut = function( aggregate ) {
 
+	//todo refactor
+
 	this.popIn();
 
 	this.poppedOut = aggregate;
