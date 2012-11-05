@@ -8,7 +8,7 @@ function ViewState(svg) {
 	// publish a viewport that we can shift around.
 	this.svg = this._svg.append("g");
 
-	this.centerView();
+	this.centreView();
 
     this.mouseData = {};
     this.mouseData.inDrag=false;
@@ -34,7 +34,7 @@ ViewState.prototype.calculateSize = function (scaleMax) {
 	this.scaler = d3.scale.sqrt().domain([0,this.scaleMax]).range([0,maxOuterRadius]);
 }
 
-ViewState.prototype.centerView = function () {
+ViewState.prototype.centreView = function () {
 	this.calculateSize(tril);
 	this.moveTo([-this.width/2, -this.height/2]);
 }
@@ -43,6 +43,24 @@ ViewState.prototype.zoom = function (factor) {
 	this.scaleMax /= factor;
 	this.scaler = this.scaler.domain([0,this.scaleMax]);
 	this.children().map( function(child) {child.render()} );
+}
+
+ViewState.prototype.centreViewOn = function( viewObj ) {
+    var bbox = viewObj.svg[0][0].getBBox();
+    
+    var doesHeightLimit = ( (this.height/bbox.height) < (this.width/bbox.width) ) ? true : false;
+
+    if (doesHeightLimit) {
+	var scaleFactor = (this.scaler.invert(this.height/2))/this.scaler.invert(bbox.height/2);
+    } else {
+	var scaleFactor = (this.scaler.invert(this.width/2))/this.scaler.invert(bbox.width/2);
+    }
+
+    this.zoom(scaleFactor);
+    bbox = viewObj.svg[0][0].getBBox();
+   
+    this.moveTo( [bbox.x+this.scaler(viewObj.position[0])-(this.width-bbox.width)/2, 
+		  bbox.y+this.scaler(viewObj.position[1])-(this.height-bbox.height)/2] );
 }
 
 /***** movement */
