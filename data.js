@@ -4,8 +4,6 @@ var tril = 1000*bil;
 
 var cssStyles=['revenue','expenses','assets','liabilities'];
 
-var entities = [ cth_fbo, wa_fbo, bhp ];
-
 var cth_fbo = {
 	'name': 'Commonwealth Final Budget Outcome',
 
@@ -409,3 +407,6 @@ var usa = {
 		}
 	}
 }
+
+var entities = [ cth_fbo, wa_fbo, bhp, usa ];
+

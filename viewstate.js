@@ -11,8 +11,9 @@ function ViewState(svg) {
 	this.centreView();
 
     this.mouseData = {};
-    this.mouseData.inDrag=false;
+    this.mouseData.isDrag=false;
     this.mouseData.isInObjDrag=false;
+	this.mouseData.inUI=false;
     this.mouseData.objMoveHandler = function () {};
     this.mouseData.objUpHandler = function () {};
     this.mouseData.startX=0;
@@ -89,3 +90,22 @@ ViewState.prototype.move = function (position) {
 }
 
 ViewState.prototype.repositionChildren = function () {};
+
+ViewState.prototype.beginAddingView = function (data) {
+	this._addingData = data;
+	this.mouseData.inDropState = true;
+}
+
+ViewState.prototype.finishAddingView = function (position) {
+
+	position[0] += this.position[0];
+	position[1] += this.position[1];
+
+	position = position.map( viewstate.scaler.invert );
+
+	var vo = new ViewObj( this._addingData, this, position );
+	vo.period('2011-12');
+	vo.render();
+
+	this.mouseData.inDropState=false;
+}

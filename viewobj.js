@@ -876,8 +876,8 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
         try {
             h = this.getBBox()['height']-10;
         } catch (e) {
-            console.log(e);
-            console.log(d);
+            //console.log(e);
+            //console.log(d);
             h = 0;
         }
         return h;
@@ -922,9 +922,7 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
 	var enclosingCircleGroup =  viewObj.svg.select('g.enclosingCircle');
 	if (enclosingCircleGroup.empty()) enclosingCircleGroup = viewObj.svg.append('g').classed('enclosingCircle', true);
 
-	console.log(viewObj);
 	var enclosingCircleData = (viewObj.children().length ? [viewObj.dollarRadiusWhenRendered(true)] : []);
-	console.log(enclosingCircleData);
 
 	var enclosingCircle = enclosingCircleGroup.selectAll('circle.axis_circle').data(enclosingCircleData);
 

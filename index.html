@@ -31,7 +31,7 @@ Hi! You seem to be using Internet Explorer 8 or below. Unfortunately this websit
   }
   </style>
   <![endif]-->
-  <div style="float:right; width:150px;">
+  <div style="float:right; width:200px;">
 <div id="rightToolBox" style="position:fixed;">
 <a href="#" onClick="javascript:viewstate.zoom(4/3); return false;">Zoom in</a><br/>
 <a href="#" onClick="javascript:viewstate.zoom(3/4); return false;">Zoom out</a><br/>
@@ -43,7 +43,13 @@ Arrow keys scroll the view.
   </select>
   <hr/>
   <input type="button" value="&lt;-" / onClick="tour.prev()" id="prevBtn" disabled="disabled" />
-  <input type="button" value="-&gt;" / onClick="tour.next()" id="nextBtn" />
+  <input type="button" value="-&gt;" / onClick="tour.next()"
+  id="nextBtn" />
+  <hr/>
+  <select id="entitySel" style="width:190px;"
+  onmousedown="javascript:viewstate.mouseData.inUI=true;"
+  onmouseup="javascript:viewstate.mouseData.inUI=false;"></select><br/>
+  <input type="button" id="entityAdd"  onClick="javascript:addEntity();" value="Add Entity"></input>
 <br/>
 
   </div>
@@ -56,6 +62,19 @@ Arrow keys scroll the view.
 	  viewstate.children().map(function(obj) {obj.render();});
 	}
 
+  function addEntity() {
+
+  var entitySel = jQuery('#entitySel')[0];
+  viewstate.beginAddingView( entities[entitySel.selectedIndex] );
+  
+  }
+
+  var entitySel = jQuery('#entitySel');
+  jQuery.each( entities, function(index) {
+      entitySel.append( jQuery('<option />').val( index ).text( entities[index].name ) );
+	} );
+		
+  
   window.viewstate=new ViewState(d3.select("body").append("svg"));
 
   var vo = new ViewObj( cth_fbo, viewstate, [0,0] );
