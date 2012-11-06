@@ -24,7 +24,7 @@ function ViewState(svg) {
 // calculate the size so something of value scaleMax can fit on screen.
 ViewState.prototype.calculateSize = function (scaleMax) {
 
-	this.width = window.outerWidth*0.9;
+	this.width = window.innerWidth*0.99;
     this.height = (window.innerHeight-30);
         var maxOuterRadius = Math.min(this.width, this.height) / 2;
 	
@@ -60,8 +60,17 @@ ViewState.prototype.centreViewOn = function( viewObj ) {
     this.zoom(scaleFactor);
     bbox = viewObj.svg[0][0].getBBox();
    
-    this.moveTo( [bbox.x+this.scaler(viewObj.position[0])-(this.width-bbox.width)/2, 
-		  bbox.y+this.scaler(viewObj.position[1])-(this.height-bbox.height)/2] );
+	var xpos = bbox.x;
+	var ypos = bbox.y;
+	var obj = viewObj;
+	while (!(obj instanceof ViewState)) {
+		xpos += this.scaler(obj.position[0]);
+		ypos += this.scaler(obj.position[1]);
+		obj = obj.parent;
+	}
+
+    this.moveTo( [xpos-(this.width-bbox.width)/2, 
+				  ypos-(this.height-bbox.height)/2] );
 }
 
 /***** movement */
