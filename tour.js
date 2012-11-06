@@ -23,7 +23,7 @@ Let\'s investigate it in more detail.';
 
 
 	function () {
-		viewstate.children()[0].render({'name':'defaultSectorRenderer', 'aggregateFilter':function(aggregate) { return aggregate.name=='Revenue' }});
+		viewstate.children()[0].render({'name':'defaultSectorRenderer', 'specifiedAggregates':['revenue'] });
 		viewstate.children()[0].popIn();
 		
 		document.getElementById('tourCaption').innerHTML = 'This is just the revenue. You can compare it to the previous year with the drop-down list. Try it!<br /> \
@@ -34,7 +34,7 @@ Now, let\'s investigate 2011-12 in more detail.';
 
 	function () {
 		viewstate.children()[0].period('2011-12');
-		viewstate.children()[0].render({'name':'defaultSectorRenderer', 'aggregateFilter':function(aggregate) { return aggregate.name=='Revenue' }});
+		viewstate.children()[0].render({'name':'defaultSectorRenderer', 'specifiedAggregates':['revenue']});
 		viewstate.children()[0].popOut(0);
 
 		document.getElementById('tourCaption').innerHTML = 'Now we can see the components of government revenue.<br />\
@@ -45,7 +45,7 @@ Now, let\'s investigate 2011-12 in more detail.';
 	},
 
 	function () {
-		viewstate.children()[0].render({'name':'defaultSectorRenderer', 'aggregateFilter':function(aggregate) { return aggregate.name=='Expenses' }});
+		viewstate.children()[0].render({'name':'defaultSectorRenderer', 'specifiedAggregates':['expenses']});
 		viewstate.children()[0].popIn();
 
 		document.getElementById('tourCaption').innerHTML = "Now for government expenditure!<br />\
@@ -56,7 +56,7 @@ You can look at different years, or press -&gt; to look at the components.";
 
 	function () {
 		viewstate.children()[0].period('2011-12');
-		viewstate.children()[0].render({'name':'defaultSectorRenderer', 'aggregateFilter':function(aggregate) { return aggregate.name=='Expenses' }});
+		viewstate.children()[0].render({'name':'defaultSectorRenderer',  'specifiedAggregates':['expenses']});
 		viewstate.children()[0].popOut(1);
 
 		document.getElementById('tourCaption').innerHTML = 'Now we can see the components of government expenses.<br />\
@@ -68,7 +68,7 @@ You can look at different years, or press -&gt; to look at the components.";
 	
 	function () {
 		viewstate.children()[0].period('2011-12');
-		viewstate.children()[0].render({'name':'defaultSectorRenderer', 'aggregateFilter':function(aggregate) { return aggregate.name=='Expenses' }});
+		viewstate.children()[0].render({'name':'defaultSectorRenderer',  'specifiedAggregates':['expenses']});
 		viewstate.children()[0].popOut(1);
 
 		document.getElementById('tourCaption').innerHTML = "You'll notice Defence is blue. It's a link to the Department of Defence's website.</br>\
@@ -79,7 +79,7 @@ The Other Purposes bubble links to some primitive JavaScript.";
 	},
 
 	function () {
-		viewstate.children()[0].render({'name':'defaultSectorRenderer', 'aggregateFilter':function(aggregate) { return aggregate.name=='Expenses'||aggregate.name=='Revenue' }});
+		viewstate.children()[0].render({'name':'defaultSectorRenderer', 'specifiedAggregates':['revenue','expenses']});
 		viewstate.children()[0].popIn();
 
 		document.getElementById('tourCaption').innerHTML = "We can compare revenue and expenses, across years...";

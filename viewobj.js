@@ -125,6 +125,44 @@ function ViewObj( data, parent, position ) {
 
         }
     }
+
+	this.ondblclickMaker = function (e) {
+		var that = this;
+		return function (d) {
+			if ('aggregates' in that.data()) {
+				// an entity
+				if (that.renderMode.specifiedAggregates == undefined ||
+					that.renderMode.specifiedAggregates.length == 4) {
+					// full entity: go down to relation
+					if (d.data.metadata.cssClass == 'revenue' || d.data.metadata.cssClass == 'expenses') {
+						that.renderMode.specifiedAggregates=['revenue','expenses'];
+					} else {
+						that.renderMode.specifiedAggregates=['assets','liabilities'];
+					}
+					that.render();
+				} else if (that.renderMode.specifiedAggregates.length == 2) {
+					// a relation: go down to a single
+					that.renderMode.specifiedAggregates = [d.data.metadata.cssClass];
+					that.render();
+				} else {
+					// a single: pop in/out
+					if (that.poppedOut !== null) that.popIn()
+					else {
+						for (var idx in that.data().aggregates) {
+							if (that.data().aggregates[idx].metadata.cssClass == d.data.metadata.cssClass) {
+								that.popOut(idx);
+								break;
+							}
+						}
+					}
+				}
+			} else {
+				// a bubble: pop in/out
+				if (that.poppedOut !== null) that.popIn();
+				else that.popOut();
+			}
+		};
+	}
 }
 
 //units are dollars
@@ -142,6 +180,7 @@ ViewObj.prototype.popIn = function () {
     this.children().map( function (child) { child.remove(); } );
     this.children().splice(0,this.children().length);
     this.poppedOut = null;
+	this.parent.repositionChildren();
 }
 
 ViewObj.prototype.popOut = function( aggregate ) {
@@ -245,7 +284,10 @@ ViewObj.prototype.render = function (mode) {
         .contextMenu( "wedgeMenu",
                       { 'bindings': { 'deleteMenuItem' : function() { that.remove() },
                                       'centreViewMenuItem' : function() { viewstate.centreViewOn( that ) },
-                                      'duplicateMenuItem': null } } );
+                                      'duplicateMenuItem' : function() {alert("not yet implemented");},
+									  'resetMenuItem' : function() { that.renderMode.specifiedAggregates = undefined; that.popIn(); that.render(); } 
+									} 
+					  });
 
     // render all children
     this.children().map( function (child) { child.render(); } );
@@ -299,8 +341,14 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
     var data = JSON.parse(JSON.stringify(viewObj.data()));
 
     // which aggregates are we interested in?
-    if (renderMode['aggregateFilter']) {
-        data['aggregates'] = data['aggregates'].filter( renderMode['aggregateFilter'] );
+    if (renderMode['specifiedAggregates']) {
+        data['aggregates'] = data['aggregates'].filter( function( aggregate ) {
+			for (var specAgg in renderMode['specifiedAggregates']) {
+				if (aggregate.metadata.cssClass == renderMode['specifiedAggregates'][specAgg])
+					return true;
+			}
+			return false;
+		});
     }
 
     data['aggregates']
@@ -389,7 +437,8 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
         .attr("d", arc)
         .on('mousedown', viewObj.onmousedownMaker() )
         .on('mousemove', viewObj.onmousemoveMaker() )
-        .on('mouseup', viewObj.onmouseupMaker() );
+        .on('mouseup', viewObj.onmouseupMaker() )
+		.on('dblclick', viewObj.ondblclickMaker() );
 
     // d3 does not seem to provide a nice way to set dynamic styles...
     for (var style in cssStyles) {
@@ -751,8 +800,14 @@ ViewObjRenderers.defaultSectorRenderer.dollarRadiusWhenRendered = function (view
     var data = JSON.parse(JSON.stringify(viewObj.data()));
 
     // which aggregates are we interested in?
-    if (renderMode['aggregateFilter']) {
-        data['aggregates'] = data['aggregates'].filter( renderMode['aggregateFilter'] );
+    if (renderMode['specifiedAggregates']) {
+        data['aggregates'] = data['aggregates'].filter( function( aggregate ) {
+			for (var specAgg in renderMode['specifiedAggregates']) {
+				if (aggregate.metadata.cssClass == renderMode['specifiedAggregates'][specAgg])
+					return true;
+			}
+			return false;
+		});
     }
 
     /***** Calculate ranges etc */
@@ -793,6 +848,7 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
         .on('mousedown', viewObj.onmousedownMaker() )
         .on('mousemove', viewObj.onmousemoveMaker() )
         .on('mouseup', viewObj.onmouseupMaker() )
+		.on('dblclick', viewObj.ondblclickMaker() )
         .classed('link', function (d) { return d.href });
 
     circle.exit().remove();
