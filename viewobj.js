@@ -780,7 +780,10 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
     }
 
     // create the bubble
-    var circle = viewObj.svg.selectAll('circle')
+	var circleGroup = viewObj.svg.select('g.circle');
+    if (circleGroup.empty()) circleGroup = viewObj.svg.append('g').classed('circle', true);
+
+    var circle = circleGroup.selectAll('circle')
         .data([data], function (d) {return d.name;});
 
     circle.enter().append("circle")
