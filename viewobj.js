@@ -127,7 +127,12 @@ function ViewObj( data, parent, position ) {
     }
 }
 
-
+//units are dollars
+ViewObj.prototype.moveTo = function (position) {
+    if (arguments.length == 2) position = arguments;
+	this.position = position;
+	this.svg.attr("transform","translate("+this.position.map(viewstate.scaler).join(",")+")")
+}
 
 ViewObj.prototype.remove = function() {
     this.svg.remove();
@@ -141,29 +146,46 @@ ViewObj.prototype.popIn = function () {
 
 ViewObj.prototype.popOut = function( aggregate ) {
 
-    //todo refactor
-
     this.popIn();
 
     this.poppedOut = aggregate;
 
-
-    var angleOffset = Math.PI;
-
     /* this whole function assumes that there's only one sector being displayed.
        This is a bit dodge in some circumstances. Be warned. */
 
-    var items = this.data()['aggregates'][aggregate]['periods'][this.period()]['items'];
+    if ('aggregates' in this.data()) {
+        var items = this.data()['aggregates'][aggregate]['periods'][this.period()]['items'];
+        var cssClass = this.data()['aggregates'][aggregate]['metadata']['cssClass'];
+    } else {
+        var items = this.data().items;
+        var cssClass = this.renderMode.cssClass;
+    }
     if (!items) return;
     items = JSON.parse(JSON.stringify(items));
     items.sort( function (a, b) { return b.value - a.value; } );
 
     var numChildren = items.length;
-    //var angleIncrement = 2*Math.PI/numChildren;
 
-    var innerDollarValue = this.data()['aggregates'][aggregate]['periods'][this.period()]['value'];
-    var exponent = Math.floor(Math.log(innerDollarValue)/Math.LN10);
-    var niceInnerRadius = Math.ceil(innerDollarValue/Math.pow(10, exponent))*Math.pow(10, exponent);
+    for (var item in items) {
+        var itemObj = new ViewObj( items[item], this, [0,0] );
+        itemObj.render({'name': 'bubbleRenderer', 'cssClass': cssClass });
+    }
+
+    this.repositionChildren();
+    this.parent.repositionChildren();
+}
+
+ViewObj.prototype.repositionChildren = function () {
+
+    var angleOffset = Math.PI;
+
+    var items = this.children();
+    if (!items) return;
+    items.sort( function (a, b) { return b.data().value - a.data().value; } );
+
+    var numChildren = items.length;
+
+    var niceInnerRadius = this.dollarRadiusWhenRendered(false);
 
     /* do maths to figure out how to position and space the bubbles
        we figure out angle between:
@@ -182,9 +204,9 @@ ViewObj.prototype.popOut = function( aggregate ) {
     var bubbleAnglesSum = 0;
 
     for (var item in items) {
-        var itemValue = items[item]['value'];
+        var itemRadius = items[item].dollarRadiusWhenRendered(true);
 
-        bubblePtRadii[item] = viewstate.scaler(itemValue);
+        bubblePtRadii[item] = viewstate.scaler(itemRadius);
 
         bubbleAngles[item] = 2*Math.asin( bubblePtRadii[item] / (bubblePtRadii[item] + sectorPtRadius) );
         bubbleAnglesSum += bubbleAngles[item];
@@ -201,8 +223,7 @@ ViewObj.prototype.popOut = function( aggregate ) {
         ].map(viewstate.scaler.invert);
         angle += angleScaler(bubbleAngles[item])/2;
 
-        var itemObj = new ViewObj( items[item], this, itemPosition );
-        itemObj.render({'name': 'bubbleRenderer', 'cssClass': this.data()['aggregates'][aggregate]['metadata']['cssClass'] });
+        items[item].moveTo(itemPosition);
     }
 }
 
@@ -231,6 +252,23 @@ ViewObj.prototype.render = function (mode) {
 
 }
 
+/* Dollar Radius When Rendered:
+   What is my radius (in dollars), for the current render settings? 
+   Parameter: include children? */
+ViewObj.prototype.dollarRadiusWhenRendered = function ( areChildrenIncluded ) {
+    var myRadius = ViewObjRenderers[this.renderMode['name']].dollarRadiusWhenRendered(this, this.renderMode);
+
+    if (!areChildrenIncluded || this.children().length == 0) return myRadius;
+
+    var childrensRadii = this.children().map( function (child) { return child.dollarRadiusWhenRendered(true); } );
+    var maxChildRadius = Math.max.apply( Math, childrensRadii );
+
+    return viewstate.scaler.invert(
+        viewstate.scaler(myRadius) + 2*viewstate.scaler(maxChildRadius)
+    );
+
+}
+
 /* Renderers go here.
 
    This is *not* the way to design a totally new way of rendering data, because
@@ -242,6 +280,10 @@ ViewObj.prototype.render = function (mode) {
    data. For example, to display the amount of carbon emmitted by a sector of
    the economy, write another renderer. Use the same conventions for classes
    and such so the event management works.
+
+   Every renderer must also provide a dollarRadiusWhenRendered method,
+   simply returning the radius (or a close-ish guess; not too fussed about
+   minor text overlaps atm.) of the object when rendered in a given mode.
 
 */
 
@@ -704,6 +746,26 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
 }
 
+ViewObjRenderers.defaultSectorRenderer.dollarRadiusWhenRendered = function (viewObj, renderMode) {
+
+    var data = JSON.parse(JSON.stringify(viewObj.data()));
+
+    // which aggregates are we interested in?
+    if (renderMode['aggregateFilter']) {
+        data['aggregates'] = data['aggregates'].filter( renderMode['aggregateFilter'] );
+    }
+
+    /***** Calculate ranges etc */
+    var maxValue=-1;
+    for (var d in data['aggregates']) {
+        if (data['aggregates'][d].periods[viewObj.period()].value>maxValue) maxValue = data['aggregates'][d].periods[viewObj.period()].value;
+    }
+    var exponent = Math.floor(Math.log(maxValue)/Math.LN10);
+    var niceMaxValue = Math.ceil(maxValue/Math.pow(10, exponent))*Math.pow(10, exponent);
+
+    return niceMaxValue;
+}
+
 /************************************************************ Bubble Renderer */
 ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
 
@@ -795,6 +857,9 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
 
 }
 
+ViewObjRenderers.bubbleRenderer.dollarRadiusWhenRendered = function (viewObj, renderMode) {
+    return viewObj.data().value;
+}
 
 function formatDollarValue( d ) {
     if (d >= 1000000000000) {

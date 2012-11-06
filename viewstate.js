@@ -17,6 +17,7 @@ function ViewState(svg) {
     this.mouseData.objUpHandler = function () {};
     this.mouseData.startX=0;
     this.mouseData.startY=0;
+
 }
 
 /***** size and scaling */
@@ -77,3 +78,5 @@ ViewState.prototype.move = function (position) {
 	this.position[1] += position[1];
 	this.moveTo(this.position);
 }
+
+ViewState.prototype.repositionChildren = function () {};

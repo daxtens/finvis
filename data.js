@@ -18,11 +18,51 @@ var cth_fbo = {
 					'items': [
 						{
 							'name': 'Income Tax',
-							'value': 231.238*bil
+							'value': 231.238*bil,
+                            'items': [
+                                {
+                                    'name': 'Individuals\' and other withholding taxation',
+                                    'value': 151.433*bil
+                                },
+                                {
+                                    'name': 'Fringe benefits tax',
+                                    'value': 3.964*bil
+                                },
+                                {
+                                    'name': 'Company tax',
+                                    'value': 66.726*bil
+                                },
+                                {
+                                    'name': 'Superannuation funds',
+                                    'value': 7.852*bil
+                                },
+                                {
+                                    'name': 'Petroleum resource rent tax',
+                                    'value': 1.293*bil
+                                }
+                            ]
 						},
 						{
 							'name': 'Indirect Tax',
-							'value': 85.511*bil
+							'value': 85.511*bil,
+                            'items': [
+                                {
+                                    'name': 'Sales taxes',
+                                    'value': 50.004*bil
+                                },
+                                {
+                                    'name': 'Excise duty',
+                                    'value': 25.480*bil
+                                },
+                                {
+                                    'name': 'Customs duty',
+                                    'value': 7.105*bil
+                                },
+                                {
+                                    'name': 'Other',
+                                    'value': 29.222*bil
+                                }
+                            ]
 						},
 						{
 							'name': 'Non-taxation revenue',
@@ -101,8 +141,22 @@ var cth_fbo = {
 						{
 							'name': 'Other purposes',
 							'value': 70.253*bil,
-							'href': 'javascript:alert("This item reflects mostly debt-related costs.")',
-							'target': '_self'
+							'href': 'javascript:alert("This item reflects mostly intergovernmental transfers.")',
+							'target': '_self',
+                            'items': [
+                                { 'name': 'Public debt interest',
+                                  'value': 11.421*bil
+                                },
+                                { 'name': 'Nominal superannuation interest',
+                                  'value': 7.376*bil
+                                },
+                                { 'name': 'General purpose inter-governmental transactions',
+                                  'value': 49.940*bil
+                                },
+                                { 'name': 'Natural disaster relief',
+                                  'value': 1.516*bil
+                                }
+                            ]
 						}
 					]
 				},
