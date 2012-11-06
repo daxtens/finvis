@@ -181,11 +181,13 @@ ViewObj.prototype.popIn = function () {
     this.children().splice(0,this.children().length);
     this.poppedOut = null;
 	this.parent.repositionChildren();
+	this.render();
 }
 
 ViewObj.prototype.popOut = function( aggregate ) {
 
-    this.popIn();
+    this.children().map( function (child) { child.remove(); } );
+    this.children().splice(0,this.children().length);
 
     this.poppedOut = aggregate;
 
@@ -212,6 +214,7 @@ ViewObj.prototype.popOut = function( aggregate ) {
 
     this.repositionChildren();
     this.parent.repositionChildren();
+	this.render();
 }
 
 ViewObj.prototype.repositionChildren = function () {
@@ -913,6 +916,26 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
         .attr("x", function (d) { return -(this.getComputedTextLength())/2; })
         .attr("y", valueLabelY)
         .attr("transform", function (d) {return "scale(" + scaleFactor + ")"; });
+
+	/* If I have children, draw a little circle around us all to indicate that we go together */
+
+	var enclosingCircleGroup =  viewObj.svg.select('g.enclosingCircle');
+	if (enclosingCircleGroup.empty()) enclosingCircleGroup = viewObj.svg.append('g').classed('enclosingCircle', true);
+
+	console.log(viewObj);
+	var enclosingCircleData = (viewObj.children().length ? [viewObj.dollarRadiusWhenRendered(true)] : []);
+	console.log(enclosingCircleData);
+
+	var enclosingCircle = enclosingCircleGroup.selectAll('circle.axis_circle').data(enclosingCircleData);
+
+	enclosingCircle.enter().append('circle')
+		.classed('axis_circle', true)
+		.attr('r', viewstate.scaler);
+
+	enclosingCircle
+		.attr('r', viewstate.scaler);
+
+	enclosingCircle.exit().remove();
 
 }
 
