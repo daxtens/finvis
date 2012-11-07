@@ -180,8 +180,10 @@ ViewObj.prototype.popIn = function () {
     this.children().map( function (child) { child.remove(); } );
     this.children().splice(0,this.children().length);
     this.poppedOut = null;
-	this.parent.repositionChildren();
-	this.render();
+	this.reposition();
+	var obj = this;
+	while (obj.parent instanceof ViewObj) obj=obj.parent;
+	obj.render();
 }
 
 ViewObj.prototype.popOut = function( aggregate ) {
@@ -212,12 +214,13 @@ ViewObj.prototype.popOut = function( aggregate ) {
         itemObj.render({'name': 'bubbleRenderer', 'cssClass': cssClass });
     }
 
-    this.repositionChildren();
-    this.parent.repositionChildren();
-	this.render();
+    this.reposition();
+	var obj = this;
+	while (obj.parent instanceof ViewObj) obj=obj.parent;
+	obj.render();
 }
 
-ViewObj.prototype.repositionChildren = function () {
+ViewObj.prototype.reposition = function () {
 
     var angleOffset = Math.PI;
 
@@ -267,6 +270,9 @@ ViewObj.prototype.repositionChildren = function () {
 
         items[item].moveTo(itemPosition);
     }
+
+	// because this changes my radius, bubble it up
+	if (this.parent instanceof ViewObj) this.parent.reposition();
 }
 
 ViewObj.prototype.render = function (mode) {
@@ -533,8 +539,8 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
     function innerLabelsY( d ) {
         // safety switch: getBBox fails if not visible
         if (scaleFactor < minScaleFactorForLabelDisplay) return 0;
-        var height = this.getBBox()['height'];
-        // save the value for the outer label
+		var height = safeGetBBox(this)['height'];
+		// save the value for the outer label
         d.data.metadata.computedTextHeight = height;
         if (isTop(d)) {
             return -15;
@@ -546,7 +552,7 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
     function outerLabelsY( d ) {
         // safety switch: getBBox fails if not visible
         if (scaleFactor < minScaleFactorForLabelDisplay) return 0;
-        var height = this.getBBox()['height'];
+        var height = safeGetBBox(this)['height'];
         if (isTop(d)) {
             return -8-d.data.metadata.computedTextHeight;
         } else {
@@ -628,13 +634,13 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
         }
     }
 
-    if (data['relations']['revenueVexpenses'] && revenue !== undefined && expenses !== undefined) {
+    if (data['relations'] && data['relations']['revenueVexpenses'] && revenue !== undefined && expenses !== undefined) {
         rVeData = revenue - expenses;
     } else {
         rVeData = null;
     }
 
-    if (data['relations']['assetsVliabilities'] && assets !== undefined && liabilities !== undefined) {
+    if (data['relations'] && data['relations']['assetsVliabilities'] && assets !== undefined && liabilities !== undefined) {
         aVlData = assets - liabilities;
     } else {
         aVlData = null;
@@ -676,7 +682,7 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
     function relationInnerY( d ) {
         // safety switch: getBBox fails if not visible
         if (scaleFactor < minScaleFactorForLabelDisplay) return 0;
-        var height = this.getBBox()['height'];
+        var height = safeGetBBox(this)['height'];
         // save the value for the outer label
         d.computedTextHeight = height;
         if (isProfit(d)) {
@@ -689,7 +695,7 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
     function relationOuterY( d ) {
         // safety switch: getBBox fails if not visible
         if (scaleFactor < minScaleFactorForLabelDisplay) return 0;
-        var height = this.getBBox()['height'];
+        var height = safeGetBBox(this)['height'];
         if (isProfit(d)) {
             return -9-d.computedTextHeight;
         } else {
@@ -872,15 +878,7 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
     function valueLabelY( d ) {
         // safety switch: getBBox fails if scaled too hard(?)
         if (scaleFactor <= minScaleFactorForLabelDisplay) return 0;
-        var h;
-        try {
-            h = this.getBBox()['height']-10;
-        } catch (e) {
-            //console.log(e);
-            //console.log(d);
-            h = 0;
-        }
-        return h;
+        return safeGetBBox(this)['height']-10;
     }
 
     nameLabel.enter().append("text")
@@ -953,4 +951,13 @@ function formatDollarValue( d ) {
     } else {
         return d.toFixed(1);
     }
+}
+
+function safeGetBBox( svg ) {
+	try {
+		var bbox = svg.getBBox();
+	} catch (e) {
+		var bbox = { 'height':0, 'width':0, 'x':0, 'y':0 };
+	}
+	return bbox;
 }

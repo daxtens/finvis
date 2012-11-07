@@ -343,7 +343,7 @@ var bhp = {
 		  'less': 'Net Loss after Tax'
 		}
 	}
-}
+};
 
 var usa = {
 	'name': 'United States Government Statements of Operations and Changes in Net Position',
@@ -406,7 +406,7 @@ var usa = {
 			'less': 'Net Debt'
 		}
 	}
-}
+};
 
 var entities = [ cth_fbo, wa_fbo, bhp, usa ];
 
