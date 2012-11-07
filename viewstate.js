@@ -19,6 +19,10 @@ function ViewState(svg) {
     this.mouseData.startX=0;
     this.mouseData.startY=0;
 
+
+	// zoom
+	this.renderTimeout = -1;
+	this.scaleFactor = 1;
 }
 
 /***** size and scaling */
@@ -42,9 +46,25 @@ ViewState.prototype.centreView = function () {
 }
 
 ViewState.prototype.zoom = function (factor) {
+	try {
+		window.clearTimeout( this.renderTimeout );
+	} catch (err) {}
+
+	this.scaleFactor = this.scaler.invert(this.scaleFactor);
+
 	this.scaleMax /= factor;
 	this.scaler = this.scaler.domain([0,this.scaleMax]);
-	this.children().map( function(child) {child.render()} );
+
+	this.scaleFactor = this.scaler(this.scaleFactor);
+
+	this.svg.attr("transform","translate("+-this.position[0]+","+-this.position[1]+") scale("+this.scaleFactor+")")
+
+	var that = this;
+	this.renderTimeout = window.setTimeout( function () {
+		that.svg.attr("transform","translate("+-that.position[0]+","+-that.position[1]+")");
+		that.children().map( function(child) {child.render()} );
+		that.scaleFactor = 1;
+	}, 50);
 }
 
 ViewState.prototype.centreViewOn = function( viewObj ) {

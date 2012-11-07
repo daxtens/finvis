@@ -12,4 +12,8 @@ function ParentingObject() {
 		_children.push(child);
 	}
 
+	this.removeChild = function (child) {
+		_children.splice(_children.indexOf(child),1);
+	}
+
 }

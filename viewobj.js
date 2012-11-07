@@ -174,11 +174,11 @@ ViewObj.prototype.moveTo = function (position) {
 
 ViewObj.prototype.remove = function() {
     this.svg.remove();
+	this.parent.removeChild(this);
 }
 
 ViewObj.prototype.popIn = function () {
     this.children().map( function (child) { child.remove(); } );
-    this.children().splice(0,this.children().length);
     this.poppedOut = null;
 	this.reposition();
 	var obj = this;
@@ -277,8 +277,7 @@ ViewObj.prototype.reposition = function () {
 
 ViewObj.prototype.render = function (mode) {
 
-    this.svg.attr("transform", "translate( " + this.position.map(viewstate.scaler).join(",") + " )");
-
+	this.svg.attr("transform", "translate( " + this.position.map(viewstate.scaler).join(",") + " )");
 
     // this is a pretty naive way of handling the transition.
     // we probably need an 'unrender'/destroy method in the renderers
@@ -344,7 +343,7 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
     /***** Constants */
     var minPtsForAxisLabelDisplay = 75;
-    var minScaleFactorForLabelDisplay = 0.2;
+    var minScaleFactorForLabelDisplay = 0.3;
 
     /***** Pre-process the data */
     var data = JSON.parse(JSON.stringify(viewObj.data()));
@@ -417,14 +416,12 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
         .classed("axis_label", true)
     //      .attr("transform", function(d) {return "translate("+centreOffset+","+(centreOffset-viewstate.scaler(d))+")"} )
         .attr("transform", function(d) {return "translate("+0+","+(0-viewstate.scaler(d))+")"} )
-        .attr("display",function (d) { return viewstate.scaler(niceMaxValue) > minPtsForAxisLabelDisplay ? null : "none" })
         .attr("dy","1em")
-        .attr("dx",function (d) { return -this.getComputedTextLength()/2 })
+        .attr("dx",function (d) { return -safeGetBBox(this)['width']/2 })
 
     labels
-        .text(formatDollarValue)
+ //       .text(formatDollarValue)
     //      .attr("transform", function(d) {return "translate("+centreOffset+","+(centreOffset-viewstate.scaler(d))+")"} );
-        .attr("display",function (d) { return viewstate.scaler(niceMaxValue) > minPtsForAxisLabelDisplay ? null : "none" })
         .attr("transform", function(d) {return "translate("+0+","+(0-viewstate.scaler(d))+")"} );
 
     labels.exit().remove();
@@ -506,9 +503,16 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
     var scaleFactor=1/(d3.scale.sqrt().domain([0,tril]).range([0,1])(viewstate.scaleMax)/
                        d3.scale.sqrt().domain([0,400*bil]).range([0,1])(minValue));
 
-    var wedgeInnerLabels = labelsGroup.selectAll('text.wedgeLabel.inner').data(donut(data['aggregates']),donutKey);
-    var wedgeOuterLabels = labelsGroup.selectAll('text.wedgeLabel.outer').data(donut(data['aggregates']),donutKey);
+	// only draw labels if they're visible
+	if (scaleFactor <= minScaleFactorForLabelDisplay) {
+		var labelData = [];
+	} else {
+		var labelData = donut(data['aggregates']);
+	}
 
+    var wedgeInnerLabels = labelsGroup.selectAll('text.wedgeLabel.inner').data(labelData,donutKey);
+    var wedgeOuterLabels = labelsGroup.selectAll('text.wedgeLabel.outer').data(labelData,donutKey);
+	
     function innerLabelsText( d ) {
         if (!isTop(d)) {
             return d.data.name.toUpperCase();
@@ -516,7 +520,7 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
             return formatDollarValue( d.data.periods[viewObj.period()].value );
         }
     }
-
+	
     function outerLabelsText( d ) {
         if (isTop(d)) {
             return d.data.name.toUpperCase();
@@ -524,13 +528,13 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
             return formatDollarValue( d.data.periods[viewObj.period()].value );
         }
     }
-
+	
     function labelsX( d ) {
         var horiz = horizSide(d);
         if (horiz == 'left') {
-            return -(this.getComputedTextLength()+15);
+            return -(safeGetBBox(this)['width']+15);
         } else if (horiz == 'middle') {
-            return -(this.getComputedTextLength())/2;
+            return -safeGetBBox(this)['width']/2;
         } else { // assume right
             return 15;
         }
@@ -560,48 +564,44 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
         }
     }
 
-    wedgeInnerLabels.enter()
-    // inner text: for top labels this is the money value, for bottom lables this is the name
-    // we determine what's what by virtue of the section's css class
+	// inner text: for top labels this is the money value, for bottom labels this is the name
+	// we determine what's what by virtue of the section's css class
+	wedgeInnerLabels.enter()
         .append("text")
         .classed('wedgeLabel', true)
         .classed('inner', true)
         .classed('value', isTop)
         .classed('name', isBottom)
         .text(innerLabelsText)
-        .attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
         .attr("x", labelsX)
         .attr("y", innerLabelsY)
-        .attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
+		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; });
 
-    wedgeInnerLabels//.attr("transform", function (d) {return "translate(" + arc.centroid(d) + ")"; })
-        .attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
+    wedgeInnerLabels
         .text(innerLabelsText)
-        .attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
         .attr("x", labelsX)
-        .attr("y", innerLabelsY)
+        //.attr("y", innerLabelsY): x may change with period, y will not.
+		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; });
 
     wedgeInnerLabels.exit().remove();
 
-    wedgeOuterLabels.enter()
     // outer text: vice versa
+    wedgeOuterLabels.enter()
         .append("text")
         .classed('wedgeLabel', true)
         .classed('outer', true)
         .classed('value', isBottom)
         .classed('name', isTop)
         .text(outerLabelsText)
-        .attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
         .attr("x", labelsX)
         .attr("y", outerLabelsY)
-        .attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
+		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; });
 
     wedgeOuterLabels
-        .attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
         .text(outerLabelsText)
-        .attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
         .attr("x", labelsX)
-        .attr("y", outerLabelsY)
+        //.attr("y", outerLabelsY)
+		.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; });
 
     wedgeOuterLabels.exit().remove();
 
@@ -649,6 +649,7 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
     var relations = viewObj.svg.select('g.relations');
     if (relations.empty()) relations = viewObj.svg.append('g').classed('relations', true);
 
+	relations.attr("transform", function (d) { return "scale(" + scaleFactor + ")"; })
 
     // FIXME: this is going to break lots where d==0
     // every time there is a bipartite test, it needs to be made tripartite
@@ -708,7 +709,7 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
         if (d.relation == 'revenueVexpenses') {
             return viewstate.scaler((revenue>expenses)?revenue:expenses)/scaleFactor+8;
         } else {
-            return -viewstate.scaler((assets>liabilities)?assets:liabilities)/scaleFactor-this.getComputedTextLength()-8;
+            return -viewstate.scaler((assets>liabilities)?assets:liabilities)/scaleFactor-safeGetBBox(this)['width']-8;
         }
     }
 
@@ -730,6 +731,9 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
                                               'displayStyle': (aVlData>=0?'assets':'liabilities')});
 
 
+	// don't display labels if they're too small
+	if (scaleFactor < minScaleFactorForLabelDisplay) relationsData=[];
+
     var innerLabel = relations.selectAll('text.relationLabel.innerLabel').data( relationsData );
 
     var enterer = innerLabel.enter().append('text')
@@ -740,8 +744,6 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
         .classed('value', isProfit)
         .classed('revenue', isProfit)
         .classed('expenses', isLoss)
-        .attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
-        .attr("transform", function (d) { return "scale(" + scaleFactor + ")"; })
         .attr('x', labelX )
         .attr('y', relationInnerY);
 
@@ -755,8 +757,6 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
         .classed('expenses', isLoss)
         .classed('name', isLoss)
         .classed('value', isProfit)
-        .attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
-        .attr("transform", function (d) { return "scale(" + scaleFactor + ")"; })
         .attr('x', labelX )
         .attr('y', relationInnerY)
 
@@ -776,8 +776,6 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
         .classed('value', isLoss)
         .classed('revenue', isProfit)
         .classed('expenses', isLoss)
-        .attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
-        .attr("transform", function (d) { return "scale(" + scaleFactor + ")"; })
         .attr('x', labelX )
         .attr('y', relationOuterY);
 
@@ -790,8 +788,6 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
         .classed('expenses', isLoss)
         .classed('name', isProfit)
         .classed('value', isLoss)
-        .attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
-        .attr("transform", function (d) { return "scale(" + scaleFactor + ")"; })
         .attr('x', labelX )
         .attr('y', relationOuterY)
 
@@ -834,10 +830,11 @@ ViewObjRenderers.defaultSectorRenderer.dollarRadiusWhenRendered = function (view
 ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
 
     /***** Constants */
-    var minScaleFactorForLabelDisplay = 0.2;
+    var minScaleFactorForLabelDisplay = 0.3;
+
 
     /***** Pre-process the data */
-    var data = JSON.parse(JSON.stringify(viewObj.data()));
+    var data = viewObj.data();//JSON.parse(JSON.stringify(viewObj.data()));
 
     function link( d ) {
         if (d.href) window.open( d.href, d.target );
@@ -872,8 +869,16 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
     var scaleFactor=1/(d3.scale.sqrt().domain([0,tril]).range([0,1])(viewstate.scaleMax)/
                        d3.scale.sqrt().domain([0,50*bil]).range([0,1])(data.value));
 
-    var nameLabel = labelsGroup.selectAll('text.wedgeLabel.name').data([data]);
-    var valueLabel = labelsGroup.selectAll('text.wedgeLabel.value').data([data]);
+	if (scaleFactor <= minScaleFactorForLabelDisplay) {
+		var labelData = [];
+	} else {
+		var labelData = [data];
+	}
+
+    var nameLabel = labelsGroup.selectAll('text.wedgeLabel.name').data(labelData);
+    var valueLabel = labelsGroup.selectAll('text.wedgeLabel.value').data(labelData);
+
+	labelsGroup.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; });
 
     function valueLabelY( d ) {
         // safety switch: getBBox fails if scaled too hard(?)
@@ -881,39 +886,27 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
         return safeGetBBox(this)['height']-10;
     }
 
+	function centredTextLabelX(d) { return -(safeGetBBox(this)['width'])/2; };
     nameLabel.enter().append("text")
         .text(function (d) {return data.name.toUpperCase();})
-        .attr("x", function (d) { return -(this.getComputedTextLength())/2; })
-        .attr("y", -10)
         .classed('wedgeLabel', true).classed('name', true)
-        .attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
-        .attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
+        .attr("x", centredTextLabelX)
+        .attr("y", -10)
         .classed('link', function (d) { return d.href })
         .on('click', link);
 
-    nameLabel.text(function (d) {return data.name.toUpperCase();})
-        .attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
-        .attr("x", function (d) { return -(this.getComputedTextLength())/2; })
-        .attr("y", -10)
-        .attr("transform", function (d) {return "scale(" + scaleFactor + ")"; });
 
+	nameLabel.exit().remove();
 
     valueLabel.enter().append("text")
         .text(function (d) {return formatDollarValue(data.value);})
-        .attr("x", function (d) { return -(this.getComputedTextLength())/2; })
-        .attr("y", valueLabelY)
         .classed('wedgeLabel', true).classed('value', true)
-        .attr("transform", function (d) {return "scale(" + scaleFactor + ")"; })
-        .attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
+		.attr("x", centredTextLabelX)
+        .attr("y", valueLabelY)
         .classed('link', function (d) { return d.href })
         .on('click', link);
 
-    valueLabel
-        .attr("display",function (d) { return scaleFactor > minScaleFactorForLabelDisplay ? null : "none" })
-        .text(function (d) {return formatDollarValue(data.value);})
-        .attr("x", function (d) { return -(this.getComputedTextLength())/2; })
-        .attr("y", valueLabelY)
-        .attr("transform", function (d) {return "scale(" + scaleFactor + ")"; });
+	valueLabel.exit().remove();
 
 	/* If I have children, draw a little circle around us all to indicate that we go together */
 
@@ -954,10 +947,11 @@ function formatDollarValue( d ) {
 }
 
 function safeGetBBox( svg ) {
-	try {
+//	try {
 		var bbox = svg.getBBox();
-	} catch (e) {
-		var bbox = { 'height':0, 'width':0, 'x':0, 'y':0 };
-	}
+//	} catch (e) {
+//		var bbox = { 'height':0, 'width':0, 'x':0, 'y':0 };
+//		console.log(svg);
+//	}
 	return bbox;
 }
