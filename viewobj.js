@@ -238,6 +238,14 @@ ViewObj.prototype.popOut = function( aggregate ) {
 	obj.render();
 }
 
+ViewObj.prototype.canPopOut = function( aggregate ) {
+	if ('aggregates' in this.data()) {
+        return this.data()['aggregates'][aggregate]['periods'][this.period()]['items'].length;
+    } else {
+        return this.data().items && this.data().items.length;
+    }
+}
+
 ViewObj.prototype.reposition = function () {
 
     var angleOffset = Math.PI;
@@ -873,7 +881,8 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
         .on('mousemove', viewObj.onmousemoveMaker() )
         .on('mouseup', viewObj.onmouseupMaker() )
 		.on('dblclick', viewObj.ondblclickMaker() )
-        .classed('link', function (d) { return d.href });
+        .classed('link', function (d) { return d.href })
+		.classed('cannotPopOut', function() {return !viewObj.canPopOut();} );
 
     circle.exit().remove();
 

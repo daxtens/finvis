@@ -13,6 +13,10 @@ circle.axis_circle {
   opacity: 0.8;
 }
 
+.wedge.cannotPopOut {
+	stroke: #333;
+}
+
 .revenue {
 	fill: #00995e;
 }
