@@ -51,7 +51,13 @@ function ViewObj( data, parent, position ) {
     this.period = function () {
         if (arguments.length == 0) return this._period;
 
-        this._period = arguments[0];
+		if (this._period != arguments[0]) {
+			this._period = arguments[0];
+			if (this.poppedOut) {
+				this.popIn();
+				this.popOut(this.poppedOutAggregate);
+			}
+		}
     }
 
     /* Rendering
@@ -78,8 +84,9 @@ function ViewObj( data, parent, position ) {
     this.onmousedownMaker = function () {
         var that = this;
         return function(d) {
+			d3.event.stopPropagation();
+
             // make sure this is a left click, otherwise pass it through
-            // TODO: context menu
             if (d3.event.button != 0) return true;
 
             // ergh, protection from when the mouse 'escapes' is messy
@@ -129,10 +136,12 @@ function ViewObj( data, parent, position ) {
 	this.ondblclickMaker = function (e) {
 		var that = this;
 		return function (d) {
+			d3.event.stopPropagation();
 			if ('aggregates' in that.data()) {
 				// an entity
-				if (that.renderMode.specifiedAggregates == undefined ||
-					that.renderMode.specifiedAggregates.length == 4) {
+				if (that.data().aggregates.length == 4 && 
+					(that.renderMode.specifiedAggregates == undefined ||
+					 that.renderMode.specifiedAggregates.length == 4)) {
 					// full entity: go down to relation
 					if (d.data.metadata.cssClass == 'revenue' || d.data.metadata.cssClass == 'expenses') {
 						that.renderMode.specifiedAggregates=['revenue','expenses'];
@@ -140,13 +149,14 @@ function ViewObj( data, parent, position ) {
 						that.renderMode.specifiedAggregates=['assets','liabilities'];
 					}
 					that.render();
-				} else if (that.renderMode.specifiedAggregates.length == 2) {
+				} else if ((that.data().aggregates.length == 2 && that.renderMode.specifiedAggregates == undefined) ||
+						   (that.data().aggregates.length == 4 && that.renderMode.specifiedAggregates.length == 2)) {
 					// a relation: go down to a single
 					that.renderMode.specifiedAggregates = [d.data.metadata.cssClass];
 					that.render();
 				} else {
 					// a single: pop in/out
-					if (that.poppedOut !== null) that.popIn()
+					if (that.poppedOut) that.popIn()
 					else {
 						for (var idx in that.data().aggregates) {
 							if (that.data().aggregates[idx].metadata.cssClass == d.data.metadata.cssClass) {
@@ -158,7 +168,7 @@ function ViewObj( data, parent, position ) {
 				}
 			} else {
 				// a bubble: pop in/out
-				if (that.poppedOut !== null) that.popIn();
+				if (that.poppedOut) that.popIn();
 				else that.popOut();
 			}
 		};
@@ -178,8 +188,14 @@ ViewObj.prototype.remove = function() {
 }
 
 ViewObj.prototype.popIn = function () {
-    this.children().map( function (child) { child.remove(); } );
-    this.poppedOut = null;
+    this.children().map( function (child) { if (child.poppedOut) child.popIn(); } );
+	// this naive approach skips every second one due to progressive renumbering
+	//this.children().map( function (child) { child.remove(); } );
+	// this doesn't
+	for (var i = this.children().length; i>=0; i--) {
+		if (this.children()[i]) this.children()[i].remove();
+	}
+    this.poppedOut = false;
 	this.reposition();
 	var obj = this;
 	while (obj.parent instanceof ViewObj) obj=obj.parent;
@@ -188,10 +204,12 @@ ViewObj.prototype.popIn = function () {
 
 ViewObj.prototype.popOut = function( aggregate ) {
 
+	this.children().map( function (child) { child.popIn(); } );
     this.children().map( function (child) { child.remove(); } );
     this.children().splice(0,this.children().length);
 
-    this.poppedOut = aggregate;
+	this.poppedOutAggregate = aggregate;
+    this.poppedOut = true;
 
     /* this whole function assumes that there's only one sector being displayed.
        This is a bit dodge in some circumstances. Be warned. */

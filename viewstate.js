@@ -13,7 +13,6 @@ function ViewState(svg) {
     this.mouseData = {};
     this.mouseData.isDrag=false;
     this.mouseData.isInObjDrag=false;
-	this.mouseData.inUI=false;
     this.mouseData.objMoveHandler = function () {};
     this.mouseData.objUpHandler = function () {};
     this.mouseData.startX=0;
@@ -45,7 +44,7 @@ ViewState.prototype.centreView = function () {
 	this.moveTo([-this.width/2, -this.height/2]);
 }
 
-ViewState.prototype.zoom = function (factor) {
+ViewState.prototype.zoom = function (factor, immediate) {
 	try {
 		window.clearTimeout( this.renderTimeout );
 	} catch (err) {}
@@ -57,14 +56,20 @@ ViewState.prototype.zoom = function (factor) {
 
 	this.scaleFactor = this.scaler(this.scaleFactor);
 
-	this.svg.attr("transform","translate("+-this.position[0]+","+-this.position[1]+") scale("+this.scaleFactor+")")
 
-	var that = this;
-	this.renderTimeout = window.setTimeout( function () {
-		that.svg.attr("transform","translate("+-that.position[0]+","+-that.position[1]+")");
-		that.children().map( function(child) {child.render()} );
-		that.scaleFactor = 1;
-	}, 50);
+	if (immediate) {
+		this.svg.attr("transform","translate("+-this.position[0]+","+-this.position[1]+")");
+		this.children().map( function(child) {child.render()} );
+		this.scaleFactor = 1;
+	} else {
+		this.svg.attr("transform","translate("+-this.position[0]+","+-this.position[1]+") scale("+this.scaleFactor+")")
+		var that = this;
+		this.renderTimeout = window.setTimeout( function () {
+			that.svg.attr("transform","translate("+-that.position[0]+","+-that.position[1]+")");
+			that.children().map( function(child) {child.render()} );
+			that.scaleFactor = 1;
+		}, 50);
+	}
 }
 
 ViewState.prototype.centreViewOn = function( viewObj ) {
@@ -78,7 +83,7 @@ ViewState.prototype.centreViewOn = function( viewObj ) {
 	var scaleFactor = (this.scaler.invert(this.width/2))/this.scaler.invert(bbox.width/2);
     }
 
-    this.zoom(scaleFactor);
+    this.zoom(scaleFactor, true);
     bbox = viewObj.svg[0][0].getBBox();
    
 	var xpos = bbox.x;

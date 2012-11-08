@@ -62,50 +62,48 @@ if (window.addEventListener)
 window.onmousewheel = document.onmousewheel = wheel;
 
 /* Mouse dragging */
-
 document.onmousedown = function ( e ) {
-	if (viewstate.mouseData.inUI || viewstate.mouseData.inDropState) return;
-    if (viewstate.mouseData.isInObjDrag) {
-		// events are getting carelessly passed through; just ignore.
+	e.stopPropagation();
+	if (viewstate.mouseData.inDropState) return;
+	if (viewstate.mouseData.isInObjDrag) {
+		console.log("mousedown when inObjDrop?");
 		return true;
-    }
-
-    // make sure this is a left click, otherwise pass it through
-    if (e.button != 0) return true;
-
-    viewstate.mouseData.isDrag = true;
-    viewstate.mouseData.startX = e.clientX;
-    viewstate.mouseData.startY = e.clientY;
-
+	}
+	
+	// make sure this is a left click, otherwise pass it through
+	if (e.button != 0) return true;
+	
+	viewstate.mouseData.isDrag = true;
+	viewstate.mouseData.startX = e.clientX;
+	viewstate.mouseData.startY = e.clientY;
 }
 
 document.onmousemove = function ( e ) {
-	if (viewstate.mouseData.inUI) return;
-    if (viewstate.mouseData.isInObjDrag) {
-	//hmm, the mouse has escaped.
-	viewstate.mouseData.objMoveHandler(e);
-    } else if (viewstate.mouseData.isDrag) {
-	var moveX = -(e.clientX) + (viewstate.mouseData.startX);
-	var moveY = -(e.clientY) + (viewstate.mouseData.startY);
-
-	viewstate.move( (moveX), (moveY));
-
-	viewstate.mouseData.startX = e.clientX;
-	viewstate.mouseData.startY = e.clientY;
-    }
-}
+	if (viewstate.mouseData.isInObjDrag) {
+		//hmm, the mouse has escaped.
+		viewstate.mouseData.objMoveHandler(e);
+		} else if (viewstate.mouseData.isDrag) {
+			var moveX = -(e.clientX) + (viewstate.mouseData.startX);
+			var moveY = -(e.clientY) + (viewstate.mouseData.startY);
+			
+			viewstate.move( (moveX), (moveY));
+			
+			viewstate.mouseData.startX = e.clientX;
+			viewstate.mouseData.startY = e.clientY;
+		}
+};
 
 document.onmouseup = function ( e ) {
-	if (viewstate.mouseData.inUI) return;
-
+	e.stopPropagation();
+	
 	if (viewstate.mouseData.inDropState) {
 		viewstate.finishAddingView( [ e.clientX, e.clientY ] );
 	} else if (viewstate.mouseData.isInObjDrag) {
 		//hmm, the mouse has escaped.
 		viewstate.mouseData.objUpHandler(e);
-    }
-    viewstate.mouseData.isDrag = false;
-}
+	}
+	viewstate.mouseData.isDrag = false;
+};
 
 /* Resize */
 var onResizeTimer;
