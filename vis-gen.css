@@ -32,6 +32,18 @@ circle.axis_circle {
 text {
 	fill: black;
 	opacity: 1;
+
+	/* Stop selection (e.g. on double click) */
+	-moz-user-select: -moz-none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	
+	/*
+      Introduced in IE 10.
+      See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
+	  */
+	-ms-user-select: none;
+	user-select: none;
 }
 
 text.label {
