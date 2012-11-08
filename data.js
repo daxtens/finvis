@@ -347,12 +347,12 @@ var bhp = {
 
 var usa = {
 	'name': 'United States Government Statements of Operations and Changes in Net Position',
-
+//lie about the period... FIXME
 	'aggregates': [
 		{
 			'name': 'Receipts',
 			'periods': {
-				'2010-11': {
+				'2011-12': {
 					'value': 2363.8*bil
 				}
 			},
@@ -363,7 +363,7 @@ var usa = {
 		{
 			'name': 'Outlays',
 			'periods': {
-				'2010-11': {
+				'2011-12': {
 					'value': 3660.8*bil
 				}
 			},
@@ -374,7 +374,7 @@ var usa = {
 		{
 			'name': 'Assets',
 			'periods': {
-				'2010-11': {
+				'2011-12': {
 					'value': 2707.3*bil
 				}
 			},
@@ -385,7 +385,7 @@ var usa = {
 		{
 			'name': 'Liabilities',
 			'periods': {
-				'2010-11': {
+				'2011-12': {
 					'value': 17492.7*bil
 				}
 			},
