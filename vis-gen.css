@@ -1,7 +1,16 @@
 @charset "utf-8";
 body {
-	background: url("images/back.jpg") repeat scroll 0 0 transparent;
+	/*background: url("images/back.jpg") repeat scroll 0 0 transparent;*/
+        background-color: rgb( 8, 27, 59 );
 	font: 10px sans-serif;
+}
+
+div {
+    color: white;
+}
+
+div a {
+    color: #77F;
 }
 
 circle.axis_circle {
@@ -34,7 +43,7 @@ circle.axis_circle {
 }
 
 text {
-	fill: black;
+	fill: white;
 	opacity: 1;
 
 	/* Stop selection (e.g. on double click) */
