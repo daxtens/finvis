@@ -426,7 +426,7 @@ var futurefund = {
 
 var submarines = {
 	'name': 'Submarines',
-    'value': 80*bil,
+    'value': 40*bil,
     'metadata': {
 	'renderMode': { 'name': 'bubbleRenderer', 'cssClass': 'expenses' }
     }
