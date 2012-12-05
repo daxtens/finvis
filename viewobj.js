@@ -206,12 +206,13 @@ ViewObj.prototype.popIn = function () {
 	obj.render();
 }
 
-ViewObj.prototype.popOut = function( aggregate ) {
+ViewObj.prototype.popOut = function( aggregate, cheat ) {
 
+    if (!cheat) {
 	this.children().map( function (child) { child.popIn(); } );
     this.children().map( function (child) { child.remove(); } );
     this.children().splice(0,this.children().length);
-
+    }
 	this.poppedOutAggregate = aggregate;
     this.poppedOut = true;
 
@@ -271,13 +272,53 @@ ViewObj.prototype._reposition = function (depth) {
 	    items[item]._reposition(depth+1);
 	}
 	
-	items.sort( function (a, b) { return b.data().value - a.data().value; } );
+	var prevType = '';
+	var lists=[];
 
-	var itemIdxs = [0, this.children().length];
-	this._dollarRadius = this.repositionItemsGivenParameters( itemIdxs, Math.PI, 2*Math.PI, 
-								  ViewObjRenderers[this.renderMode['name']].dollarRadiusWhenRendered(this, this.renderMode) );
+	// if we want to pop out two aggregates ... then this mess is the result.
+	// todo: refactor with a better way of publishing my type than a cssClass
+	//console.log(items);
+	for (var item in items) {
+	    if (items[item].renderMode.cssClass != prevType) {
+		prevType = items[item].renderMode.cssClass;
+		if (lists.length) lists[lists.length-1].push(item);
+		lists.push([item]);
+		//fixme: how do I sort a sublist?
+		//items.sort( function (a, b) { return b.data().value - a.data().value; } );
+	    }
+	}
+	lists[lists.length-1].push(items.length);
+	//console.log(lists);
 
 
+	this._dollarRadius = ViewObjRenderers[this.renderMode['name']].dollarRadiusWhenRendered(this, this.renderMode);
+	var innerRadius = this._dollarRadius;
+	if (lists.length > 1) {
+	    // todo: a little bit of angular padding
+	    
+	    // have 2 cracks at it.
+	    for (var list in lists) {
+		//var itemIdxs = [0, this.children().length];
+		var newValues = this.repositionItemsGivenParameters( lists[list], Math.PI+(2*Math.PI*list)/lists.length*1.05, (2*Math.PI)/lists.length*0.9, 
+								     innerRadius, lists.length<=1 );
+		
+		if (newValues[1] > innerRadius) {
+		    innerRadius = newValues[1];
+		}
+		
+	    }
+
+	    for (var list in lists) {
+		this.repositionItemsGivenParameters( lists[list], Math.PI+(2*Math.PI*list)/lists.length*1.05, (2*Math.PI)/lists.length*0.9, 
+						     innerRadius, false );
+		if (newValues[0] > this._dollarRadius) {
+		    this._dollarRadius = newValues[0];
+		}
+	    }
+	} else {
+	    this._dollarRadius = this.repositionItemsGivenParameters( lists[0], Math.PI, (2*Math.PI), 
+								      innerRadius, true )[0];
+	}
     } else {
 	this._dollarRadius = ViewObjRenderers[this.renderMode['name']].dollarRadiusWhenRendered(this, this.renderMode);
 	//console.log(this._dollarRadius);
@@ -287,8 +328,8 @@ ViewObj.prototype._reposition = function (depth) {
 
 // itemIdxs is [first, last)
 // assumes they are presorted.
-// returns the resultant radius
-ViewObj.prototype.repositionItemsGivenParameters = function( itemIdxs, angleOffset, angleSpan, initialRadius ) {
+// returns the resultant [outer, inner] radius
+ViewObj.prototype.repositionItemsGivenParameters = function( itemIdxs, angleOffset, angleSpan, initialRadius, halfOffset ) {
 
     var items = this.children();
 
@@ -310,7 +351,7 @@ ViewObj.prototype.repositionItemsGivenParameters = function( itemIdxs, angleOffs
     var bubbleAngles = [];
     var bubbleAnglesSum = 9999;
     var count = 0;
-    while (bubbleAnglesSum > 2*Math.PI) {
+    while (bubbleAnglesSum > angleSpan) {
 	bubbleAnglesSum=0;
 	for (var item=itemIdxs[0]; item<itemIdxs[1]; item++) {
             var itemRadius = items[item]._dollarRadius;
@@ -321,8 +362,8 @@ ViewObj.prototype.repositionItemsGivenParameters = function( itemIdxs, angleOffs
             bubbleAnglesSum += bubbleAngles[item];
 	}
 	if (bubbleAnglesSum>angleSpan) {
-	    console.log('angle sum: ' + bubbleAnglesSum)
-	    console.log('initial radius: ' + sectorPtRadius);
+	    //console.log('angle sum: ' + bubbleAnglesSum)
+	    //console.log('initial radius: ' + sectorPtRadius);
 	    /* Things are bigger than 2pi
 	       In the absence of an exact solution (waiting on http://math.stackexchange.com/questions/251399/what-is-the-smallest-circle-such-that-an-arbitrary-set-of-circles-can-be-placed)
 	       we want to reduce the biggest angle to the size it needs to be to get 2pi
@@ -337,10 +378,16 @@ ViewObj.prototype.repositionItemsGivenParameters = function( itemIdxs, angleOffs
 	       fun derivation shows r_i/(r_i+r_inner,new) = sin(pi/sum*theta_old)
 	       */
 	    var frac = Math.sin((angleSpan/(2*bubbleAnglesSum))*bubbleAngles[0]);
-	    // if frac > 0.5, something is wrong.
-	    console.log('frac: ' + frac );
-	    sectorPtRadius = bubblePtRadii[0]*(1-frac)/frac;
-	    console.log('final radius:' + sectorPtRadius);
+	    // if frac causes things to shrink, something is wrong. Also sometimes get NaNs if sum ~= angles
+	    // but (NaN == NaN) evaluates to false, so phase it as the compliment of valid
+	    // fractions
+	    var newSectorPtRadius = bubblePtRadii[itemIdxs[0]]*(1-frac)/frac;
+	    if (!(newSectorPtRadius > sectorPtRadius)) {
+		newSectorPtRadius = sectorPtRadius*1.1;
+	    }
+	    //console.log('frac: ' + frac );
+	    sectorPtRadius = newSectorPtRadius;
+	    //console.log('final radius:' + sectorPtRadius);
 	}
 	if (count++ > 10) {
 	    break;
@@ -348,7 +395,8 @@ ViewObj.prototype.repositionItemsGivenParameters = function( itemIdxs, angleOffs
     }
     
     var angleScaler = d3.scale.linear().domain([0,bubbleAnglesSum]).range([0,angleSpan]);
-    var angle = angleOffset-angleScaler(bubbleAngles[0])/2;
+    var angle = angleOffset;
+    if (halfOffset) angle -= angleScaler(bubbleAngles[itemIdxs[0]])/2;
 
     for (var item = itemIdxs[0]; item<itemIdxs[1]; item++) {
         angle += angleScaler(bubbleAngles[item])/2;
@@ -361,7 +409,7 @@ ViewObj.prototype.repositionItemsGivenParameters = function( itemIdxs, angleOffs
         items[item].moveTo(itemPosition);
     }
 
-    return viewstate.scaler.invert(sectorPtRadius+2*bubblePtRadii[0]);
+    return [viewstate.scaler.invert(sectorPtRadius+2*bubblePtRadii[0]), viewstate.scaler.invert(sectorPtRadius)];
 }
 
 ViewObj.prototype.render = function (mode) {
@@ -381,11 +429,17 @@ ViewObj.prototype.render = function (mode) {
     var bindings = { 'bindings': { 'deleteMenuItem' : function() { that.remove() },
                                       'centreViewMenuItem' : function() { viewstate.centreViewOn( that ) },
                                       //'duplicateMenuItem' : function() {alert("not yet implemented");},
-									  'resetMenuItem' : function() { that.renderMode.specifiedAggregates = undefined; that.popIn(); that.render(); } 
+				   'resetMenuItem' : function() { that.renderMode.specifiedAggregates = undefined; that.popIn(); that.render(); }, 
+				   'popBothMenuItem': function() { that.popOut(0); that.popOut(1, true); }
 									} 
 					  }
 
-    jQuery( this.svg[0][0] ).find( ".wedge" ).contextMenu( "wedgeMenu", bindings );
+    
+    if (this.data().aggregates && this.data().aggregates.length==2) {
+	jQuery( this.svg[0][0] ).find( ".wedge" ).contextMenu( "wedge2Menu", bindings );
+    } else {
+	jQuery( this.svg[0][0] ).find( ".wedge" ).contextMenu( "wedgeMenu", bindings );
+    }
     jQuery( this.svg[0][0] ).find( ".tinyHalo" ).contextMenu( "wedgeMenu", bindings );
 
     // render all children
