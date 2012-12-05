@@ -252,45 +252,105 @@ ViewObj.prototype.canPopOut = function( aggregate ) {
 
 ViewObj.prototype.reposition = function () {
 
-    var angleOffset = Math.PI;
+    // calling reposition on anything in the chain causes the whole thing to be rejigged
+    var obj = this;
+    while (obj.parent instanceof ViewObj) obj = obj.parent;
+
+    obj._reposition(0);
+}
+
+//todo: make me private/protected/something
+ViewObj.prototype._reposition = function (depth) {
+    //console.log(depth+': begin repositioning '+this.data().name);
+    // having bubbled up to the top, now descend to get correct sizes, then position on the way back up.
+    // we set _dollarRadius in each viewobj; the bubble renderer sadly depends upon it atm.
 
     var items = this.children();
-    if (!items) return;
-    items.sort( function (a, b) { return b.data().value - a.data().value; } );
+    if (items.length) {
+	for (var item in items) {
+	    items[item]._reposition(depth+1);
+	}
+	
+	items.sort( function (a, b) { return b.data().value - a.data().value; } );
 
-    var numChildren = items.length;
+	var itemIdxs = [0, this.children().length];
+	this._dollarRadius = this.repositionItemsGivenParameters( itemIdxs, Math.PI, 2*Math.PI, 
+								  ViewObjRenderers[this.renderMode['name']].dollarRadiusWhenRendered(this, this.renderMode) );
 
-    var niceInnerRadius = this.dollarRadiusWhenRendered(false);
+
+    } else {
+	this._dollarRadius = ViewObjRenderers[this.renderMode['name']].dollarRadiusWhenRendered(this, this.renderMode);
+	//console.log(this._dollarRadius);
+    }
+    //console.log(depth+': end repositioning '+this.data().name);
+}
+
+// itemIdxs is [first, last)
+// assumes they are presorted.
+// returns the resultant radius
+ViewObj.prototype.repositionItemsGivenParameters = function( itemIdxs, angleOffset, angleSpan, initialRadius ) {
+
+    var items = this.children();
+
+    var numChildren = itemIdxs[1]-itemIdxs[0];
 
     /* do maths to figure out how to position and space the bubbles
        we figure out angle between:
        - the line between the centre of the bubble and the centre of the sector diagram; and,
        - the line from the centre of the sector diagram that is tangent to the bubble
        doubling this gives us the radial angle taken to draw the bubble
-       we get the sum of those, (hopefully it's <2Pi!)
+       we get the sum of those, (hopefully it's <2Pi, otherwise see below.)
        and then scale them over the available space
 
        We also do some of the work to figure out the position.
        We can't add dollar values to get the new radius due to sqrt scaling.
     */
-    var sectorPtRadius = viewstate.scaler(niceInnerRadius);
+    var sectorPtRadius = viewstate.scaler(initialRadius);
     var bubblePtRadii = [];
     var bubbleAngles = [];
-    var bubbleAnglesSum = 0;
+    var bubbleAnglesSum = 9999;
+    var count = 0;
+    while (bubbleAnglesSum > 2*Math.PI) {
+	bubbleAnglesSum=0;
+	for (var item=itemIdxs[0]; item<itemIdxs[1]; item++) {
+            var itemRadius = items[item]._dollarRadius;
+	    
+            bubblePtRadii[item] = viewstate.scaler(itemRadius);
 
-    for (var item in items) {
-        var itemRadius = items[item].dollarRadiusWhenRendered(true);
+            bubbleAngles[item] = 2*Math.asin( bubblePtRadii[item] / (bubblePtRadii[item] + sectorPtRadius) );
+            bubbleAnglesSum += bubbleAngles[item];
+	}
+	if (bubbleAnglesSum>angleSpan) {
+	    console.log('angle sum: ' + bubbleAnglesSum)
+	    console.log('initial radius: ' + sectorPtRadius);
+	    /* Things are bigger than 2pi
+	       In the absence of an exact solution (waiting on http://math.stackexchange.com/questions/251399/what-is-the-smallest-circle-such-that-an-arbitrary-set-of-circles-can-be-placed)
+	       we want to reduce the biggest angle to the size it needs to be to get 2pi
+	       
+	       we assume it's worst case
 
-        bubblePtRadii[item] = viewstate.scaler(itemRadius);
+	       f = angleSpan/sum(thetas)
 
-        bubbleAngles[item] = 2*Math.asin( bubblePtRadii[item] / (bubblePtRadii[item] + sectorPtRadius) );
-        bubbleAnglesSum += bubbleAngles[item];
+	       let theata_old be 2sin^-1(r_i/(r_i+r_inner))
+	       let theta_new be f*theta, and theta_new = 2sin^-1(r_i/(r_i+r_inner,new))
+
+	       fun derivation shows r_i/(r_i+r_inner,new) = sin(pi/sum*theta_old)
+	       */
+	    var frac = Math.sin((angleSpan/(2*bubbleAnglesSum))*bubbleAngles[0]);
+	    // if frac > 0.5, something is wrong.
+	    console.log('frac: ' + frac );
+	    sectorPtRadius = bubblePtRadii[0]*(1-frac)/frac;
+	    console.log('final radius:' + sectorPtRadius);
+	}
+	if (count++ > 10) {
+	    break;
+	}
     }
-
-    var angleScaler = d3.scale.linear().domain([0,bubbleAnglesSum]).range([0,2*Math.PI]);
+    
+    var angleScaler = d3.scale.linear().domain([0,bubbleAnglesSum]).range([0,angleSpan]);
     var angle = angleOffset-angleScaler(bubbleAngles[0])/2;
 
-    for (var item in items) {
+    for (var item = itemIdxs[0]; item<itemIdxs[1]; item++) {
         angle += angleScaler(bubbleAngles[item])/2;
         var itemPosition = [
             (sectorPtRadius+bubblePtRadii[item])*Math.cos(angle),
@@ -301,8 +361,7 @@ ViewObj.prototype.reposition = function () {
         items[item].moveTo(itemPosition);
     }
 
-	// because this changes my radius, bubble it up
-	if (this.parent instanceof ViewObj) this.parent.reposition();
+    return viewstate.scaler.invert(sectorPtRadius+2*bubblePtRadii[0]);
 }
 
 ViewObj.prototype.render = function (mode) {
@@ -331,23 +390,6 @@ ViewObj.prototype.render = function (mode) {
 
     // render all children
     this.children().map( function (child) { child.render(); } );
-
-}
-
-/* Dollar Radius When Rendered:
-   What is my radius (in dollars), for the current render settings? 
-   Parameter: include children? */
-ViewObj.prototype.dollarRadiusWhenRendered = function ( areChildrenIncluded ) {
-    var myRadius = ViewObjRenderers[this.renderMode['name']].dollarRadiusWhenRendered(this, this.renderMode);
-
-    if (!areChildrenIncluded || this.children().length == 0) return myRadius;
-
-    var childrensRadii = this.children().map( function (child) { return child.dollarRadiusWhenRendered(true); } );
-    var maxChildRadius = Math.max.apply( Math, childrensRadii );
-
-    return viewstate.scaler.invert(
-        viewstate.scaler(myRadius) + 2*viewstate.scaler(maxChildRadius)
-    );
 
 }
 
@@ -646,7 +688,6 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
     // entity name
     var entitylabel = labelsGroup.selectAll('text.entityLabel.name').data([viewObj.name])
-    console.log(viewObj);
     entitylabel.enter()
 	.append('text')
 	.classed('entityLabel',true).classed('name',true)
@@ -970,7 +1011,7 @@ ViewObjRenderers.bubbleRenderer = function (viewObj, renderMode) {
 	var enclosingCircleGroup =  viewObj.svg.select('g.enclosingCircle');
 	if (enclosingCircleGroup.empty()) enclosingCircleGroup = viewObj.svg.append('g').classed('enclosingCircle', true);
 
-	var enclosingCircleData = (viewObj.children().length ? [viewObj.dollarRadiusWhenRendered(true)] : []);
+	var enclosingCircleData = (viewObj.children().length ? [viewObj._dollarRadius] : []);
 
 	var enclosingCircle = enclosingCircleGroup.selectAll('circle.axis_circle').data(enclosingCircleData);
 
