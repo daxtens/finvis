@@ -58,6 +58,11 @@ text.wedgeLabel {
 	fill: white;
 }
 
+text.entityLabel {
+	fill: black;
+	font-size: 18px;
+}
+
 text.relationLabel {
 }
 

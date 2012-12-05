@@ -631,6 +631,23 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
     wedgeOuterLabels.exit().remove();
 
+    // entity name
+    var entitylabel = labelsGroup.selectAll('text.entityLabel.name').data([viewObj.name])
+    console.log(viewObj);
+    entitylabel.enter()
+	.append('text')
+	.classed('entityLabel',true).classed('name',true)
+	.text(viewObj.data().name)
+	.attr( 'x', function (d) { return -safeGetBBox(this)['width']/2; } )
+	.attr( 'y', 20 )
+	.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; });
+
+    entitylabel
+	.attr( 'x', function (d) { return -safeGetBBox(this)['width']/2; } )
+	.attr( 'y', 80 )
+	.attr("transform", function (d) {return "scale(" + scaleFactor + ")"; });
+
+    entitylabel.exit().remove();
 
     // Halo if the whole thing is just too small to see.
 
