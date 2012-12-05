@@ -435,7 +435,9 @@ ViewObj.prototype.render = function (mode) {
 					  }
 
     
-    if (this.data().aggregates && this.data().aggregates.length==2) {
+    if (this.data().aggregates && ((this.data().aggregates.length == 2 && this.renderMode.specifiedAggregates == undefined) ||
+				   (this.data().aggregates.length == 4 && 
+				    this.renderMode.specifiedAggregates && this.renderMode.specifiedAggregates.length == 2))) {
 	jQuery( this.svg[0][0] ).find( ".wedge" ).contextMenu( "wedge2Menu", bindings );
     } else {
 	jQuery( this.svg[0][0] ).find( ".wedge" ).contextMenu( "wedgeMenu", bindings );
