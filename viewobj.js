@@ -70,7 +70,11 @@ function ViewObj( data, parent, position ) {
     */
     this.svg = this.parent.svg.append("g");
 
-    this.renderMode = {'name': 'defaultSectorRenderer' };
+    if (this.data().metadata && this.data().metadata.renderMode) {
+	this.renderMode = this.data().metadata.renderMode;
+    } else {
+	this.renderMode = {'name': 'defaultSectorRenderer' };
+    }
 
     /* Event handling */
     // dragging is set up here. context menu is set up in render - icky, I know.

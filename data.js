@@ -409,80 +409,40 @@ var usa = {
 };
 
 var abudhabi = {
-	'name': 'Abu Dhabi Investment Authority',
-	'aggregates': [
-		{
-			'name': 'Assets',
-			'periods': {
-				'2011-12': {
-					'value': 627*bil
-				}
-			},
-			'metadata': {
-				'cssClass': 'assets'
-			}
-		}
-	],
-	'relations': {}
+	'name': 'Abu Dhabi Investment Auth.',
+    'value': 627*bil,
+    'metadata': {
+	'renderMode': { 'name': 'bubbleRenderer', 'cssClass': 'assets' }
+    }
 };
 
 var futurefund = {
-	'name': 'Future Fund',
-	'aggregates': [
-		{
-			'name': 'Assets',
-			'periods': {
-				'2011-12': {
-					'value': 73*bil
-				}
-			},
-			'metadata': {
-				'cssClass': 'assets'
-			}
-		}
-	],
-	'relations': {}
+    'name': 'Future Fund',
+    'value': 73*bil,
+    'metadata': {
+	'renderMode': { 'name': 'bubbleRenderer', 'cssClass': 'assets' }
+    }
 };
 
 var submarines = {
 	'name': 'Submarines',
-	'aggregates': [
-		{
-			'name': 'Expense',
-			'periods': {
-				'2011-12': {
-					'value': 80*bil
-				}
-			},
-			'metadata': {
-				'cssClass': 'expenses'
-			}
-		}
-	],
-	'relations': {}
+    'value': 80*bil,
+    'metadata': {
+	'renderMode': { 'name': 'bubbleRenderer', 'cssClass': 'expenses' }
+    }
 };
 
 var australiansuper = {
-	'name': 'Australian Super Funds',
-	'aggregates': [
-		{
-			'name': 'Assets',
-			'periods': {
-				'2011-12': {
-					'value': 1277*bil
-				}
-			},
-			'metadata': {
-				'cssClass': 'revenue'
-			}
-		}
-	],
-	'relations': {}
+	'name': 'Aus Super Funds',
+    'value': 1277*bil,
+    'metadata': {
+	'renderMode': { 'name': 'bubbleRenderer', 'cssClass': 'revenue' }
+    }
 };
 
 
 
-var electioninitatives = {
+var usa = {
 'name': 'United States Government Statements of Operations and Changes in Net Position',
 //lie about the period... FIXME
 	'aggregates': [
@@ -549,7 +509,9 @@ var greens_budget = {
 		  'value':  25487*mil,//125*bil,
 		  'items': [ 
 		      { 'name':'Revised MRRT',
-			'value': 6000*mil
+			'value': 6000*mil,
+			'href': 'http://greensmps.org.au/content/news-stories/economy-serves-people-and-nature-not-other-way-around',
+			'target': '_blank'
 		      },
 		      { 'name':'Tax measure 1',
 			'value': 235*mil
@@ -877,5 +839,5 @@ var greens_budget = {
 }
 
 
-var entities = [ cth_fbo, wa_fbo, bhp, usa, abudhabi, futurefund, submarines, greens_budget ];
+var entities = [ cth_fbo, wa_fbo, bhp, usa, abudhabi, futurefund, australiansuper, submarines, greens_budget ];
 
