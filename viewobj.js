@@ -318,14 +318,16 @@ ViewObj.prototype.render = function (mode) {
     // than try to write my own context menus!
     // ... do this before children so they can do their own.
     var that = this;
-    jQuery( this.svg[0][0] ).find( ".wedge" )
-        .contextMenu( "wedgeMenu",
-                      { 'bindings': { 'deleteMenuItem' : function() { that.remove() },
+    
+    var bindings = { 'bindings': { 'deleteMenuItem' : function() { that.remove() },
                                       'centreViewMenuItem' : function() { viewstate.centreViewOn( that ) },
-                                      'duplicateMenuItem' : function() {alert("not yet implemented");},
+                                      //'duplicateMenuItem' : function() {alert("not yet implemented");},
 									  'resetMenuItem' : function() { that.renderMode.specifiedAggregates = undefined; that.popIn(); that.render(); } 
 									} 
-					  });
+					  }
+
+    jQuery( this.svg[0][0] ).find( ".wedge" ).contextMenu( "wedgeMenu", bindings );
+    jQuery( this.svg[0][0] ).find( ".tinyHalo" ).contextMenu( "wedgeMenu", bindings );
 
     // render all children
     this.children().map( function (child) { child.render(); } );
@@ -408,6 +410,11 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
 
     //var centreOffset = viewstate.scaler(niceMaxValue);
 
+    // this is full of magic numbers. le sigh. In short, [0,tril] sets a default scaling factor for
+    // the size of the window, and [0, 400*bil] sets a scale for the smallest value.
+    var scaleFactor=1/(d3.scale.sqrt().domain([0,tril]).range([0,1])(viewstate.scaleMax)/
+                       d3.scale.sqrt().domain([0,400*bil]).range([0,1])(minValue));
+
     /***** Start laying things out */
     // create the scale background
     var backdata = d3.range( 1, 9 ).map( function (d) { return d*Math.pow(10, exponent - 1); } );
@@ -439,6 +446,12 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
     circles.exit().remove();
 
     // label them!
+
+    // only draw labels if they're supposed to be visible
+    if (scaleFactor <= minScaleFactorForLabelDisplay) {
+	var backdata2 = [];
+    }
+
     var labels=backGroup.selectAll("text.axis_label").data(backdata2);
 
     labels.enter().append("text")
@@ -528,10 +541,6 @@ ViewObjRenderers.defaultSectorRenderer = function (viewObj, renderMode) {
     function donutKey(d) {
         return d.data.name;
     }
-    // this is full of magic numbers. le sigh. In short, [0,tril] sets a default scaling factor for
-    // the size of the window, and [0, 400*bil] sets a scale for the smallest value.
-    var scaleFactor=1/(d3.scale.sqrt().domain([0,tril]).range([0,1])(viewstate.scaleMax)/
-                       d3.scale.sqrt().domain([0,400*bil]).range([0,1])(minValue));
 
 	// only draw labels if they're visible
 	if (scaleFactor <= minScaleFactorForLabelDisplay) {
