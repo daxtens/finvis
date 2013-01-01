@@ -1,8 +1,8 @@
-var mil  = 1000000;
-var bil  = 1000*mil;
-var tril = 1000*bil;
+var mil = 1000000;
+var bil = 1000 * mil;
+var tril = 1000 * bil;
 
-var cssStyles=['revenue','expenses','assets','liabilities'];
+var cssStyles = ['revenue', 'expenses', 'assets', 'liabilities'];
 
 var cth_fbo = {
     'name': 'Commonwealth Final Budget Outcome',
@@ -12,186 +12,186 @@ var cth_fbo = {
 	    'name': 'Revenue',
 	    'periods': {
 		'2011-12': {
-		    'value': 338.1*bil,
+		    'value': 338.1 * bil,
 		    'items': [
 			{
 			    'name': 'Income Tax',
-			    'value': 231.238*bil,
+			    'value': 231.238 * bil,
                             'items': [
                                 {
                                     'name': 'Individuals\' and other withholding taxation',
-                                    'value': 151.433*bil
+                                    'value': 151.433 * bil
                                 },
                                 {
                                     'name': 'Fringe benefits tax',
-                                    'value': 3.964*bil
+                                    'value': 3.964 * bil
                                 },
                                 {
                                     'name': 'Company tax',
-                                    'value': 66.726*bil
+                                    'value': 66.726 * bil
                                 },
                                 {
                                     'name': 'Superannuation funds',
-                                    'value': 7.852*bil
+                                    'value': 7.852 * bil
                                 },
                                 {
                                     'name': 'Petroleum resource rent tax',
-                                    'value': 1.293*bil
+                                    'value': 1.293 * bil
                                 }
                             ]
 			},
 			{
 			    'name': 'Indirect Tax',
-			    'value': 85.511*bil,
+			    'value': 85.511 * bil,
                             'items': [
                                 {
                                     'name': 'Sales taxes',
-                                    'value': 50.004*bil
+                                    'value': 50.004 * bil
                                 },
                                 {
                                     'name': 'Excise duty',
-                                    'value': 25.480*bil
+                                    'value': 25.480 * bil
                                 },
                                 {
                                     'name': 'Customs duty',
-                                    'value': 7.105*bil
+                                    'value': 7.105 * bil
                                 },
                                 {
                                     'name': 'Other',
-                                    'value': 29.222*bil
+                                    'value': 29.222 * bil
                                 }
                             ]
 			},
 			{
 			    'name': 'Non-taxation revenue',
-			    'value': 21.330*bil
+			    'value': 21.330 * bil
 			}
 		    ]
 		},
 		'2010-11': {
-		    'value': 309.9*bil
+		    'value': 309.9 * bil
 		}
 	    },
 	    'metadata': {
-		'cssClass': 'revenue',
+		'cssClass': 'revenue'
 	    }
 	},
-	{ 
+	{
 	    'name': 'Expenses',
 	    'periods': {
 		'2011-12': {
-		    'value': 377.7*bil,
+		    'value': 377.7 * bil,
 		    'items': [
 			{
 			    'name': 'General public services',
-			    'value': 23.153*bil
+			    'value': 23.153 * bil
 			},
 			{
 			    'name': 'Defence',
-			    'value': 21.692*bil,
+			    'value': 21.692 * bil,
 			    'href': 'http://defence.gov.au/',
 			    'target': '_blank'
 			},
 			{
 			    'name': 'Public order and safety',
-			    'value': 3.999*bil
+			    'value': 3.999 * bil
 			},
 			{
 			    'name': 'Education',
-			    'value': 29.050*bil
+			    'value': 29.050 * bil
 			},
 			{
 			    'name': 'Health',
-			    'value': 62.012*bil
+			    'value': 62.012 * bil
 			},
 			{
 			    'name': 'Social security and welfare',
-			    'value': 126.747*bil
+			    'value': 126.747 * bil
 			},
 			{
 			    'name': 'Housing',
-			    'value': 6.180*bil
+			    'value': 6.180 * bil
 			},
 			{
 			    'name': 'Recreation and culture',
-			    'value': 6.464*bil
+			    'value': 6.464 * bil
 			},
 			{
 			    'name': 'Fuel and energy',
-			    'value': 6.464*bil
+			    'value': 6.464 * bil
 			},
 			{
 			    'name': 'Agriculture, forestry and fishing',
-			    'value': 2.953*bil
+			    'value': 2.953 * bil
 			},
 			{
 			    'name': 'Mining, manufacturing and construction',
-			    'value': 2.245*bil
+			    'value': 2.245 * bil
 			},
 			{
 			    'name': 'Transport and communication',
-			    'value': 9.129*bil
+			    'value': 9.129 * bil
 			},
 			{
 			    'name': 'Other economic affairs',
-			    'value': 10.054*bil
+			    'value': 10.054 * bil
 			},
 			{
 			    'name': 'Other purposes',
-			    'value': 70.253*bil,
+			    'value': 70.253 * bil,
 			    'href': 'javascript:alert("This item reflects mostly intergovernmental transfers.")',
 			    'target': '_self',
                             'items': [
                                 { 'name': 'Public debt interest',
-                                  'value': 11.421*bil
+                                  'value': 11.421 * bil
                                 },
                                 { 'name': 'Nominal superannuation interest',
-                                  'value': 7.376*bil
+                                  'value': 7.376 * bil
                                 },
                                 { 'name': 'General purpose inter-governmental transactions',
-                                  'value': 49.940*bil
+                                  'value': 49.940 * bil
                                 },
                                 { 'name': 'Natural disaster relief',
-                                  'value': 1.516*bil
+                                  'value': 1.516 * bil
                                 }
                             ]
 			}
 		    ]
 		},
 		'2010-11': {
-		    'value': 356.1*bil
+		    'value': 356.1 * bil
 		}
 	    },
 	    'metadata': {
-		'cssClass': 'expenses',
+		'cssClass': 'expenses'
 	    }
 	},
 	{
 	    'name': 'Assets',
 	    'periods': {
 		'2011-12': {
-		    'value': 332.4*bil
+		    'value': 332.4 * bil
 		},
 		'2010-11': {
-		    'value': 320.4*bil
+		    'value': 320.4 * bil
 		}
 	    },
 	    'metadata': {
-		'cssClass': 'assets',
+		'cssClass': 'assets'
 	    }
 	},
 	{
 	    'name': 'Liabilities',
 	    'periods': {
 		'2011-12': {
-		    'value': 579.6*bil
+		    'value': 579.6 * bil
 		},
 		'2010-11': {
-		    'value': 415.8*bil
+		    'value': 415.8 * bil
 		}
 	    },
 	    'metadata': {
-		'cssClass': 'liabilities',
+		'cssClass': 'liabilities'
 	    }
 	}
     ],
@@ -218,56 +218,56 @@ var wa_fbo = {
 	    'name': 'Revenue',
 	    'periods': {
 		'2011-12': {
-		    'value': 25.233*bil
+		    'value': 25.233 * bil
 		},
 		'2010-11': {
-		    'value': 23.764*bil
+		    'value': 23.764 * bil
 		}
 	    },
 	    'metadata': {
-		'cssClass': 'revenue',
+		'cssClass': 'revenue'
 	    }
 	},
-	{ 
+	{
 	    'name': 'Expenses',
 	    'periods': {
 		'2011-12': {
-		    'value': 24.791*bil
+		    'value': 24.791 * bil
 		},
 		'2010-11': {
-		    'value': 22.98*bil
+		    'value': 22.98 * bil
 		}
 	    },
 	    'metadata': {
-		'cssClass': 'expenses',
+		'cssClass': 'expenses'
 	    }
 	},
 	{
 	    'name': 'Assets',
 	    'periods': {
 		'2011-12': {
-		    'value': 135*bil
+		    'value': 135 * bil
 		},
 		'2010-11': {
-		    'value': 129.116*bil
+		    'value': 129.116 * bil
 		}
 	    },
 	    'metadata': {
-		'cssClass': 'assets',
+		'cssClass': 'assets'
 	    }
 	},
 	{
 	    'name': 'Liabilities',
 	    'periods': {
 		'2011-12': {
-		    'value': 21.039*bil
+		    'value': 21.039 * bil
 		},
 		'2010-11': {
-		    'value': 17.851*bil
+		    'value': 17.851 * bil
 		}
 	    },
 	    'metadata': {
-		'cssClass': 'liabilities',
+		'cssClass': 'liabilities'
 	    }
 	}
     ],
@@ -294,7 +294,7 @@ var bhp = {
 	    'name': 'Revenue',
 	    'periods': {
 		'2011-12': {
-		    'value': 72226*mil
+		    'value': 72226 * mil
 		}
 	    },
 	    'metadata': {
@@ -305,7 +305,7 @@ var bhp = {
 	    'name': 'Expenses',
 	    'periods': {
 		'2011-12': {
-		    'value': 57600*mil
+		    'value': 57600 * mil
 		}
 	    },
 	    'metadata': {
@@ -316,7 +316,7 @@ var bhp = {
 	    'name': 'Assets',
 	    'periods': {
 		'2011-12': {
-		    'value': 129273*mil
+		    'value': 129273 * mil
 		}
 	    },
 	    'metadata': {
@@ -327,7 +327,7 @@ var bhp = {
 	    'name': 'Liabilities',
 	    'periods': {
 		'2011-12': {
-		    'value': 62188*mil
+		    'value': 62188 * mil
 		}
 	    },
 	    'metadata': {
@@ -353,7 +353,7 @@ var usa = {
 	    'name': 'Receipts',
 	    'periods': {
 		'2011-12': {
-		    'value': 2363.8*bil
+		    'value': 2363.8 * bil
 		}
 	    },
 	    'metadata': {
@@ -364,7 +364,7 @@ var usa = {
 	    'name': 'Outlays',
 	    'periods': {
 		'2011-12': {
-		    'value': 3660.8*bil
+		    'value': 3660.8 * bil
 		}
 	    },
 	    'metadata': {
@@ -375,7 +375,7 @@ var usa = {
 	    'name': 'Assets',
 	    'periods': {
 		'2011-12': {
-		    'value': 2707.3*bil
+		    'value': 2707.3 * bil
 		}
 	    },
 	    'metadata': {
@@ -386,7 +386,7 @@ var usa = {
 	    'name': 'Liabilities',
 	    'periods': {
 		'2011-12': {
-		    'value': 17492.7*bil
+		    'value': 17492.7 * bil
 		}
 	    },
 	    'metadata': {
@@ -410,7 +410,7 @@ var usa = {
 
 var abudhabi = {
     'name': 'Abu Dhabi Investment Auth.',
-    'value': 627*bil,
+    'value': 627 * bil,
     'metadata': {
 	'renderMode': { 'name': 'bubbleRenderer', 'cssClass': 'assets' }
     }
@@ -418,7 +418,7 @@ var abudhabi = {
 
 var futurefund = {
     'name': 'Future Fund',
-    'value': 73*bil,
+    'value': 73 * bil,
     'metadata': {
 	'renderMode': { 'name': 'bubbleRenderer', 'cssClass': 'assets' }
     }
@@ -426,7 +426,7 @@ var futurefund = {
 
 var submarines = {
     'name': 'Submarines',
-    'value': 40*bil,
+    'value': 40 * bil,
     'metadata': {
 	'renderMode': { 'name': 'bubbleRenderer', 'cssClass': 'expenses' }
     }
@@ -434,7 +434,7 @@ var submarines = {
 
 var australiansuper = {
     'name': 'Aus Super Funds',
-    'value': 1277*bil,
+    'value': 1277 * bil,
     'metadata': {
 	'renderMode': { 'name': 'bubbleRenderer', 'cssClass': 'revenue' }
     }
@@ -450,7 +450,7 @@ var usa = {
 	    'name': 'Receipts',
 	    'periods': {
 		'2011-12': {
-		    'value': 2363.8*bil
+		    'value': 2363.8 * bil
 		}
 	    },
 	    'metadata': {
@@ -461,7 +461,7 @@ var usa = {
 	    'name': 'Outlays',
 	    'periods': {
 		'2011-12': {
-		    'value': 3660.8*bil
+		    'value': 3660.8 * bil
 		}
 	    },
 	    'metadata': {
@@ -472,7 +472,7 @@ var usa = {
 	    'name': 'Assets',
 	    'periods': {
 		'2011-12': {
-		    'value': 2707.3*bil
+		    'value': 2707.3 * bil
 		}
 	    },
 	    'metadata': {
@@ -483,7 +483,7 @@ var usa = {
 	    'name': 'Liabilities',
 	    'periods': {
 		'2011-12': {
-		    'value': 17492.7*bil
+		    'value': 17492.7 * bil
 		}
 	    },
 	    'metadata': {
@@ -506,63 +506,63 @@ var greens_budget = {
 	{ 'name': 'Revenue',
 	  'periods': {
 	      '2011-12': {// this is a lie
-		  'value':  25487*mil,//125*bil,
-		  'items': [ 
-		      { 'name':'Revised MRRT',
-			'value': 6000*mil,
+		  'value': 25487 * mil,//125*bil,
+		  'items': [
+		      { 'name': 'Revised MRRT',
+			'value': 6000 * mil,
 			'href': 'http://greensmps.org.au/content/news-stories/economy-serves-people-and-nature-not-other-way-around',
 			'target': '_blank'
 		      },
-		      { 'name':'Tax measure 1',
-			'value': 235*mil
+		      { 'name': 'Tax measure 1',
+			'value': 235 * mil
 		      },
-		      { 'name':'Tax measure 2',
-			'value': 2600*mil
+		      { 'name': 'Tax measure 2',
+			'value': 2600 * mil
 		      },
-		      { 'name':'Tax measure 3',
-			'value': 2500*mil
+		      { 'name': 'Tax measure 3',
+			'value': 2500 * mil
 		      },
-		      { 'name':'Tax measure 4',
-			'value': 600*mil
+		      { 'name': 'Tax measure 4',
+			'value': 600 * mil
 		      },
-		      { 'name':'Tax measure 5',
-			'value': 200*mil
+		      { 'name': 'Tax measure 5',
+			'value': 200 * mil
 		      },
-		      { 'name':'Tax measure 6',
-			'value': 2500*mil
+		      { 'name': 'Tax measure 6',
+			'value': 2500 * mil
 		      },
-		      { 'name':'Tax measure 7',
-			'value': 900*mil
+		      { 'name': 'Tax measure 7',
+			'value': 900 * mil
 		      },
-		      { 'name':'Tax measure 8',
-			'value': 1250*mil
+		      { 'name': 'Tax measure 8',
+			'value': 1250 * mil
 		      },
-		      { 'name':'Tax measure 9',
-			'value': 150*mil
+		      { 'name': 'Tax measure 9',
+			'value': 150 * mil
 		      },
-		      { 'name':'Tax measure 10',
-			'value': 1170*mil
+		      { 'name': 'Tax measure 10',
+			'value': 1170 * mil
 		      },
-		      { 'name':'Tax measure 11',
-			'value': 1000*mil
+		      { 'name': 'Tax measure 11',
+			'value': 1000 * mil
 		      },
-		      { 'name':'Tax measure 12',
-			'value': 172*mil
+		      { 'name': 'Tax measure 12',
+			'value': 172 * mil
 		      },
-		      { 'name':'Tax measure 13',
-			'value': 260*mil
+		      { 'name': 'Tax measure 13',
+			'value': 260 * mil
 		      },
-		      { 'name':'Tax measure 14',
-			'value': 100*mil
+		      { 'name': 'Tax measure 14',
+			'value': 100 * mil
 		      },
-		      { 'name':'Tax measure 15',
-			'value': 4500*mil
+		      { 'name': 'Tax measure 15',
+			'value': 4500 * mil
 		      },
-		      { 'name':'Tax measure 16',
-			'value': 1200*mil
+		      { 'name': 'Tax measure 16',
+			'value': 1200 * mil
 		      },
-		      { 'name':'Tax measure 17',
-			'value': 150*mil
+		      { 'name': 'Tax measure 17',
+			'value': 150 * mil
 		      }
 		  ]
 	      }
@@ -576,247 +576,247 @@ var greens_budget = {
 	  'periods': {
 	      '2011-12': { //lie
 
-		  'value': 23943.3*mil,//117*bil,//23943.3
+		  'value': 23943.3 * mil,//117*bil,//23943.3
 		  'items': [
-		      { 'name':'Environment',
-			'value': 380*mil,
+		      { 'name': 'Environment',
+			'value': 380 * mil,
 			'items': [
-			    { 'name':'Environment expenditure 1',
-			      'value': 95*mil
+			    { 'name': 'Environment expenditure 1',
+			      'value': 95 * mil
 			    },
-			    { 'name':'Environment expenditure 2',
-			      'value': 30*mil
+			    { 'name': 'Environment expenditure 2',
+			      'value': 30 * mil
 			    },
-			    { 'name':'Environment expenditure 3',
-			      'value': 71*mil
+			    { 'name': 'Environment expenditure 3',
+			      'value': 71 * mil
 			    },
-			    { 'name':'Environment expenditure 4',
-			      'value': 58*mil
+			    { 'name': 'Environment expenditure 4',
+			      'value': 58 * mil
 			    },
-			    { 'name':'Environment expenditure 5',
-			      'value': 10*mil
+			    { 'name': 'Environment expenditure 5',
+			      'value': 10 * mil
 			    },
-			    { 'name':'Environment expenditure 6',
-			      'value': 50*mil
+			    { 'name': 'Environment expenditure 6',
+			      'value': 50 * mil
 			    },
-			    { 'name':'Environment expenditure 7',
-			      'value': 26*mil
+			    { 'name': 'Environment expenditure 7',
+			      'value': 26 * mil
 			    },
-			    { 'name':'Environment expenditure 8',
-			      'value': 40*mil
+			    { 'name': 'Environment expenditure 8',
+			      'value': 40 * mil
 			    }]
 		      },
-		      
+
 		      {'name': 'Climate change and energy',
-		       'value': 77.3*mil,
+		       'value': 77.3 * mil,
 		       'items': [
-			   { 'name':'Climate expenditure 1',
-			     'value': 0*mil
+			   { 'name': 'Climate expenditure 1',
+			     'value': 0 * mil
 			   },
-			   { 'name':'Climate expenditure 2',
-			     'value': 0*mil
+			   { 'name': 'Climate expenditure 2',
+			     'value': 0 * mil
 			   },
-			   { 'name':'Climate expenditure 3',
-			     'value': -1.7*mil
+			   { 'name': 'Climate expenditure 3',
+			     'value': -1.7 * mil
 			   },
-			   { 'name':'Climate expenditure 4',
-			     'value': -1*mil
+			   { 'name': 'Climate expenditure 4',
+			     'value': -1 * mil
 			   },
-			   { 'name':'Climate 1',
-			     'value': 	20*mil
+			   { 'name': 'Climate 1',
+			     'value': 20 * mil
 			   },
-			   { 'name':'Climate 2',
-			     'value': 60*mil
+			   { 'name': 'Climate 2',
+			     'value': 60 * mil
 			   }]
 		      },
-		      
-		      
-		      
+
+
+
 		      {'name': 'Education science and industry',
-		       'value': 2135*mil,
+		       'value': 2135 * mil,
 		       'items': [
-			   { 'name':'Education expenditure 1',
-			     'value': 700*mil
+			   { 'name': 'Education expenditure 1',
+			     'value': 700 * mil
 			   },
-			   { 'name':'Education expenditure 2',
-			     'value': 300*mil
+			   { 'name': 'Education expenditure 2',
+			     'value': 300 * mil
 			   },
-			   { 'name':'Education expenditure 3',
-			     'value': 190*mil
+			   { 'name': 'Education expenditure 3',
+			     'value': 190 * mil
 			   },
-			   { 'name':'Education expenditure 4',
-			     'value': 350*mil
+			   { 'name': 'Education expenditure 4',
+			     'value': 350 * mil
 			   },
-			   { 'name':'Education expenditure 5',
-			     'value': 35*mil
+			   { 'name': 'Education expenditure 5',
+			     'value': 35 * mil
 			   },
-			   { 'name':'Education expenditure 6',
-			     'value': 20*mil
+			   { 'name': 'Education expenditure 6',
+			     'value': 20 * mil
 			   },
-			   { 'name':'Education expenditure 7',
-			     'value': 300*mil
+			   { 'name': 'Education expenditure 7',
+			     'value': 300 * mil
 			   },
-			   { 'name':'Education expenditure 8',
-			     'value': 38*mil
+			   { 'name': 'Education expenditure 8',
+			     'value': 38 * mil
 			   },
-			   { 'name':'Education expenditure 9',
-			     'value': 33*mil
+			   { 'name': 'Education expenditure 9',
+			     'value': 33 * mil
 			   },
-			   { 'name':'Education expenditure 10',
-			     'value': 169*mil
+			   { 'name': 'Education expenditure 10',
+			     'value': 169 * mil
 			   }]
 		      },
-		      
-		      
+
+
 		      {'name': 'Care for people',
-		       'value': 4488*mil,
+		       'value': 4488 * mil,
 		       'items': [
-			   { 'name':'Denticare',
-			     'value': 656*mil
+			   { 'name': 'Denticare',
+			     'value': 656 * mil
 			   },
-			   { 'name':'People expenditure 1',
-			     'value': 1200*mil
+			   { 'name': 'People expenditure 1',
+			     'value': 1200 * mil
 			   },
-			   { 'name':'People expenditure 2',
-			     'value': 1458*mil
+			   { 'name': 'People expenditure 2',
+			     'value': 1458 * mil
 			   },
-			   { 'name':'People expenditure 3',
-			     'value': 400*mil
+			   { 'name': 'People expenditure 3',
+			     'value': 400 * mil
 			   },
-			   { 'name':'People expenditure 4',
-			     'value': 180*mil
+			   { 'name': 'People expenditure 4',
+			     'value': 180 * mil
 			   },
-			   { 'name':'People expenditure 5',
-			     'value': 160*mil
+			   { 'name': 'People expenditure 5',
+			     'value': 160 * mil
 			   },
-			   { 'name':'People expenditure 6',
-			     'value': 330*mil
+			   { 'name': 'People expenditure 6',
+			     'value': 330 * mil
 			   },
-			   { 'name':'People expenditure 7',
-			     'value': 20*mil
+			   { 'name': 'People expenditure 7',
+			     'value': 20 * mil
 			   },
-			   { 'name':'People expenditure 8',
-			     'value': 84*mil
+			   { 'name': 'People expenditure 8',
+			     'value': 84 * mil
 			   }]
 		      },
-		      
-		      
+
+
 		      {'name': 'Housing and sustainable cities',
-		       'value': 8960*mil,
+		       'value': 8960 * mil,
 		       'items': [
-			   { 'name':'Housing expenditure 1',
-			     'value': 5400*mil
+			   { 'name': 'Housing expenditure 1',
+			     'value': 5400 * mil
 			   },
-			   { 'name':'Housing expenditure 2',
-			     'value': 1300*mil
+			   { 'name': 'Housing expenditure 2',
+			     'value': 1300 * mil
 			   },
-			   { 'name':'Housing expenditure 3',
-			     'value': 500*mil
+			   { 'name': 'Housing expenditure 3',
+			     'value': 500 * mil
 			   },
-			   { 'name':'Housing expenditure 4',
-			     'value': 300*mil
+			   { 'name': 'Housing expenditure 4',
+			     'value': 300 * mil
 			   },
-			   { 'name':'Housing expenditure 5',
-			     'value': 1000*mil
+			   { 'name': 'Housing expenditure 5',
+			     'value': 1000 * mil
 			   },
-			   { 'name':'Housing expenditure 6',
-			     'value': 210*mil
+			   { 'name': 'Housing expenditure 6',
+			     'value': 210 * mil
 			   },
-			   { 'name':'Housing expenditure 7',
-			     'value': 250*mil
+			   { 'name': 'Housing expenditure 7',
+			     'value': 250 * mil
 			   }]
 		      },
-		      
-		      
+
+
 		      {'name': 'Transport',
-		       'value': 2166*mil,
+		       'value': 2166 * mil,
 		       'items': [
-			   { 'name':'Bike paths national',
-			     'value': 80*mil
+			   { 'name': 'Bike paths national',
+			     'value': 80 * mil
 			   },
-			   { 'name':'Transport expenditure 1',
-			     'value': 275*mil
+			   { 'name': 'Transport expenditure 1',
+			     'value': 275 * mil
 			   },
-			   { 'name':'Transport expenditure 2',
-			     'value': 250*mil
+			   { 'name': 'Transport expenditure 2',
+			     'value': 250 * mil
 			   },
-			   { 'name':'Transport expenditure 3',
-			     'value': 30*mil
+			   { 'name': 'Transport expenditure 3',
+			     'value': 30 * mil
 			   },
-			   { 'name':'Transport expenditure 4',
-			     'value': 300*mil
+			   { 'name': 'Transport expenditure 4',
+			     'value': 300 * mil
 			   },
-			   { 'name':'Transport expenditure 5',
-			     'value': 12*mil
+			   { 'name': 'Transport expenditure 5',
+			     'value': 12 * mil
 			   },
-			   { 'name':'Transport expenditure 6',
-			     'value': 100*mil
+			   { 'name': 'Transport expenditure 6',
+			     'value': 100 * mil
 			   },
-			   { 'name':'Transport expenditure 7',
-			     'value': 144*mil
+			   { 'name': 'Transport expenditure 7',
+			     'value': 144 * mil
 			   },
-			   { 'name':'Transport expenditure 8',
-			     'value': 444*mil
+			   { 'name': 'Transport expenditure 8',
+			     'value': 444 * mil
 			   },
-			   { 'name':'Transport expenditure 9',
-			     'value': 531*mil
+			   { 'name': 'Transport expenditure 9',
+			     'value': 531 * mil
 			   }]
 		      },
-		      
-		      
+
+
 		      {'name': 'Other',
-		       'value': 5737*mil,
+		       'value': 5737 * mil,
 		       'items': [
-			   { 'name':'Foreign aid',
-			     'value': 2000*mil
+			   { 'name': 'Foreign aid',
+			     'value': 2000 * mil
 			   },
-			   { 'name':'Other 1',
-			     'value': 1000*mil
+			   { 'name': 'Other 1',
+			     'value': 1000 * mil
 			   },
-			   { 'name':'Other 2',
-			     'value': 7*mil
+			   { 'name': 'Other 2',
+			     'value': 7 * mil
 			   },
-			   { 'name':'Other 3',
-			     'value': 90*mil
+			   { 'name': 'Other 3',
+			     'value': 90 * mil
 			   },
-			   { 'name':'Other 4',
-			     'value': 0*mil
+			   { 'name': 'Other 4',
+			     'value': 0 * mil
 			   },
-			   { 'name':'Other 5',
-			     'value': 0*mil
+			   { 'name': 'Other 5',
+			     'value': 0 * mil
 			   },
-			   { 'name':'Other 6',
-			     'value': 20*mil
+			   { 'name': 'Other 6',
+			     'value': 20 * mil
 			   },
-			   { 'name':'Other 7',
-			     'value': 29*mil
+			   { 'name': 'Other 7',
+			     'value': 29 * mil
 			   },
-			   { 'name':'Other 8',
-			     'value': 5*mil
+			   { 'name': 'Other 8',
+			     'value': 5 * mil
 			   },
-			   { 'name':'Other 9',
-			     'value': 12*mil
+			   { 'name': 'Other 9',
+			     'value': 12 * mil
 			   },
-			   { 'name':'Other 10',
-			     'value': 124*mil
+			   { 'name': 'Other 10',
+			     'value': 124 * mil
 			   },
-			   { 'name':'Other 11',
-			     'value': 12*mil
+			   { 'name': 'Other 11',
+			     'value': 12 * mil
 			   },
-			   { 'name':'Other 12',
-			     'value': 5*mil
+			   { 'name': 'Other 12',
+			     'value': 5 * mil
 			   },
-			   { 'name':'Other 13',
-			     'value': 34*mil
+			   { 'name': 'Other 13',
+			     'value': 34 * mil
 			   },
-			   { 'name':'Other 14',
-			     'value': 2354*mil
+			   { 'name': 'Other 14',
+			     'value': 2354 * mil
 			   },
-			   { 'name':'Other 15',
-			     'value': 12*mil
+			   { 'name': 'Other 15',
+			     'value': 12 * mil
 			   },
-			   { 'name':'Other 16',
-			     'value': 33*mil
+			   { 'name': 'Other 16',
+			     'value': 33 * mil
 			   }
 		       ]
 		      }
@@ -827,7 +827,7 @@ var greens_budget = {
 	  'metadata': {
 	      'cssClass': 'expenses'
 	  }
-	}	
+	}
     ],
     'relations': {
 	'revenueVexpenses': {
@@ -836,8 +836,8 @@ var greens_budget = {
 	    'less': 'Budget Deficit'
 	}
     }
-}
+};
 
 
-var entities = [ cth_fbo, wa_fbo, bhp, usa, abudhabi, futurefund, australiansuper, submarines, greens_budget ];
+var entities = [cth_fbo, wa_fbo, bhp, usa, abudhabi, futurefund, australiansuper, submarines, greens_budget];
 
