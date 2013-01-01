@@ -53,6 +53,8 @@ function ViewObj(data, parent, position) {
 
         if (this._period != arguments[0]) {
             this._period = arguments[0];
+            var thePeriod = arguments[0];
+            this.children().map(function(child) { child.period( thePeriod ); });
             if (this.poppedOut) {
                 this.popIn();
                 this.popOut(this.poppedOutAggregate);
@@ -210,7 +212,7 @@ ViewObj.prototype.popOut = function(aggregate) {
     this.poppedOut = true;
 
     if ('aggregates' in this.data()) {
-        var items = this.data()['aggregates'][aggregate]['periods'][this.period()]['items'];
+        var items = this.data()['aggregates'][aggregate]['items'];
         var cssClass = this.data()['aggregates'][aggregate]['metadata']['cssClass'];
     } else {
         var items = this.data().items;
@@ -218,12 +220,14 @@ ViewObj.prototype.popOut = function(aggregate) {
     }
     if (!items) return;
     items = JSON.parse(JSON.stringify(items));
-    items.sort(function(a, b) { return b.value - a.value; });
+    var that = this;
+    items.sort(function(a, b) { return b['periods'][that.period()]['value'] - a['periods'][that.period()]['value']; });
 
     var numChildren = items.length;
 
     for (var item in items) {
         var itemObj = new ViewObj(items[item], this, [0, 0]);
+        itemObj.period( this.period() );
         itemObj.render({'name': 'bubbleRenderer', 'cssClass': cssClass });
     }
 
@@ -233,11 +237,11 @@ ViewObj.prototype.popOut = function(aggregate) {
     obj.render();
 };
 
-ViewObj.prototype.canPopOut = function(aggregate ) {
+ViewObj.prototype.canPopOut = function(aggregate) {
     if ('aggregates' in this.data()) {
-        return this.data()['aggregates'][aggregate]['periods'][this.period()]['items'].length;
+        return this.data()['aggregates'][aggregate]['items'].length;
     } else {
-        return this.data().items && this.data().items.length;
+        return this.data()['items'] && this.data()['items'].length;
     }
 };
 
@@ -525,11 +529,11 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
     var maxValue = -1;
     var minValue = tril * tril;
     for (var d in data['aggregates']) {
-        if (data['aggregates'][d].periods[viewObj.period()].value > maxValue) {
-            maxValue = data['aggregates'][d].periods[viewObj.period()].value;
+        if (data['aggregates'][d]['periods'][viewObj.period()].value > maxValue) {
+            maxValue = data['aggregates'][d]['periods'][viewObj.period()].value;
         }
-        if (data['aggregates'][d].periods[viewObj.period()].value < minValue) {
-            minValue = data['aggregates'][d].periods[viewObj.period()].value;
+        if (data['aggregates'][d]['periods'][viewObj.period()].value < minValue) {
+            minValue = data['aggregates'][d]['periods'][viewObj.period()].value;
         }
 
     }
@@ -615,7 +619,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
     var arc = d3.svg.arc()
         .innerRadius(0)
         .outerRadius(function(d) {
-            return viewstate.scaler(d.data.periods[viewObj.period()].value);
+            return viewstate.scaler(d.data['periods'][viewObj.period()]['value']);
         });
 
     var paths = sectorsGroup.selectAll('path.wedge')
@@ -707,15 +711,15 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
         if (!isTop(d)) {
             return d.data.name.toUpperCase();
         } else {
-            return formatDollarValue(d.data.periods[viewObj.period()].value);
+            return formatDollarValue(d.data['periods'][viewObj.period()]['value']);
         }
     }
 
     function outerLabelsText(d) {
         if (isTop(d)) {
-            return d.data.name.toUpperCase();
+            return d.data['name'].toUpperCase();
         } else {
-            return formatDollarValue(d.data.periods[viewObj.period()].value);
+            return formatDollarValue(d.data['periods'][viewObj.period()]['value']);
         }
     }
 
@@ -1056,8 +1060,8 @@ ViewObjRenderers.defaultSectorRenderer.dollarRadiusWhenRendered = function(
     /***** Calculate ranges etc */
     var maxValue = -1;
     for (var d in data['aggregates']) {
-        if (data['aggregates'][d].periods[viewObj.period()].value > maxValue) {
-            maxValue = data['aggregates'][d].periods[viewObj.period()].value;
+        if (data['aggregates'][d]['periods'][viewObj.period()]['value'] > maxValue) {
+            maxValue = data['aggregates'][d]['periods'][viewObj.period()]['value'];
         }
     }
 
@@ -1071,9 +1075,11 @@ ViewObjRenderers.defaultSectorRenderer.dollarRadiusWhenRendered = function(
 
 /************************************************************ Bubble Renderer */
 ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
-
-    /***** Pre-process the data */
-    var data = viewObj.data();//JSON.parse(JSON.stringify(viewObj.data()));
+    
+    // don't display a valueless circle
+    if (viewObj.data()['periods'][viewObj.period()]['value'] <= 0) {
+        return;
+    }
 
     function link(d) {
         if (d.href) window.open(d.href, d.target);
@@ -1087,11 +1093,13 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
             .classed('circle', true);
     }
 
+    var data = viewObj.data()
+
     var circle = circleGroup.selectAll('circle')
-        .data([data], function(d) {return d.name;});
+        .data([data], function(d) {return d['name'];});
 
     circle.enter().append('circle')
-        .attr('r', function(d) {return viewstate.scaler(d.value);})
+        .attr('r', function(d) {return viewstate.scaler(d['periods'][viewObj.period()]['value']);})
         .classed(renderMode['cssClass'], true)
         .classed('wedge', true)
         .on('mousedown', viewObj.onmousedownMaker())
@@ -1103,8 +1111,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
 
     circle.exit().remove();
 
-    circle.attr('r', function(d) {return viewstate.scaler(d.value);});
-
+    circle.attr('r', function(d) {return viewstate.scaler(d['periods'][viewObj.period()]['value']);})
 
     /* Create section labels */
     var labelsGroup = viewObj.svg.select('g.labels');
@@ -1114,7 +1121,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
             .classed('labels', true);
     }
 
-    var scaleFactor = ViewObjRenderers.scaleFactor(data.value, 50 * bil);
+    var scaleFactor = ViewObjRenderers.scaleFactor(data['periods'][viewObj.period()]['value'], 50 * bil);
 
     if (scaleFactor <= ViewObjRenderers.MIN_SCALE_FACTOR_FOR_LABEL_DISPLAY) {
         var labelData = [];
@@ -1140,8 +1147,9 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
     }
 
     function centredTextLabelX(d) { return -(safeGetBBox(this)['width']) / 2; };
+
     nameLabel.enter().append('text')
-        .text(function(d) {return data.name.toUpperCase();})
+        .text(function(d) {return d['name'].toUpperCase();})
         .classed('wedgeLabel', true).classed('name', true)
         .attr('x', centredTextLabelX)
         .attr('y', -10)
@@ -1152,7 +1160,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
     nameLabel.exit().remove();
 
     valueLabel.enter().append('text')
-        .text(function(d) {return formatDollarValue(data.value);})
+        .text(function(d) {return formatDollarValue(d['periods'][viewObj.period()]['value']);})
         .classed('wedgeLabel', true).classed('value', true)
         .attr('x', centredTextLabelX)
         .attr('y', valueLabelY)
@@ -1191,7 +1199,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
 
 ViewObjRenderers.bubbleRenderer.dollarRadiusWhenRendered =
     function(viewObj, renderMode) {
-        return viewObj.data().value;
+        return viewObj.data()['periods'][viewObj.period()]['value'];
     };
 
 function formatDollarValue(d) {
