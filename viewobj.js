@@ -226,6 +226,8 @@ ViewObj.prototype.popOut = function(aggregate) {
     var numChildren = items.length;
 
     for (var item in items) {
+        // it it's non-zero, create it.
+        if (items[item]['periods'][this.period()]['value'] <= 0) continue;
         var itemObj = new ViewObj(items[item], this, [0, 0]);
         itemObj.period( this.period() );
         itemObj.render({'name': 'bubbleRenderer', 'cssClass': cssClass });
@@ -257,10 +259,11 @@ ViewObj.prototype.reposition = function() {
 ViewObj.prototype._reposition = function() {
     // having bubbled up to the top, now descend to get correct sizes, then position on the way back up.
     // we set _dollarRadius in each viewobj; the bubble renderer sadly depends upon it atm.
+    // (fixme)
 
     var items = this.children();
     if (items.length) {
-        for (var item in items) {
+        for (var item=0; item<items.length; item++) {
             items[item]._reposition();
         }
 
@@ -270,13 +273,11 @@ ViewObj.prototype._reposition = function() {
         // if we want to pop out two aggregates ... then this mess is the result.
         // todo: refactor with a better way of publishing my type than a cssClass
         //console.log(items);
-        for (var item in items) {
+        for (var item=0; item<items.length; item++) {
             if (items[item].renderMode.cssClass != prevType) {
                 prevType = items[item].renderMode.cssClass;
                 if (lists.length) lists[lists.length - 1].push(item);
                 lists.push([item]);
-                //fixme: how do I sort a sublist?
-                //items.sort( function (a, b) { return b.data().value - a.data().value; } );
             }
         }
         lists[lists.length - 1].push(items.length);
@@ -292,7 +293,7 @@ ViewObj.prototype._reposition = function() {
             for (var list in lists) {
                 //var itemIdxs = [0, this.children().length];
                 var newValues = this.repositionItemsGivenParameters(lists[list], Math.PI + (2 * Math.PI * list) / lists.length * 1.05, (2 * Math.PI) / lists.length * 0.9,
-                                                                    innerRadius, lists.length <= 1);
+                                                                    innerRadius);
 
                 if (newValues[1] > innerRadius) {
                     innerRadius = newValues[1];
@@ -302,102 +303,112 @@ ViewObj.prototype._reposition = function() {
 
             for (var list in lists) {
                 this.repositionItemsGivenParameters(lists[list], Math.PI + (2 * Math.PI * list) / lists.length * 1.05, (2 * Math.PI) / lists.length * 0.9,
-                                                    innerRadius, false);
+                                                    innerRadius);
                 if (newValues[0] > this._dollarRadius) {
                     this._dollarRadius = newValues[0];
                 }
             }
         } else {
             this._dollarRadius = this.repositionItemsGivenParameters(lists[0], Math.PI, (2 * Math.PI),
-                                                                     innerRadius, true)[0];
+                                                                     innerRadius)[0];
         }
     } else {
         this._dollarRadius = ViewObjRenderers[this.renderMode['name']].dollarRadiusWhenRendered(this, this.renderMode);
-        //console.log(this._dollarRadius);
     }
-    //console.log(depth+': end repositioning '+this.data().name);
 };
 
-// itemIdxs is [first, last)
-// assumes they are presorted.
-// returns the resultant [outer, inner] radius
+/**
+ * Actually do the work of repositioning items.
+ * Based on:
+ * http://math.stackexchange.com/questions/251399/what-is-the-smallest-circle-such-that-an-arbitrary-set-of-circles-can-be-placed 
+ * Assumes the items are presorted.
+ *
+ * @private
+ * @param {Array.<number>} itemIdxs The item indexes to consider: [first, last)
+ * @returns {Array.<number>} the resultant [outer, inner] radius
+ */  
+
 ViewObj.prototype.repositionItemsGivenParameters = function(
-    itemIdxs, angleOffset, angleSpan, initialRadius, halfOffset) {
+    itemIdxs, angleOffset, angleSpan, initialRadius) {
 
     var items = this.children();
 
     var numChildren = itemIdxs[1] - itemIdxs[0];
 
     /* do maths to figure out how to position and space the bubbles
-       we figure out angle between:
-       - the line between the centre of the bubble and the centre of the sector diagram; and,
-       - the line from the centre of the sector diagram that is tangent to the bubble
-       doubling this gives us the radial angle taken to draw the bubble
-       we get the sum of those, (hopefully it's <2Pi, otherwise see below.)
-       and then scale them over the available space
 
-       We also do some of the work to figure out the position.
-       We can't add dollar values to get the new radius due to sqrt scaling.
+       NB: We can't add dollar values to get the new radius due to sqrt scaling.
     */
     var sectorPtRadius = viewstate.scaler(initialRadius);
     var bubblePtRadii = [];
     var bubbleAngles = [];
-    var bubbleAnglesSum = 9999;
-    var count = 0;
-    while (bubbleAnglesSum > angleSpan) {
-        bubbleAnglesSum = 0;
-        for (var item = itemIdxs[0]; item < itemIdxs[1]; item++) {
-            var itemRadius = items[item]._dollarRadius;
-
-            bubblePtRadii[item] = viewstate.scaler(itemRadius);
-
-            bubbleAngles[item] = 2 * Math.asin(bubblePtRadii[item] / (bubblePtRadii[item] + sectorPtRadius));
-            bubbleAnglesSum += bubbleAngles[item];
+    var count = 0;  
+  
+    var phi = function(R,i) {
+        var i1 = (i+1 == itemIdxs[1]) ? itemIdxs[0] : (i+1);
+        var ri = bubblePtRadii[i], ri1 = bubblePtRadii[i1];
+        return Math.acos((R*R + R*ri + R*ri1 - ri*ri1) /
+                         ((R+ri)*(R+ri1)));
+    }
+        
+    var f = function(R) {
+        var sum = 0;
+        for (var i = itemIdxs[0]; i < itemIdxs[1]; i++) {
+            sum += phi(R,i);
         }
-        if (bubbleAnglesSum > angleSpan) {
-            //console.log('angle sum: ' + bubbleAnglesSum)
-            //console.log('initial radius: ' + sectorPtRadius);
-            /* Things are bigger than 2pi
-               In the absence of an exact solution (waiting on http://math.stackexchange.com/questions/251399/what-is-the-smallest-circle-such-that-an-arbitrary-set-of-circles-can-be-placed)
-               we want to reduce the biggest angle to the size it needs to be to get 2pi
-
-               we assume it's worst case
-
-               f = angleSpan/sum(thetas)
-
-               let theata_old be 2sin^-1(r_i/(r_i+r_inner))
-               let theta_new be f*theta, and theta_new = 2sin^-1(r_i/(r_i+r_inner,new))
-
-               fun derivation shows r_i/(r_i+r_inner,new) = sin(pi/sum*theta_old)
-            */
-            var frac = Math.sin((angleSpan / (2 * bubbleAnglesSum)) * bubbleAngles[0]);
-            // if frac causes things to shrink, something is wrong. Also sometimes get NaNs if sum ~= angles
-            // but (NaN == NaN) evaluates to false, so phase it as the compliment of valid
-            // fractions
-            var newSectorPtRadius = bubblePtRadii[itemIdxs[0]] * (1 - frac) / frac;
-            if (!(newSectorPtRadius > sectorPtRadius)) {
-                newSectorPtRadius = sectorPtRadius * 1.1;
-            }
-            //console.log('frac: ' + frac );
-            sectorPtRadius = newSectorPtRadius;
-            //console.log('final radius:' + sectorPtRadius);
+        return angleSpan - sum;
+    }
+    
+    var dPhidR = function(R,i) {
+        var i1 = (i+1 == itemIdxs[1]) ? itemIdxs[0] : (i+1);
+        var ri = bubblePtRadii[i], ri1 = bubblePtRadii[i1];
+        var radicand = (R*ri*ri1*(R+ri+ri1))/
+            (Math.pow((R+ri)*(R+ri1),2))
+        var numerator = Math.sqrt(radicand)*(2*R + ri + ri1);
+        return - numerator / (R*(R+ri+ri1));
+    }
+    
+    var dFdR = function(R) {
+        var sum = 0;
+        for (var i = itemIdxs[0]; i < itemIdxs[1]; i++) {
+            sum += dPhidR(R,i);
         }
-        if (count++ > 10) {
-            break;
-        }
+        return -sum;
+    }
+    
+    var bubbleAnglesSum = function() {
+        return angleSpan - f(sectorPtRadius);
+    }
+    
+    for (var item = itemIdxs[0]; item < itemIdxs[1]; item++) {
+        var itemRadius = items[item]._dollarRadius; 
+        bubblePtRadii[item] = viewstate.scaler(itemRadius);
     }
 
-    var angleScaler = d3.scale.linear().domain([0, bubbleAnglesSum]).range([0, angleSpan]);
+    if (bubbleAnglesSum() > angleSpan) {
+   
+        var Rn = sectorPtRadius;
+        var Rn1 = Rn - f(Rn)/dFdR(Rn);
+        
+        while (Math.abs((Rn-Rn1)/Rn) > 0.01 || f(Rn1) < 0) {
+            Rn = Rn1;
+            Rn1 = Rn - f(Rn)/dFdR(Rn);
+        }
+        sectorPtRadius = Rn1;
+    }
+
+    var angleScaler = d3.scale.linear()
+        .domain([0, bubbleAnglesSum()])
+        .range([0, angleSpan]);
+
     var angle = angleOffset;
-    if (halfOffset) angle -= angleScaler(bubbleAngles[itemIdxs[0]]) / 2;
 
     for (var item = itemIdxs[0]; item < itemIdxs[1]; item++) {
-        angle += angleScaler(bubbleAngles[item]) / 2;
         var itemPosition = [
             (sectorPtRadius + bubblePtRadii[item]) * Math.cos(angle),
             (sectorPtRadius + bubblePtRadii[item]) * Math.sin(angle)
         ].map(viewstate.scaler.invert);
-        angle += angleScaler(bubbleAngles[item]) / 2;
+        angle += angleScaler(phi(sectorPtRadius,item));
 
         items[item].moveTo(itemPosition);
     }
