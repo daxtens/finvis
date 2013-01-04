@@ -10,7 +10,6 @@
 <script type="text/javascript" src="circles.js"></script>
     <script type="text/javascript" src="data.js"></script>
     <script type="text/javascript" src="theopenbudget.js"></script>
-<script type="text/javascript">entities.push(openbudget);</script>
 	<script type="text/javascript" src="parenting.js"></script>
 	<script type="text/javascript" src="viewstate.js"></script>
     <script type="text/javascript" src="viewobj.js"></script>
@@ -29,7 +28,7 @@ Hi! You seem to be using Internet Explorer 8 or below. Unfortunately this websit
   </ul>
   Please try again with one of those.<br />
   <style type="text/css">
-  #tourCaption, #rightToolBox {
+  #rightToolBox {
   display: none;
   }
   </style>
@@ -51,34 +50,6 @@ Drag things around, double-click, right-click, use the scroll wheel: explore!
   <input type="button" id="entityAdd"  onClick="javascript:addEntity();" value="Add Entity"></input>
   </div>
   </div>
-  <script type="text/javascript">
-  
-	function periodChange(sel) {
-	  var chosenoption=sel.options[sel.selectedIndex];
-      viewstate.children().map(function(obj) {obj.period(chosenoption.value);});
-	  viewstate.children().map(function(obj) {obj.render();});
-	}
-
-  function addEntity() {
-
-  var entitySel = jQuery('#entitySel')[0];
-  viewstate.beginAddingView( entities[entitySel.selectedIndex] );
-  
-  }
-
-  var entitySel = jQuery('#entitySel');
-  jQuery.each( entities, function(index) {
-      entitySel.append( jQuery('<option />').val( index ).text( entities[index].name ) );
-	} );
-		
-  
-  window.viewstate=new ViewState(d3.select("body").append("svg"));
-
-  var vo = new ViewObj( openbudget, viewstate, [0,0] );
-  vo.period('2011-12');
-  vo.render();
-
-  </script>
 <div id="wedgeMenu" class="contextMenu">
   <ul>
     <li id="deleteMenuItem">Delete</li>

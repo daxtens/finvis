@@ -117,3 +117,34 @@ window.onresize = function () {
 	viewstate.children().map( function(child) { child.render() } );
     }, 50 );
 }
+
+/** Initalise the document when we start. */
+jQuery('document').ready(function() {
+    var entitySel = jQuery('#entitySel');
+    jQuery.each(entities, function(index) {
+        entitySel.append(
+            jQuery('<option />').val( index ).text( entities[index].name )
+        );
+    });
+		
+    window.viewstate = new ViewState(d3.select("body").append("svg"));
+
+    var vo = new ViewObj( openbudget, viewstate, [0,0] );
+    vo.period('2011-12');
+    vo.render();
+});
+
+/** Handler for the period selector
+    @param sel The <select> tag.
+*/
+window['periodChange'] = function(sel) {
+    var chosenoption=sel.options[sel.selectedIndex];
+    viewstate.children().map(function(obj) {obj.period(chosenoption.value);});
+    viewstate.children().map(function(obj) {obj.render();});
+};
+
+/** Handler for add entity button */
+window['addEntity'] = function() {
+    var entitySel = jQuery('#entitySel')[0];
+    viewstate.beginAddingView( entities[entitySel.selectedIndex] );
+};

@@ -4443,3 +4443,5 @@ var openbudget = {
       }
    ]
 }
+
+entities.push(openbudget);
