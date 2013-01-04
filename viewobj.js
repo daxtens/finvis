@@ -14,14 +14,11 @@
 */
 
 
-/* Constructor.
+/** @constructor
 
-   data : at the top level, this should be an entity; subview may be
-   passed individual items
-
-   parent : either a viewObj, or at the root level, a viewstate
-
-   position : an (x$, y$) pair
+   @param {Object} data an entity or item.
+   @param {Object} parent a viewObj, or at the root level, a viewstate.
+   @param {Array.<number>} position an (x$, y$) pair.
 */
 
 //having wacky non-fun with inheritance; children array was being shared!
@@ -37,6 +34,7 @@ function ViewObj(data, parent, position) {
     this.parent.addChild(this);
 
     this.position = position;
+    this.boundingCircle = {};
 
     /* getter and setter for data
      */
@@ -54,7 +52,7 @@ function ViewObj(data, parent, position) {
         if (this._period != arguments[0]) {
             this._period = arguments[0];
             var thePeriod = arguments[0];
-            this.children().map(function(child) { child.period( thePeriod ); });
+            this.children().map(function(child) { child.period(thePeriod); });
             if (this.poppedOut) {
                 this.popIn();
                 this.popOut(this.poppedOutAggregate);
@@ -85,9 +83,9 @@ function ViewObj(data, parent, position) {
     this.mouseData.startX = 0;
     this.mouseData.startY = 0;
 
-    /* we have to attach these to things with substance 
+    /* we have to attach these to things with substance
        like wedges, not the overall group
-       
+
        these functions manufacture a suitable function for that. */
     this.onmousedownMaker = function() {
         var that = this;
@@ -184,8 +182,10 @@ function ViewObj(data, parent, position) {
 ViewObj.prototype.moveTo = function(position) {
     if (arguments.length == 2) position = arguments;
     this.position = position;
-    this.svg.attr('transform', 'translate(' + this.position.map(viewstate.scaler).join(',') + ')');
-};
+    this.svg.attr('transform',
+                  'translate(' +
+                  this.position.map(viewstate.scaler).join(',') +
+                  ')');};
 
 ViewObj.prototype.remove = function() {
     this.svg.remove();
@@ -229,7 +229,7 @@ ViewObj.prototype.popOut = function(aggregate) {
         // it it's non-zero, create it.
         if (items[item]['periods'][this.period()]['value'] <= 0) continue;
         var itemObj = new ViewObj(items[item], this, [0, 0]);
-        itemObj.period( this.period() );
+        itemObj.period(this.period());
         itemObj.render({'name': 'bubbleRenderer', 'cssClass': cssClass });
     }
 
@@ -257,83 +257,61 @@ ViewObj.prototype.reposition = function() {
 
 //todo: make me private/protected/something
 ViewObj.prototype._reposition = function() {
-    // having bubbled up to the top, now descend to get correct sizes, then position on the way back up.
-    // we set _dollarRadius in each viewobj; the bubble renderer sadly depends upon it atm.
-    // (fixme)
+    /* having bubbled up to the top, now descend to get correct sizes,
+       then position and bound on the way back up.
+       */
+    var innerRadius = ViewObjRenderers[this.renderMode['name']]
+        .dollarRadiusWhenRendered(this,
+                                  this.renderMode);
+
+    this.boundingCircle = {cx: 0, cy: 0,
+                           radius: innerRadius};
 
     var items = this.children();
     if (items.length) {
-        for (var item=0; item<items.length; item++) {
+        for (var item = 0; item < items.length; item++) {
             items[item]._reposition();
         }
 
         var prevType = '';
-        var lists = [];
+        var list2Start = -1;
 
-        // if we want to pop out two aggregates ... then this mess is the result.
+        // mess to pop out 2 aggregates at once.
         // todo: refactor with a better way of publishing my type than a cssClass
-        //console.log(items);
-        for (var item=0; item<items.length; item++) {
+        prevType = items[0].renderMode.cssClass;
+        for (var item = 1; item < items.length; item++) {
             if (items[item].renderMode.cssClass != prevType) {
-                prevType = items[item].renderMode.cssClass;
-                if (lists.length) lists[lists.length - 1].push(item);
-                lists.push([item]);
+                list2Start = item;
+                break;
             }
         }
-        lists[lists.length - 1].push(items.length);
-        //console.log(lists);
-
-
-        this._dollarRadius = ViewObjRenderers[this.renderMode['name']].dollarRadiusWhenRendered(this, this.renderMode);
-        var innerRadius = this._dollarRadius;
-        if (lists.length > 1) {
-            // todo: a little bit of angular padding
-
-            // have 2 cracks at it.
-            for (var list in lists) {
-                //var itemIdxs = [0, this.children().length];
-                var newValues = this.repositionItemsGivenParameters(lists[list], Math.PI + (2 * Math.PI * list) / lists.length * 1.05, (2 * Math.PI) / lists.length * 0.9,
-                                                                    innerRadius);
-
-                if (newValues[1] > innerRadius) {
-                    innerRadius = newValues[1];
-                }
-
-            }
-
-            for (var list in lists) {
-                this.repositionItemsGivenParameters(lists[list], Math.PI + (2 * Math.PI * list) / lists.length * 1.05, (2 * Math.PI) / lists.length * 0.9,
-                                                    innerRadius);
-                if (newValues[0] > this._dollarRadius) {
-                    this._dollarRadius = newValues[0];
-                }
-            }
-        } else {
-            this._dollarRadius = this.repositionItemsGivenParameters(lists[0], Math.PI, (2 * Math.PI),
-                                                                     innerRadius)[0];
-        }
-    } else {
-        this._dollarRadius = ViewObjRenderers[this.renderMode['name']].dollarRadiusWhenRendered(this, this.renderMode);
+        this.boundingCircle =
+            this.repositionItemsGivenParameters(list2Start, innerRadius);
     }
 };
 
 /**
  * Actually do the work of repositioning items.
  * Based on:
- * http://math.stackexchange.com/questions/251399/what-is-the-smallest-circle-such-that-an-arbitrary-set-of-circles-can-be-placed 
+ * http://math.stackexchange.com/questions/251399/what-is-the-smallest-circle-such-that-an-arbitrary-set-of-circles-can-be-placed
  * Assumes the items are presorted.
+ * Massively complicated by the thought of handling 2 lists:
+ * - each must fit completely in the pi radians their sector traces out
+ * -- this requires tangent to the perpendicular padding at each end
+ * -- a big list cannot squeeze out a small list: angle = max(pi, sum)
+ * -- hence derivatives get reeeeeeally messy.
  *
  * @private
- * @param {Array.<number>} itemIdxs The item indexes to consider: [first, last)
- * @returns {Array.<number>} the resultant [outer, inner] radius
- */  
-
+ * @param {number} list2Start The index at which list 2 begins, or -1 if there's only 1 list.
+ * @return {number} the resultant outer radius.
+ */
+// todo: make me private
 ViewObj.prototype.repositionItemsGivenParameters = function(
-    itemIdxs, angleOffset, angleSpan, initialRadius) {
+    list2Start, initialRadius) {
+
+    // all the functions here should be [lowerbound, upperbound)
 
     var items = this.children();
-
-    var numChildren = itemIdxs[1] - itemIdxs[0];
 
     /* do maths to figure out how to position and space the bubbles
 
@@ -342,86 +320,178 @@ ViewObj.prototype.repositionItemsGivenParameters = function(
     var sectorPtRadius = viewstate.scaler(initialRadius);
     var bubblePtRadii = [];
     var bubbleAngles = [];
-    var count = 0;  
-  
-    var phi = function(R,i) {
-        var i1 = (i+1 == itemIdxs[1]) ? itemIdxs[0] : (i+1);
-        var ri = bubblePtRadii[i], ri1 = bubblePtRadii[i1];
-        return Math.acos((R*R + R*ri + R*ri1 - ri*ri1) /
-                         ((R+ri)*(R+ri1)));
-    }
-        
+    var count = 0;
+
+    var phi = function(R, ri, ri1) {
+        return Math.acos((R * R + R * ri + R * ri1 - ri * ri1) /
+                         ((R + ri) * (R + ri1)));
+    };
+
+    // this is the function for tangent padding
+    var psi = function(R, r) {
+        return Math.asin(r / (r + R));
+    };
+
+    var sumFnAcross = function(fn, R, i1, i2) {
+        var sum = 0;
+        for (var j = i1; j < i2 - 1; j++) {
+            sum += fn(R, bubblePtRadii[j], bubblePtRadii[j + 1]);
+        }
+        return sum;
+    };
+
+    var sumPhiAcrossWithPadding = function(R, i1, i2) {
+        var subangle;
+        subangle = psi(R, bubblePtRadii[i1]);
+        subangle += sumFnAcross(phi, R, i1, i2);
+        subangle += Math.asin(bubblePtRadii[i2 - 1] /
+                              (bubblePtRadii[i2 - 1] + R));
+        return subangle;
+    };
+
     var f = function(R) {
         var sum = 0;
-        for (var i = itemIdxs[0]; i < itemIdxs[1]; i++) {
-            sum += phi(R,i);
+        if (list2Start == -1) {
+            sum += sumFnAcross(phi, R, 0, items.length);
+            sum += phi(R, bubblePtRadii[items.length - 1], bubblePtRadii[0]);
+        } else {
+            /* for each list:
+               - tangent to the perpendicular padding on each end.
+               - angle is max( pi, sum ): don't allow it to be squeezed out
+            */
+            var subangle;
+            subangle = sumPhiAcrossWithPadding(R, 0, list2Start);
+            sum += Math.max(Math.PI, subangle);
+            subangle = sumPhiAcrossWithPadding(R, list2Start, items.length);
+            sum += Math.max(Math.PI, subangle);
         }
-        return angleSpan - sum;
-    }
-    
-    var dPhidR = function(R,i) {
-        var i1 = (i+1 == itemIdxs[1]) ? itemIdxs[0] : (i+1);
-        var ri = bubblePtRadii[i], ri1 = bubblePtRadii[i1];
-        var radicand = (R*ri*ri1*(R+ri+ri1))/
-            (Math.pow((R+ri)*(R+ri1),2))
-        var numerator = Math.sqrt(radicand)*(2*R + ri + ri1);
-        return - numerator / (R*(R+ri+ri1));
-    }
-    
+        return 2 * Math.PI - sum;
+    };
+
+    var dPhidR = function(R,ri,ri1) {
+        var radicand = (R * ri * ri1 * (R + ri + ri1)) /
+            (Math.pow((R + ri) * (R + ri1), 2));
+        var numerator = Math.sqrt(radicand) * (2 * R + ri + ri1);
+        return - numerator / (R * (R + ri + ri1));
+    };
+
+    var dPsidR = function(R,r) {
+        return - r / ((r + R) * Math.sqrt(R * (2 * r + R)));
+    };
+
     var dFdR = function(R) {
+        // this is massively complicated by the 2 list requirement
         var sum = 0;
-        for (var i = itemIdxs[0]; i < itemIdxs[1]; i++) {
-            sum += dPhidR(R,i);
+        if (list2Start == -1) {
+            sum += sumFnAcross(dPhidR, R, 0, items.length);
+            sum += dPhidR(R, bubblePtRadii[items.length - 1], bubblePtRadii[0]);
+        } else {
+            var subangle;
+            subangle = sumPhiAcrossWithPadding(R, 0, list2Start);
+
+            if (subangle > Math.PI) {
+                sum += dPsidR(R, bubblePtRadii[0]);
+                sum += sumFnAcross(dPhidR, R, 0, list2Start);
+                sum += dPsidR(R, bubblePtRadii[list2Start - 1]);
+            } // else Pi, derivative = 0
+
+            subangle = sumPhiAcrossWithPadding(R, list2Start, items.length);
+            if (subangle > Math.PI) {
+                sum += dPsidR(R, bubblePtRadii[list2Start]);
+                sum += sumFnAcross(dPhidR, R, list2Start, items.length);
+                sum += dPsidR(R, bubblePtRadii[items.length - 1]);
+            } // else Pi, derivative = 0
         }
         return -sum;
-    }
-    
+    };
+
     var bubbleAnglesSum = function() {
-        return angleSpan - f(sectorPtRadius);
-    }
-    
-    for (var item = itemIdxs[0]; item < itemIdxs[1]; item++) {
-        var itemRadius = items[item]._dollarRadius; 
+        return 2 * Math.PI - f(sectorPtRadius);
+    };
+
+    for (var item = 0; item < items.length; item++) {
+        var itemRadius = items[item].boundingCircle.radius;
         bubblePtRadii[item] = viewstate.scaler(itemRadius);
     }
 
-    if (bubbleAnglesSum() > angleSpan) {
-   
+    // Newton's method
+    if (bubbleAnglesSum() > 2 * Math.PI) {
+
         var Rn = sectorPtRadius;
-        var Rn1 = Rn - f(Rn)/dFdR(Rn);
-        
-        while (Math.abs((Rn-Rn1)/Rn) > 0.01 || f(Rn1) < 0) {
+        var Rn1 = Rn - f(Rn) / dFdR(Rn);
+
+        while (Math.abs((Rn - Rn1) / Rn) > 0.01 || f(Rn1) < 0) {
             Rn = Rn1;
-            Rn1 = Rn - f(Rn)/dFdR(Rn);
+            Rn1 = Rn - f(Rn) / dFdR(Rn);
         }
         sectorPtRadius = Rn1;
     }
 
-    var angleScaler = d3.scale.linear()
-        .domain([0, bubbleAnglesSum()])
-        .range([0, angleSpan]);
 
-    var angle = angleOffset;
+    var actuallyPosition = function(start, end, domain, range, angleOffset,
+                                   tangentPad) {
 
-    for (var item = itemIdxs[0]; item < itemIdxs[1]; item++) {
-        var itemPosition = [
-            (sectorPtRadius + bubblePtRadii[item]) * Math.cos(angle),
-            (sectorPtRadius + bubblePtRadii[item]) * Math.sin(angle)
-        ].map(viewstate.scaler.invert);
-        angle += angleScaler(phi(sectorPtRadius,item));
+        var angleScaler = d3.scale.linear()
+            .domain([0, domain])
+            .range([0, range]);
 
-        items[item].moveTo(itemPosition);
+        var angle = angleOffset;
+        if (tangentPad) angle += angleScaler(psi(sectorPtRadius,
+                                                 bubblePtRadii[start]));
+
+        for (var item = start; item < end; item++) {
+            var itemPosition = [
+                (sectorPtRadius + bubblePtRadii[item]) * Math.cos(angle) -
+                    viewstate.scaler(items[item].boundingCircle.cx),
+                (sectorPtRadius + bubblePtRadii[item]) * Math.sin(angle) -
+                    viewstate.scaler(items[item].boundingCircle.cy)
+            ].map(viewstate.scaler.invert);
+
+            if (item + 1 < end) {
+                    angle += angleScaler(phi(sectorPtRadius,
+                                         bubblePtRadii[item],
+                                         bubblePtRadii[item + 1]));
+            }
+            items[item].moveTo(itemPosition);
+        }
+    };
+
+    if (list2Start == -1) {
+        actuallyPosition(0, items.length, bubbleAnglesSum(),
+                         2 * Math.PI, Math.PI);
+    } else {
+        actuallyPosition(0, list2Start,
+                         sumPhiAcrossWithPadding(sectorPtRadius,
+                                                 0, list2Start),
+                         Math.PI, Math.PI, true);
+        actuallyPosition(list2Start, items.length,
+                         sumPhiAcrossWithPadding(sectorPtRadius,
+                                                 list2Start, items.length),
+                         Math.PI, 0, true);
     }
 
-    return [viewstate.scaler.invert(sectorPtRadius + 2 * bubblePtRadii[0]), 
-            viewstate.scaler.invert(sectorPtRadius)];
+    var result = {cx: 0, cy: 0, radius: sectorPtRadius};
+
+    var circles = items.map(function(child) {
+        var circle = child.boundingCircle;
+        return {cx: viewstate.scaler(circle.cx) +
+                    viewstate.scaler(child.position[0]),
+                cy: viewstate.scaler(circle.cy) +
+                    viewstate.scaler(child.position[1]),
+                radius: viewstate.scaler(circle.radius) };
+    });
+    circles.push({cx: 0, cy: 0, radius: viewstate.scaler(initialRadius)});
+
+    result = minimumBoundingCircleForCircles(circles);
+    result.radius = viewstate.scaler.invert(result.radius);
+    result.cx = viewstate.scaler.invert(result.cx);
+    result.cy = viewstate.scaler.invert(result.cy);
+    return result;
 };
 
 ViewObj.prototype.render = function(mode) {
 
-    this.svg.attr('transform', 
-                  'translate( ' + this.position.map(viewstate.scaler).join(',') 
-                  + ' )');
+    this.moveTo(this.position);
 
     // this is a pretty naive way of handling the transition.
     // we probably need an 'unrender'/destroy method in the renderers
@@ -442,7 +512,7 @@ ViewObj.prototype.render = function(mode) {
                    };
 
 
-    if (this.data().aggregates && 
+    if (this.data().aggregates &&
         ((this.data().aggregates.length == 2 &&
           this.renderMode.specifiedAggregates == undefined) ||
          (this.data().aggregates.length == 4 &&
@@ -461,7 +531,7 @@ ViewObj.prototype.render = function(mode) {
 
 };
 
-/* Renderers go here.
+/** Renderers go here.
 
    This is *not* the way to design a totally new way of rendering data, because
    there's really tight linkage to the viewObj in event handling (what happens
@@ -477,8 +547,8 @@ ViewObj.prototype.render = function(mode) {
    simply returning the radius (or a close-ish guess; not too fussed about
    minor text overlaps atm.) of the object when rendered in a given mode.
 
+   @global
 */
-
 var ViewObjRenderers = {};
 
 /**
@@ -486,8 +556,8 @@ var ViewObjRenderers = {};
  * Setting this too low leads to getBBox throwing errors.
  *
  * A renderer should use the scaling factor as a transform on every text tag.
- * @const 
- * @type {number} 
+ * @const
+ * @type {number}
  */
 ViewObjRenderers.MIN_SCALE_FACTOR_FOR_LABEL_DISPLAY = 0.3;
 
@@ -503,13 +573,13 @@ ViewObjRenderers.MIN_SCALE_FACTOR_FOR_LABEL_DISPLAY = 0.3;
                                 permitting) be it's natural size.
  * @return {number} The scale factor.
  */
-ViewObjRenderers.scaleFactor = function (minValue, naturalValue) {
+ViewObjRenderers.scaleFactor = function(minValue, naturalValue) {
     // this is full of magic numbers. le sigh.
     // [0,tril] sets a default scaling factor for the size of the window
     return 1 /
         (d3.scale.sqrt().domain([0, tril]).range([0, 1])(viewstate.scaleMax) /
          d3.scale.sqrt().domain([0, naturalValue]).range([0, 1])(minValue));
-}
+};
 
 ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
 
@@ -554,14 +624,14 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
 
     //var centreOffset = viewstate.scaler(niceMaxValue);
 
-    var scaleFactor = ViewObjRenderers.scaleFactor( minValue, 400 * bil );
+    var scaleFactor = ViewObjRenderers.scaleFactor(minValue, 400 * bil);
 
     /***** Start laying things out */
     // create the scale background
-    var backdata = d3.range(1, 9).map(function(d) { 
+    var backdata = d3.range(1, 9).map(function(d) {
         return d * Math.pow(10, exponent - 1);
     });
-    
+
     var backdata2 = d3.range(1, Math.ceil(maxValue / Math.pow(10, exponent)) + 1)
         .map(function(d) { return d * Math.pow(10, exponent); });
 
@@ -602,15 +672,15 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
         .text(formatDollarValue)
         .classed('axis_label', true)
         .attr('transform', function(d) {
-            return 'translate('+ 0 + ','+ (0 - viewstate.scaler(d)) + ')'
+            return 'translate(' + 0 + ',' + (0 - viewstate.scaler(d)) + ')';
         })
         .attr('dy', '1em')
         .attr('dx', function(d) { return -safeGetBBox(this)['width'] / 2 });
 
     labels
-        .attr('transform', 
+        .attr('transform',
               function(d) {
-                  return 'translate('+ 0 + ','+ (0 - viewstate.scaler(d)) + ')';
+                  return 'translate(' + 0 + ',' + (0 - viewstate.scaler(d)) + ')';
               });
 
     labels.exit().remove();
@@ -840,10 +910,10 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
 
     tinyHalo.enter().append('circle').classed('tinyHalo', true)
         .attr('r', tinyHaloThreshold)
-        .attr('display', 
+        .attr('display',
               function(d) { return d < tinyHaloThreshold ? null : 'none' });
 
-    tinyHalo.attr('display', 
+    tinyHalo.attr('display',
                   function(d) { return d < tinyHaloThreshold ? null : 'none' });
 
 
@@ -1086,11 +1156,6 @@ ViewObjRenderers.defaultSectorRenderer.dollarRadiusWhenRendered = function(
 
 /************************************************************ Bubble Renderer */
 ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
-    
-    // don't display a valueless circle
-    if (viewObj.data()['periods'][viewObj.period()]['value'] <= 0) {
-        return;
-    }
 
     function link(d) {
         if (d.href) window.open(d.href, d.target);
@@ -1104,7 +1169,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
             .classed('circle', true);
     }
 
-    var data = viewObj.data()
+    var data = viewObj.data();
 
     var circle = circleGroup.selectAll('circle')
         .data([data], function(d) {return d['name'];});
@@ -1122,7 +1187,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
 
     circle.exit().remove();
 
-    circle.attr('r', function(d) {return viewstate.scaler(d['periods'][viewObj.period()]['value']);})
+    circle.attr('r', function(d) {return viewstate.scaler(d['periods'][viewObj.period()]['value']);});
 
     /* Create section labels */
     var labelsGroup = viewObj.svg.select('g.labels');
@@ -1190,8 +1255,12 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
             .classed('enclosingCircle', true);
     }
 
-    var enclosingCircleData =
-        (viewObj.children().length ? [viewObj._dollarRadius] : []);
+
+    var enclosingCircleData = [];
+
+    if (viewObj.children().length) {
+        enclosingCircleData.push(viewObj.boundingCircle);
+    }
 
     var enclosingCircle = enclosingCircleGroup
         .selectAll('circle.axis_circle')
@@ -1199,10 +1268,14 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
 
     enclosingCircle.enter().append('circle')
         .classed('axis_circle', true)
-        .attr('r', viewstate.scaler);
+        .attr('r', function(d) { return viewstate.scaler(d.radius); })
+        .attr('cx', function(d) { return viewstate.scaler(d.cx); })
+        .attr('cy', function(d) { return viewstate.scaler(d.cy); });
 
     enclosingCircle
-        .attr('r', viewstate.scaler);
+        .attr('r', function(d) { return viewstate.scaler(d.radius); })
+        .attr('cx', function(d) { return viewstate.scaler(d.cx); })
+        .attr('cy', function(d) { return viewstate.scaler(d.cy); });
 
     enclosingCircle.exit().remove();
 
