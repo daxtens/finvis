@@ -34,11 +34,15 @@ document.onkeydown = function (e) {
 
 /* Mouse wheel */
 // from http://www.adomas.org/javascript-mouse-wheel/
-function scrollZoom(delta) {
+function scrollZoom(delta, e) {
+    // using clientX is wrong, and will break horribly when
+    // the svg doesn't take up most of the page.
+    // daniel: convert everything into d3 events that attach just to the svg?
+    // and if we can't have an event on an svg, make viewstate hold a div.
     if (delta < 0) {
-	viewstate.zoom(10/9);
+	viewstate.zoom(10/9, [e.clientX, e.clientY]);
     } else {
-	viewstate.zoom(9/10);
+	viewstate.zoom(9/10, [e.clientX, e.clientY]);
     }
 }
 
@@ -51,7 +55,7 @@ function wheel(event){
 		delta = -event.detail/3;
 	}
 	if (delta)
-		scrollZoom(delta);
+	    scrollZoom(delta, event);
         if (event.preventDefault)
                 event.preventDefault();
         event.returnValue = false;
@@ -61,48 +65,13 @@ if (window.addEventListener)
 	window.addEventListener('DOMMouseScroll', wheel, false);
 window.onmousewheel = document.onmousewheel = wheel;
 
-/* Mouse dragging */
-document.onmousedown = function ( e ) {
-	e.stopPropagation();
-	if (viewstate.mouseData.inDropState) return;
-	if (viewstate.mouseData.isInObjDrag) {
-		console.log("mousedown when inObjDrop?");
-		return true;
-	}
-	
-	// make sure this is a left click, otherwise pass it through
-	if (e.button != 0) return true;
-	
-	viewstate.mouseData.isDrag = true;
-	viewstate.mouseData.startX = e.clientX;
-	viewstate.mouseData.startY = e.clientY;
-}
-
-document.onmousemove = function ( e ) {
-	if (viewstate.mouseData.isInObjDrag) {
-		//hmm, the mouse has escaped.
-		viewstate.mouseData.objMoveHandler(e);
-		} else if (viewstate.mouseData.isDrag) {
-			var moveX = -(e.clientX) + (viewstate.mouseData.startX);
-			var moveY = -(e.clientY) + (viewstate.mouseData.startY);
-			
-			viewstate.move( (moveX), (moveY));
-			
-			viewstate.mouseData.startX = e.clientX;
-			viewstate.mouseData.startY = e.clientY;
-		}
-};
 
 document.onmouseup = function ( e ) {
-	e.stopPropagation();
-	
-	if (viewstate.mouseData.inDropState) {
-		viewstate.finishAddingView( [ e.clientX, e.clientY ] );
-	} else if (viewstate.mouseData.isInObjDrag) {
-		//hmm, the mouse has escaped.
-		viewstate.mouseData.objUpHandler(e);
-	}
-	viewstate.mouseData.isDrag = false;
+    e.stopPropagation();
+    
+    if (viewstate.mouseData.inDropState) {
+	viewstate.finishAddingView( [ e.clientX, e.clientY ] );
+    }
 };
 
 /* Resize */

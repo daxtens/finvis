@@ -13,6 +13,8 @@
 
 */
 
+//having wacky non-fun with inheritance; children array was being shared!
+//ViewObj.prototype = new ParentingObject();
 
 /** @constructor
 
@@ -20,11 +22,7 @@
    @param {Object} parent a viewObj, or at the root level, a viewstate.
    @param {Array.<number>} position an (x$, y$) pair.
 */
-
-//having wacky non-fun with inheritance; children array was being shared!
-//ViewObj.prototype = new ParentingObject();
 function ViewObj(data, parent, position) {
-
     this._data = data;
 
     this.ParentingObject = ParentingObject;
@@ -77,64 +75,26 @@ function ViewObj(data, parent, position) {
     }
 
     /* Event handling */
-    // dragging is set up here. context menu is set up in render - icky, I know.
+    var that = this;
     this.mouseData = {};
-    this.mouseData.isDrag = false;
-    this.mouseData.startX = 0;
-    this.mouseData.startY = 0;
-
-    /* we have to attach these to things with substance
-       like wedges, not the overall group
-
-       these functions manufacture a suitable function for that. */
-    this.onmousedownMaker = function() {
-        var that = this;
-        return function(d) {
-            d3.event.stopPropagation();
-
-            // make sure this is a left click, otherwise pass it through
-            if (d3.event.button != 0) return true;
-
-            // ergh, protection from when the mouse 'escapes' is messy
-            viewstate.mouseData.isInObjDrag = true;
-            viewstate.mouseData.objMoveHandler = that.onmousemoveMaker();
-            viewstate.mouseData.objUpHandler = that.onmouseupMaker();
-
-            that.mouseData.isDrag = true;
-            that.mouseData.startX = d3.event.clientX;
-            that.mouseData.startY = d3.event.clientY;
-
-            return false;
-        };
-    };
-
-    this.onmouseupMaker = function() {
-        var that = this;
-        return function(d) {
-            that.mouseData.isDrag = false;
-            viewstate.mouseData.isInObjDrag = false;
-        };
-    };
-
-    this.onmousemoveMaker = function(e) {
-        var that = this;
-        return function(d) {
-            if (d instanceof MouseEvent) e = d;
-            else e = d3.event;
-
-            if (!that.mouseData.isDrag) return true;
-
+    // this is working really weirdly... but see viewstate.js
+    // where it works fine.
+    this.dragHandler = d3.behavior.drag()
+        .origin(function (d) {
+            // needed, not sure why.
+            return {x: 0, y: 0};
+        })
+        .on("drag", function (d) {
             that.position = that.position.map(viewstate.scaler);
-            that.position[0] -= (that.mouseData.startX - e.clientX);
-            that.position[1] -= (that.mouseData.startY - e.clientY);
+            that.position[0] += d3.event.x
+            that.position[1] += d3.event.y
+            that.svg.attr('transform',
+                          'translate( ' + that.position.join(',') + ' )');
             that.position = that.position.map(viewstate.scaler.invert);
+        });
 
-            that.svg.attr('transform', 'translate( ' + that.position.map(viewstate.scaler).join(',') + ' )');
 
-            that.mouseData.startX = e.clientX;
-            that.mouseData.startY = e.clientY;
-        }
-    };
+    // context menu is set up in render.
 
     this.ondblclickMaker = function(e) {
         var that = this;
@@ -178,7 +138,11 @@ function ViewObj(data, parent, position) {
     };
 }
 
-//units are dollars
+/**
+ * Move myself to the given position.
+ * units are dollars
+ * @param {Array.<number>} position New position.
+*/
 ViewObj.prototype.moveTo = function(position) {
     if (arguments.length == 2) position = arguments;
     this.position = position;
@@ -709,9 +673,10 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
     var enterer = paths.enter().append('path')
         .classed('wedge', true)
         .attr('d', arc)
-        .on('mousedown', viewObj.onmousedownMaker())
-        .on('mousemove', viewObj.onmousemoveMaker())
-        .on('mouseup', viewObj.onmouseupMaker())
+        //.on('mousedown', viewObj.onmousedownMaker())
+        //.on('mousemove', viewObj.onmousemoveMaker())
+        //.on('mouseup', viewObj.onmouseupMaker())
+        .call(viewObj.dragHandler)
         .on('dblclick', viewObj.ondblclickMaker());
 
     // d3 does not seem to provide a nice way to set dynamic styles...
@@ -745,7 +710,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
 
     // General Case
     // ... utility functions
-    function isTop(d ) {
+    function isTop(d) {
         if (d.data.metadata.cssClass == 'revenue' ||
             d.data.metadata.cssClass == 'assets') {
             return true;
@@ -848,6 +813,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
         .classed('inner', true)
         .classed('value', isTop)
         .classed('name', isBottom)
+        .call(viewObj.dragHandler)
         .text(innerLabelsText)
         .attr('x', labelsX)
         .attr('y', innerLabelsY)
@@ -868,6 +834,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
         .classed('outer', true)
         .classed('value', isBottom)
         .classed('name', isTop)
+        .call(viewObj.dragHandler)
         .text(outerLabelsText)
         .attr('x', labelsX)
         .attr('y', outerLabelsY)
@@ -889,6 +856,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
     entitylabel.enter()
         .append('text')
         .classed('entityLabel', true).classed('name', true)
+        .call(viewObj.dragHandler)
         .text(viewObj.data().name)
         .attr('x', function(d) { return -safeGetBBox(this)['width'] / 2; })
         .attr('y', 20)
@@ -909,6 +877,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
         .data([backdata.pop()].map(viewstate.scaler));
 
     tinyHalo.enter().append('circle').classed('tinyHalo', true)
+        .call(viewObj.dragHandler)
         .attr('r', tinyHaloThreshold)
         .attr('display',
               function(d) { return d < tinyHaloThreshold ? null : 'none' });
@@ -1052,6 +1021,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
         .classed('value', isProfit)
         .classed('revenue', isProfit)
         .classed('expenses', isLoss)
+        .call(viewObj.dragHandler)
         .attr('x', labelX)
         .attr('y', relationInnerY);
 
@@ -1092,6 +1062,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
         .classed('value', isLoss)
         .classed('revenue', isProfit)
         .classed('expenses', isLoss)
+        .call(viewObj.dragHandler)
         .attr('x', labelX)
         .attr('y', relationOuterY);
 
@@ -1178,9 +1149,10 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
         .attr('r', function(d) {return viewstate.scaler(d['periods'][viewObj.period()]['value']);})
         .classed(renderMode['cssClass'], true)
         .classed('wedge', true)
-        .on('mousedown', viewObj.onmousedownMaker())
-        .on('mousemove', viewObj.onmousemoveMaker())
-        .on('mouseup', viewObj.onmouseupMaker())
+        //.on('mousedown', viewObj.onmousedownMaker())
+        //.on('mousemove', viewObj.onmousemoveMaker())
+        //.on('mouseup', viewObj.onmouseupMaker())
+        .call(viewObj.dragHandler)
         .on('dblclick', viewObj.ondblclickMaker())
         .classed('link', function(d) { return d.href })
         .classed('cannotPopOut', function() {return !viewObj.canPopOut();});
@@ -1227,6 +1199,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
     nameLabel.enter().append('text')
         .text(function(d) {return d['name'].toUpperCase();})
         .classed('wedgeLabel', true).classed('name', true)
+        .call(viewObj.dragHandler)
         .attr('x', centredTextLabelX)
         .attr('y', -10)
         .classed('link', function(d) { return d.href })
@@ -1241,6 +1214,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
         .attr('x', centredTextLabelX)
         .attr('y', valueLabelY)
         .classed('link', function(d) { return d.href })
+        .call(viewObj.dragHandler)
         .on('click', link);
 
     valueLabel.exit().remove();
