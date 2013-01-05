@@ -37,8 +37,8 @@ Hi! You seem to be using Internet Explorer 8 or below. Unfortunately this websit
 <div id="rightToolBox" style="position:fixed;"
   onmousedown="javascript:event.stopPropagation();"
   onmouseup="javascript:event.stopPropagation();">
-<a href="#" onClick="javascript:viewstate.zoom(4/3); return false;">Zoom in</a><br/>
-<a href="#" onClick="javascript:viewstate.zoom(3/4); return false;">Zoom out</a><br/>
+<a href="#" onClick="javascript:viewstate.zoom(4/3,[viewstate.width/2,viewstate.height/2]); return false;">Zoom in</a><br/>
+<a href="#" onClick="javascript:viewstate.zoom(3/4),[viewstate.width/2,viewstate.height/2]; return false;">Zoom out</a><br/>
 Drag things around, double-click, right-click, use the scroll wheel: explore!
 <hr />
 <!--  <select onChange="javascript:periodChange(this);" id="periodSelector">

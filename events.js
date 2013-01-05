@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /* Event dispatcher. */
 
@@ -28,51 +28,9 @@ document.onkeydown = function (e) {
 	} else {
 		move = false;
 	}
-
 	if (move) viewstate.moveTo( position );
 }
 
-/* Mouse wheel */
-// from http://www.adomas.org/javascript-mouse-wheel/
-function scrollZoom(delta, e) {
-    // using clientX is wrong, and will break horribly when
-    // the svg doesn't take up most of the page.
-    // daniel: convert everything into d3 events that attach just to the svg?
-    // and if we can't have an event on an svg, make viewstate hold a div.
-    if (delta < 0) {
-	viewstate.zoom(10/9, [e.clientX, e.clientY]);
-    } else {
-	viewstate.zoom(9/10, [e.clientX, e.clientY]);
-    }
-}
-
-function wheel(event){
-	var delta = 0;
-	if (!event) event = window.event;
-	if (event.wheelDelta) {
-		delta = event.wheelDelta/120; 
-	} else if (event.detail) {
-		delta = -event.detail/3;
-	}
-	if (delta)
-	    scrollZoom(delta, event);
-        if (event.preventDefault)
-                event.preventDefault();
-        event.returnValue = false;
-}
-
-if (window.addEventListener)
-	window.addEventListener('DOMMouseScroll', wheel, false);
-window.onmousewheel = document.onmousewheel = wheel;
-
-
-document.onmouseup = function ( e ) {
-    e.stopPropagation();
-    
-    if (viewstate.mouseData.inDropState) {
-	viewstate.finishAddingView( [ e.clientX, e.clientY ] );
-    }
-};
 
 /* Resize */
 var onResizeTimer;
