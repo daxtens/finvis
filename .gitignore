@@ -1,2 +1,10 @@
 .DS_Store
+# compiled files
 docs/
+*.pyc
+finvis.js
+
+# local copies of libraries
+d3.v2.js
+d3.v3.js
+jquery-1.8.3.js
