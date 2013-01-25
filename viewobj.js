@@ -180,7 +180,6 @@ function ViewObj(data, parent, position) {
 	 * -- a big list cannot squeeze out a small list: angle = max(pi, sum)
 	 * -- hence derivatives get reeeeeeally messy.
 	 *
-	 * @private
 	 * @param {number} list2Start The index at which list 2 begins, or -1 if there's only 1 list.
 	 * @return {number} the resultant outer radius.
 	 */
