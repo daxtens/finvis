@@ -136,6 +136,237 @@ function ViewObj(data, parent, position) {
             }
         };
     };
+	this._reposition = function () {
+		/* having bubbled up to the top, now descend to get correct sizes,
+		   then position and bound on the way back up.
+		   */
+		var innerRadius = ViewObjRenderers[this.renderMode['name']]
+			.dollarRadiusWhenRendered(this,
+									  this.renderMode);
+
+		this.boundingCircle = {cx: 0, cy: 0,
+							   radius: innerRadius};
+
+		var items = this.children();
+		if (items.length) {
+			for (var item = 0; item < items.length; item++) {
+				items[item]._reposition();
+			}
+
+			var prevType = '';
+			var list2Start = -1;
+
+			// mess to pop out 2 aggregates at once.
+			// todo: refactor with a better way of publishing my type than a cssClass
+			prevType = items[0].renderMode.cssClass;
+			for (var item = 1; item < items.length; item++) {
+				if (items[item].renderMode.cssClass != prevType) {
+					list2Start = item;
+					break;
+				}
+			}
+			this.boundingCircle =
+				this.repositionItemsGivenParameters(list2Start, innerRadius);
+		}
+	};
+	/**
+	 * Actually do the work of repositioning items.
+	 * Based on:
+	 * http://math.stackexchange.com/questions/251399/what-is-the-smallest-circle-such-that-an-arbitrary-set-of-circles-can-be-placed
+	 * Assumes the items are presorted.
+	 * Massively complicated by the thought of handling 2 lists:
+	 * - each must fit completely in the pi radians their sector traces out
+	 * -- this requires tangent to the perpendicular padding at each end
+	 * -- a big list cannot squeeze out a small list: angle = max(pi, sum)
+	 * -- hence derivatives get reeeeeeally messy.
+	 *
+	 * @private
+	 * @param {number} list2Start The index at which list 2 begins, or -1 if there's only 1 list.
+	 * @return {number} the resultant outer radius.
+	 */
+	this.repositionItemsGivenParameters = function(
+		list2Start, initialRadius) {
+
+		// all the functions here should be [lowerbound, upperbound)
+
+		var items = this.children();
+
+		/* do maths to figure out how to position and space the bubbles
+
+		   NB: We can't add dollar values to get the new radius due to sqrt scaling.
+		*/
+		var sectorPtRadius = viewstate.scaler(initialRadius);
+		var bubblePtRadii = [];
+		var bubbleAngles = [];
+		var count = 0;
+
+		var phi = function(R, ri, ri1) {
+			return Math.acos((R * R + R * ri + R * ri1 - ri * ri1) /
+							 ((R + ri) * (R + ri1)));
+		};
+
+		// this is the function for tangent padding
+		var psi = function(R, r) {
+			return Math.asin(r / (r + R));
+		};
+
+		var sumFnAcross = function(fn, R, i1, i2) {
+			var sum = 0;
+			for (var j = i1; j < i2 - 1; j++) {
+				sum += fn(R, bubblePtRadii[j], bubblePtRadii[j + 1]);
+			}
+			return sum;
+		};
+
+		var sumPhiAcrossWithPadding = function(R, i1, i2) {
+			var subangle;
+			subangle = psi(R, bubblePtRadii[i1]);
+			subangle += sumFnAcross(phi, R, i1, i2);
+			subangle += Math.asin(bubblePtRadii[i2 - 1] /
+								  (bubblePtRadii[i2 - 1] + R));
+			return subangle;
+		};
+
+		var f = function(R) {
+			var sum = 0;
+			if (list2Start == -1) {
+				sum += sumFnAcross(phi, R, 0, items.length);
+				sum += phi(R, bubblePtRadii[items.length - 1], bubblePtRadii[0]);
+			} else {
+				/* for each list:
+				   - tangent to the perpendicular padding on each end.
+				   - angle is max( pi, sum ): don't allow it to be squeezed out
+				*/
+				var subangle;
+				subangle = sumPhiAcrossWithPadding(R, 0, list2Start);
+				sum += Math.max(Math.PI, subangle);
+				subangle = sumPhiAcrossWithPadding(R, list2Start, items.length);
+				sum += Math.max(Math.PI, subangle);
+			}
+			return 2 * Math.PI - sum;
+		};
+
+		var dPhidR = function(R,ri,ri1) {
+			var radicand = (R * ri * ri1 * (R + ri + ri1)) /
+				(Math.pow((R + ri) * (R + ri1), 2));
+			var numerator = Math.sqrt(radicand) * (2 * R + ri + ri1);
+			return - numerator / (R * (R + ri + ri1));
+		};
+
+		var dPsidR = function(R,r) {
+			return - r / ((r + R) * Math.sqrt(R * (2 * r + R)));
+		};
+
+		var dFdR = function(R) {
+			// this is massively complicated by the 2 list requirement
+			var sum = 0;
+			if (list2Start == -1) {
+				sum += sumFnAcross(dPhidR, R, 0, items.length);
+				sum += dPhidR(R, bubblePtRadii[items.length - 1], bubblePtRadii[0]);
+			} else {
+				var subangle;
+				subangle = sumPhiAcrossWithPadding(R, 0, list2Start);
+
+				if (subangle > Math.PI) {
+					sum += dPsidR(R, bubblePtRadii[0]);
+					sum += sumFnAcross(dPhidR, R, 0, list2Start);
+					sum += dPsidR(R, bubblePtRadii[list2Start - 1]);
+				} // else Pi, derivative = 0
+
+				subangle = sumPhiAcrossWithPadding(R, list2Start, items.length);
+				if (subangle > Math.PI) {
+					sum += dPsidR(R, bubblePtRadii[list2Start]);
+					sum += sumFnAcross(dPhidR, R, list2Start, items.length);
+					sum += dPsidR(R, bubblePtRadii[items.length - 1]);
+				} // else Pi, derivative = 0
+			}
+			return -sum;
+		};
+
+		var bubbleAnglesSum = function() {
+			return 2 * Math.PI - f(sectorPtRadius);
+		};
+
+		for (var item = 0; item < items.length; item++) {
+			var itemRadius = items[item].boundingCircle.radius;
+			bubblePtRadii[item] = viewstate.scaler(itemRadius);
+		}
+
+		// Newton's method
+		if (bubbleAnglesSum() > 2 * Math.PI) {
+
+			var Rn = sectorPtRadius;
+			var Rn1 = Rn - f(Rn) / dFdR(Rn);
+
+			while (Math.abs((Rn - Rn1) / Rn) > 0.01 || f(Rn1) < 0) {
+				Rn = Rn1;
+				Rn1 = Rn - f(Rn) / dFdR(Rn);
+			}
+			sectorPtRadius = Rn1;
+		}
+
+
+		var actuallyPosition = function(start, end, domain, range, angleOffset,
+									   tangentPad) {
+
+			var angleScaler = d3.scale.linear()
+				.domain([0, domain])
+				.range([0, range]);
+
+			var angle = angleOffset;
+			if (tangentPad) angle += angleScaler(psi(sectorPtRadius,
+													 bubblePtRadii[start]));
+
+			for (var item = start; item < end; item++) {
+				var itemPosition = [
+					(sectorPtRadius + bubblePtRadii[item]) * Math.cos(angle) -
+						viewstate.scaler(items[item].boundingCircle.cx),
+					(sectorPtRadius + bubblePtRadii[item]) * Math.sin(angle) -
+						viewstate.scaler(items[item].boundingCircle.cy)
+				].map(viewstate.scaler.invert);
+
+				if (item + 1 < end) {
+						angle += angleScaler(phi(sectorPtRadius,
+											 bubblePtRadii[item],
+											 bubblePtRadii[item + 1]));
+				}
+				items[item].moveTo(itemPosition);
+			}
+		};
+
+		if (list2Start == -1) {
+			actuallyPosition(0, items.length, bubbleAnglesSum(),
+							 2 * Math.PI, Math.PI);
+		} else {
+			actuallyPosition(0, list2Start,
+							 sumPhiAcrossWithPadding(sectorPtRadius,
+													 0, list2Start),
+							 Math.PI, Math.PI, true);
+			actuallyPosition(list2Start, items.length,
+							 sumPhiAcrossWithPadding(sectorPtRadius,
+													 list2Start, items.length),
+							 Math.PI, 0, true);
+		}
+
+		var result = {cx: 0, cy: 0, radius: sectorPtRadius};
+
+		var circles = items.map(function(child) {
+			var circle = child.boundingCircle;
+			return {cx: viewstate.scaler(circle.cx) +
+						viewstate.scaler(child.position[0]),
+					cy: viewstate.scaler(circle.cy) +
+						viewstate.scaler(child.position[1]),
+					radius: viewstate.scaler(circle.radius) };
+		});
+		circles.push({cx: 0, cy: 0, radius: viewstate.scaler(initialRadius)});
+
+		result = minimumBoundingCircleForCircles(circles);
+		result.radius = viewstate.scaler.invert(result.radius);
+		result.cx = viewstate.scaler.invert(result.cx);
+		result.cy = viewstate.scaler.invert(result.cy);
+		return result;
+	};
+
 }
 
 /**
@@ -214,243 +445,10 @@ ViewObj.prototype.canPopOut = function(aggregate) {
 ViewObj.prototype.reposition = function() {
     // calling reposition on anything in the chain causes the whole thing to be rejigged
     var obj = this;
-    while (obj.parent instanceof ViewObj) obj = obj.parent;
-
+    while (obj.parent instanceof ViewObj) {
+		obj = obj.parent;
+	}
     obj._reposition();
-};
-
-//todo: make me private/protected/something
-ViewObj.prototype._reposition = function() {
-    /* having bubbled up to the top, now descend to get correct sizes,
-       then position and bound on the way back up.
-       */
-    var innerRadius = ViewObjRenderers[this.renderMode['name']]
-        .dollarRadiusWhenRendered(this,
-                                  this.renderMode);
-
-    this.boundingCircle = {cx: 0, cy: 0,
-                           radius: innerRadius};
-
-    var items = this.children();
-    if (items.length) {
-        for (var item = 0; item < items.length; item++) {
-            items[item]._reposition();
-        }
-
-        var prevType = '';
-        var list2Start = -1;
-
-        // mess to pop out 2 aggregates at once.
-        // todo: refactor with a better way of publishing my type than a cssClass
-        prevType = items[0].renderMode.cssClass;
-        for (var item = 1; item < items.length; item++) {
-            if (items[item].renderMode.cssClass != prevType) {
-                list2Start = item;
-                break;
-            }
-        }
-        this.boundingCircle =
-            this.repositionItemsGivenParameters(list2Start, innerRadius);
-    }
-};
-
-/**
- * Actually do the work of repositioning items.
- * Based on:
- * http://math.stackexchange.com/questions/251399/what-is-the-smallest-circle-such-that-an-arbitrary-set-of-circles-can-be-placed
- * Assumes the items are presorted.
- * Massively complicated by the thought of handling 2 lists:
- * - each must fit completely in the pi radians their sector traces out
- * -- this requires tangent to the perpendicular padding at each end
- * -- a big list cannot squeeze out a small list: angle = max(pi, sum)
- * -- hence derivatives get reeeeeeally messy.
- *
- * @private
- * @param {number} list2Start The index at which list 2 begins, or -1 if there's only 1 list.
- * @return {number} the resultant outer radius.
- */
-// todo: make me private
-ViewObj.prototype.repositionItemsGivenParameters = function(
-    list2Start, initialRadius) {
-
-    // all the functions here should be [lowerbound, upperbound)
-
-    var items = this.children();
-
-    /* do maths to figure out how to position and space the bubbles
-
-       NB: We can't add dollar values to get the new radius due to sqrt scaling.
-    */
-    var sectorPtRadius = viewstate.scaler(initialRadius);
-    var bubblePtRadii = [];
-    var bubbleAngles = [];
-    var count = 0;
-
-    var phi = function(R, ri, ri1) {
-        return Math.acos((R * R + R * ri + R * ri1 - ri * ri1) /
-                         ((R + ri) * (R + ri1)));
-    };
-
-    // this is the function for tangent padding
-    var psi = function(R, r) {
-        return Math.asin(r / (r + R));
-    };
-
-    var sumFnAcross = function(fn, R, i1, i2) {
-        var sum = 0;
-        for (var j = i1; j < i2 - 1; j++) {
-            sum += fn(R, bubblePtRadii[j], bubblePtRadii[j + 1]);
-        }
-        return sum;
-    };
-
-    var sumPhiAcrossWithPadding = function(R, i1, i2) {
-        var subangle;
-        subangle = psi(R, bubblePtRadii[i1]);
-        subangle += sumFnAcross(phi, R, i1, i2);
-        subangle += Math.asin(bubblePtRadii[i2 - 1] /
-                              (bubblePtRadii[i2 - 1] + R));
-        return subangle;
-    };
-
-    var f = function(R) {
-        var sum = 0;
-        if (list2Start == -1) {
-            sum += sumFnAcross(phi, R, 0, items.length);
-            sum += phi(R, bubblePtRadii[items.length - 1], bubblePtRadii[0]);
-        } else {
-            /* for each list:
-               - tangent to the perpendicular padding on each end.
-               - angle is max( pi, sum ): don't allow it to be squeezed out
-            */
-            var subangle;
-            subangle = sumPhiAcrossWithPadding(R, 0, list2Start);
-            sum += Math.max(Math.PI, subangle);
-            subangle = sumPhiAcrossWithPadding(R, list2Start, items.length);
-            sum += Math.max(Math.PI, subangle);
-        }
-        return 2 * Math.PI - sum;
-    };
-
-    var dPhidR = function(R,ri,ri1) {
-        var radicand = (R * ri * ri1 * (R + ri + ri1)) /
-            (Math.pow((R + ri) * (R + ri1), 2));
-        var numerator = Math.sqrt(radicand) * (2 * R + ri + ri1);
-        return - numerator / (R * (R + ri + ri1));
-    };
-
-    var dPsidR = function(R,r) {
-        return - r / ((r + R) * Math.sqrt(R * (2 * r + R)));
-    };
-
-    var dFdR = function(R) {
-        // this is massively complicated by the 2 list requirement
-        var sum = 0;
-        if (list2Start == -1) {
-            sum += sumFnAcross(dPhidR, R, 0, items.length);
-            sum += dPhidR(R, bubblePtRadii[items.length - 1], bubblePtRadii[0]);
-        } else {
-            var subangle;
-            subangle = sumPhiAcrossWithPadding(R, 0, list2Start);
-
-            if (subangle > Math.PI) {
-                sum += dPsidR(R, bubblePtRadii[0]);
-                sum += sumFnAcross(dPhidR, R, 0, list2Start);
-                sum += dPsidR(R, bubblePtRadii[list2Start - 1]);
-            } // else Pi, derivative = 0
-
-            subangle = sumPhiAcrossWithPadding(R, list2Start, items.length);
-            if (subangle > Math.PI) {
-                sum += dPsidR(R, bubblePtRadii[list2Start]);
-                sum += sumFnAcross(dPhidR, R, list2Start, items.length);
-                sum += dPsidR(R, bubblePtRadii[items.length - 1]);
-            } // else Pi, derivative = 0
-        }
-        return -sum;
-    };
-
-    var bubbleAnglesSum = function() {
-        return 2 * Math.PI - f(sectorPtRadius);
-    };
-
-    for (var item = 0; item < items.length; item++) {
-        var itemRadius = items[item].boundingCircle.radius;
-        bubblePtRadii[item] = viewstate.scaler(itemRadius);
-    }
-
-    // Newton's method
-    if (bubbleAnglesSum() > 2 * Math.PI) {
-
-        var Rn = sectorPtRadius;
-        var Rn1 = Rn - f(Rn) / dFdR(Rn);
-
-        while (Math.abs((Rn - Rn1) / Rn) > 0.01 || f(Rn1) < 0) {
-            Rn = Rn1;
-            Rn1 = Rn - f(Rn) / dFdR(Rn);
-        }
-        sectorPtRadius = Rn1;
-    }
-
-
-    var actuallyPosition = function(start, end, domain, range, angleOffset,
-                                   tangentPad) {
-
-        var angleScaler = d3.scale.linear()
-            .domain([0, domain])
-            .range([0, range]);
-
-        var angle = angleOffset;
-        if (tangentPad) angle += angleScaler(psi(sectorPtRadius,
-                                                 bubblePtRadii[start]));
-
-        for (var item = start; item < end; item++) {
-            var itemPosition = [
-                (sectorPtRadius + bubblePtRadii[item]) * Math.cos(angle) -
-                    viewstate.scaler(items[item].boundingCircle.cx),
-                (sectorPtRadius + bubblePtRadii[item]) * Math.sin(angle) -
-                    viewstate.scaler(items[item].boundingCircle.cy)
-            ].map(viewstate.scaler.invert);
-
-            if (item + 1 < end) {
-                    angle += angleScaler(phi(sectorPtRadius,
-                                         bubblePtRadii[item],
-                                         bubblePtRadii[item + 1]));
-            }
-            items[item].moveTo(itemPosition);
-        }
-    };
-
-    if (list2Start == -1) {
-        actuallyPosition(0, items.length, bubbleAnglesSum(),
-                         2 * Math.PI, Math.PI);
-    } else {
-        actuallyPosition(0, list2Start,
-                         sumPhiAcrossWithPadding(sectorPtRadius,
-                                                 0, list2Start),
-                         Math.PI, Math.PI, true);
-        actuallyPosition(list2Start, items.length,
-                         sumPhiAcrossWithPadding(sectorPtRadius,
-                                                 list2Start, items.length),
-                         Math.PI, 0, true);
-    }
-
-    var result = {cx: 0, cy: 0, radius: sectorPtRadius};
-
-    var circles = items.map(function(child) {
-        var circle = child.boundingCircle;
-        return {cx: viewstate.scaler(circle.cx) +
-                    viewstate.scaler(child.position[0]),
-                cy: viewstate.scaler(circle.cy) +
-                    viewstate.scaler(child.position[1]),
-                radius: viewstate.scaler(circle.radius) };
-    });
-    circles.push({cx: 0, cy: 0, radius: viewstate.scaler(initialRadius)});
-
-    result = minimumBoundingCircleForCircles(circles);
-    result.radius = viewstate.scaler.invert(result.radius);
-    result.cx = viewstate.scaler.invert(result.cx);
-    result.cy = viewstate.scaler.invert(result.cy);
-    return result;
 };
 
 ViewObj.prototype.render = function(mode) {
