@@ -47,9 +47,9 @@ PAID TASKS
 ==========
 
  - paid tasks are tagged as such on github's issue tracker, and marked with the estimated time and amount payable. 
- - Pick one to work on, assign it to yourself so I know you're doing it.
+ - Pick one to work on that hasn't been assigned to anyone. Assign it to yourself so everyone knows you're doing it.
  - Do it. If at any stage you think the price is too low, ask me if I'll increase it. I might.
  - When you're done, comment on the task with the time it took you (so I can calibrate my estimation)
- - Commit everything to the repository. If you're working on a big feature, use a branch.
+ - Commit everything to the repository. If you're working on a big feature or you're unsure about anything, use a branch.
  - I will close the task when I've confirmed that you've done it.
 
