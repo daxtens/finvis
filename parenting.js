@@ -8,7 +8,9 @@ function ParentingObject() {
 	/** create array for storage of objects */ 	
 	var _children = [];
 
-	/** return array of Objects */ 	
+	/** return array of Objects
+	@returns {Array} Array of objects
+	*/ 	
 	this.children = function () {
 		return _children;
 	}
