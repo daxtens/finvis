@@ -467,69 +467,6 @@ var bhp = {
     }
 };
 
-var usa = {
-    'name': 'United States Government Statements of Operations and Changes in Net Position',
-    //lie about the period... FIXME
-    'aggregates': [
-        {
-            'name': 'Receipts',
-            'periods': {
-                '2011-12': {
-                    'value': 2363.8 * bil
-                }
-            },
-            'metadata': {
-                'cssClass': 'revenue'
-            }
-        },
-        {
-            'name': 'Outlays',
-            'periods': {
-                '2011-12': {
-                    'value': 3660.8 * bil
-                }
-            },
-            'metadata': {
-                'cssClass': 'expenses'
-            }
-        },
-        {
-            'name': 'Assets',
-            'periods': {
-                '2011-12': {
-                    'value': 2707.3 * bil
-                }
-            },
-            'metadata': {
-                'cssClass': 'assets'
-            }
-        },
-        {
-            'name': 'Liabilities',
-            'periods': {
-                '2011-12': {
-                    'value': 17492.7 * bil
-                }
-            },
-            'metadata': {
-                'cssClass': 'liabilities'
-            }
-        }
-    ],
-    'relations': {
-        'revenueVexpenses': {
-            'greater': 'Budget Surplus',
-            'equal': 'Balanced Budget',
-            'less': 'Budget Deficit'
-        },
-        'assetsVliabilities': {
-            'greater': 'Net Position',
-            'equal': 'No net debt',
-            'less': 'Net Debt'
-        }
-    }
-};
-
 var abudhabi = {
     'name': 'Abu Dhabi Investment Auth.',
     // TODO FIXME: check date
