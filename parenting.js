@@ -5,25 +5,26 @@
  */
 function ParentingObject() {
 	
-	/** create array for storage of objects */ 	
+	/** create array for storage of objects
+            @private */ 	
 	var _children = [];
 
-	/** return array of Objects
-	 * @returns {Array} Array of objects
+	/** return my children: array of ParentingObjects
+	 * @returns {Array.<ParentingObject>} my children
 	 */ 	
 	this.children = function () {
 		return _children;
 	}
 
-	/** add child to array of Objects 
-	 * @param {Object} child A ViewState or ViewObj object
+	/** add child
+	 * @param {ParentingObject} child A ParentingObject (ViewState or ViewObj)
 	 */ 	
 	this.addChild = function (child) {
 		_children.push(child);
 	}
 
-	/** remove child from array of Objects
-	 * @param {Object} child A ViewState or ViewObj object
+	/** remove child
+	 * @param {ParentingObject} child A ParentingObject (ViewState or ViewObj)
 	 */ 	
 	this.removeChild = function (child) {
 		_children.splice(_children.indexOf(child),1);
