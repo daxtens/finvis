@@ -198,7 +198,7 @@ ViewState.prototype.finishAddingView = function(position) {
     position[0] += this.position[0];
     position[1] += this.position[1];
 
-    position = position.map(viewstate.scaler.invert);
+    position = position.map(this.scaler.invert);
 
     var vo = new ViewObj(this._addingData, this, position);
     vo.period('2011-12');
