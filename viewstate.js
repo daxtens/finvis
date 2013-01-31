@@ -83,7 +83,9 @@ ViewState.prototype.calculateSize = function(scaleMax) {
     this.scaler = d3.scale.sqrt()
         .domain([0, this.scaleMax]).range([0, maxOuterRadius]);
 };
-
+/** 
+ * Move the ViewState object to the centre of the display
+ */
 ViewState.prototype.centreView = function() {
     this.calculateSize(tril);
     this.moveTo([-this.width / 2, -this.height / 2]);
@@ -139,7 +141,11 @@ ViewState.prototype.zoom = function(factor, about, immediate) {
     }
 };
 
-
+/**
+ * Centre display around an object
+ *
+ * @param {Object} viewObj Object on which to centre display
+*/
 ViewState.prototype.centreViewOn = function(viewObj) {
     var bbox = viewObj.svg[0][0].getBBox();
 
@@ -171,8 +177,11 @@ ViewState.prototype.centreViewOn = function(viewObj) {
                  ypos - (this.height - bbox.height) / 2]);
 };
 
-/***** movement */
-// units are not! dollars
+/**
+ * Use svg to translate the current object to a new position
+ *  
+ * @param {Position} position Array of x,y location
+ */
 ViewState.prototype.moveTo = function(position) {
     this.position = position;
     this.svg.attr('transform',
@@ -180,19 +189,38 @@ ViewState.prototype.moveTo = function(position) {
                                  -this.position[1]) + ')');
 };
 
+/**
+ * Use svg to translate the current object to an offset from the current position
+ *  
+ * @param {Position} position Array of x,y location as offset
+ */
 ViewState.prototype.move = function(position) {
     this.position[0] += position[0];
     this.position[1] += position[1];
     this.moveTo(this.position);
 };
 
+/**
+ * repositionChildren stub
+ *  
+ */
 ViewState.prototype.repositionChildren = function() {};
 
+/**
+ * Begin process to add view data
+ *  
+ * @param {Object} data Dropped data to view
+ */
 ViewState.prototype.beginAddingView = function(data) {
     this._addingData = data;
     this.mouseData.inDropState = true;
 };
 
+/**
+ * Complete add view data by specifying offset from current location to display it
+ *  
+ * @param {Position} position Array of x,y location as offset
+ */
 ViewState.prototype.finishAddingView = function(position) {
 
     position[0] += this.position[0];
