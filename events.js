@@ -1,8 +1,11 @@
 'use strict';
 
-/* Event dispatcher. */
+/** Event dispatcher. */
 
-/* Keys */
+/** custom onkeydown
+ * @event
+ * @param {Event} e Set to window.event if null
+ */
 document.onkeydown = function(e) {
     // ... is this necessary in the browsers we're supporting?
     e = e || window.event;
@@ -32,7 +35,9 @@ document.onkeydown = function(e) {
 };
 
 
-/* Resize */
+/** Custom onresize 
+ * @event
+*/
 var onResizeTimer;
 window.onresize = function() {
     try {
@@ -45,7 +50,9 @@ window.onresize = function() {
     }, 50);
 };
 
-/** Initalise the document when we start. */
+/** Initalise the document when we start. 
+ * @event
+ */
 jQuery('document').ready(function() {
     var entitySel = jQuery('#entitySel');
     jQuery.each(entities, function(index) {
@@ -62,15 +69,18 @@ jQuery('document').ready(function() {
 });
 
 /** Handler for the period selector
-    @param {Object} sel The <select> tag.
-*/
+ * @event
+ * @param {Object} sel The <select> tag.
+ */
 window['periodChange'] = function(sel) {
     var chosenoption = sel.options[sel.selectedIndex];
     viewstate.children().map(function(obj) {obj.period(chosenoption.value);});
     viewstate.children().map(function(obj) {obj.render();});
 };
 
-/** Handler for add entity button */
+/** Handler for add entity button 
+ * @event
+ */
 window['addEntity'] = function() {
     var entitySel = jQuery('#entitySel')[0];
     viewstate.beginAddingView(entities[entitySel.selectedIndex]);
