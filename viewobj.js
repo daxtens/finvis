@@ -17,11 +17,11 @@
 //ViewObj.prototype = new ParentingObject();
 
 /** @constructor
-
-   @param {Object} data an entity or item.
-   @param {Object} parent a viewObj, or at the root level, a viewstate.
-   @param {Array.<number>} position an (x$, y$) pair.
-*/
+ *
+ *  @param {Object} data an entity or item.
+ *  @param {Object} parent a viewObj, or at the root level, a viewstate.
+ *  @param {Array.<number>} position an (x$, y$) pair.
+ */
 function ViewObj(data, parent, position) {
     this._data = data;
 
@@ -381,11 +381,19 @@ ViewObj.prototype.moveTo = function(position) {
                   this.position.map(viewstate.scaler).join(',') +
                   ')');};
 
+/**
+ * Removes current object from svg. 
+ * Also remove current object from parent.
+ */
 ViewObj.prototype.remove = function() {
     this.svg.remove();
     this.parent.removeChild(this);
 };
 
+/**
+ * Pops-in popped-out children and repositions them.
+ * Finds the first parent object that is not a ViewObj and calls its render method.
+ */
 ViewObj.prototype.popIn = function() {
     this.children().map(function(child) { if (child.poppedOut) child.popIn(); });
     // this naive approach skips every second one due to progressive renumbering
@@ -401,6 +409,17 @@ ViewObj.prototype.popIn = function() {
     obj.render();
 };
 
+/**
+ * Select items and cssClass of instance data() 
+ *  or of its aggregates if aggregates are present 
+ * Sort items on value within period.
+ * Create a new ViewObj for every item with a value > 0
+ *	and render it with bubbleRenderer
+ * Reposition.
+ * Call render method of object's first non-ViewObj parent 
+ * @param {aggregate} aggregate The ?
+ * 
+ */
 ViewObj.prototype.popOut = function(aggregate) {
     this.poppedOutAggregate = aggregate;
     this.poppedOut = true;
@@ -433,6 +452,13 @@ ViewObj.prototype.popOut = function(aggregate) {
     obj.render();
 };
 
+/**
+ * canPopOut
+ * @param {aggregate} aggregate Selected aggregate
+ * @returns {integer} length of items of aggregate of data
+ *  else length of items of data if there are items of data
+ *  if there are no items in data, the result is undefined
+ */
 ViewObj.prototype.canPopOut = function(aggregate) {
     if ('aggregates' in this.data()) {
         return this.data()['aggregates'][aggregate]['items'].length;
@@ -441,6 +467,9 @@ ViewObj.prototype.canPopOut = function(aggregate) {
     }
 };
 
+/**
+ * Find parent which is not a ViewObj then call _reposition method.
+ */
 ViewObj.prototype.reposition = function() {
     // calling reposition on anything in the chain causes the whole thing to be rejigged
     var obj = this;
@@ -450,6 +479,11 @@ ViewObj.prototype.reposition = function() {
     obj._reposition();
 };
 
+/**
+ * Render
+ * 
+ * @param {String} mode Render mode
+ */
 ViewObj.prototype.render = function(mode) {
 
     this.moveTo(this.position);
