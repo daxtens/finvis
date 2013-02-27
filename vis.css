@@ -1,18 +1,4 @@
 @charset "utf-8";
-body {
-	/*background: url("images/back.jpg") repeat scroll 0 0 transparent;*/
-        background-color: rgb( 8, 27, 59 );
-	font: 10px sans-serif;
-}
-
-div {
-    color: white;
-}
-
-div a {
-    color: #77F;
-}
-
 circle.axis_circle {
   fill: none;
   stroke: #777;
@@ -43,20 +29,9 @@ circle.axis_circle {
 }
 
 text {
+	font: 10px sans-serif;
 	fill: white;
 	opacity: 1;
-
-	/* Stop selection (e.g. on double click) */
-	-moz-user-select: -moz-none;
-	-khtml-user-select: none;
-	-webkit-user-select: none;
-	
-	/*
-      Introduced in IE 10.
-      See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
-	  */
-	-ms-user-select: none;
-	user-select: none;
 }
 
 text.label {
@@ -87,32 +62,13 @@ text.wedgeLabel.name, text.relationLabel.name {
 	font-size: 14px;
 }
 
-
-
-#tourCaption {
-	font-size: 12pt;
-}
-
 circle.tinyHalo {
 	fill: white;
 	stroke: black;
 	opacity: 0.5;
 }
 
-.link {
-	cursor: pointer;
-}
-
 text.link {
 	text-decoration: underline; /* haha, doesn't work in firefox; 7 year old bug. https://bugzilla.mozilla.org/show_bug.cgi?id=317196 */
 	fill: blue;
-}
-
-img.btnimg {
-    height: 32px;
-    width: 32px;
-}
-
-.hidden {
-    display: none;
 }

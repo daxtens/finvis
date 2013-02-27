@@ -1,0 +1,41 @@
+@charset "utf-8";
+body {
+	/*background: url("images/back.jpg") repeat scroll 0 0 transparent;*/
+        background-color: rgb( 8, 27, 59 );
+	font: 10px sans-serif;
+}
+
+div {
+    color: white;
+}
+
+div a {
+    color: #77F;
+}
+
+text {
+	/* Stop selection (e.g. on double click) */
+	-moz-user-select: -moz-none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	
+	/*
+      Introduced in IE 10.
+      See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
+	  */
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.link {
+	cursor: pointer;
+}
+
+img.btnimg {
+    height: 32px;
+    width: 32px;
+}
+
+.hidden {
+    display: none;
+}

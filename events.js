@@ -58,6 +58,9 @@ jQuery('document').ready(function() {
     jQuery('#initAddEntity').on('click', initAddEntity);
     jQuery('#addEntity').on('click', addEntity);
     jQuery('#cancelAddEntity').on('click', cancelAddEntity);
+    jQuery('#initSaveToDisk').on('click', initSaveToDisk);
+    jQuery('#saveToDisk').on('click', saveToDisk);
+    jQuery('#cancelSaveToDisk').on('click', cancelSaveToDisk);
 
     // populate the entity list
     var entitySel = jQuery('#entitySel');
@@ -114,4 +117,87 @@ function cancelAddEntity() {
  */
 function hasPlacedEntity() {
     cancelAddEntity();
+}
+
+/** Prepare to save the view as an SVG/PNG. */
+function initSaveToDisk() {
+    jQuery('#saveToDiskForm').removeClass('hidden');
+}
+
+/** Save the view as an SVG/PNG. Currently rather hacky. */
+function saveToDisk() {
+
+    function htmlEscape(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function serialise(a) {
+        var str = '<' + a.tagName;
+        for (var x = 0; x < a.attributes.length; x++) {
+            if (a.attributes[x].nodeName == 'style' ||
+                a.attributes[x].nodeName == 'class') {
+                continue;
+            }
+            str += ' ' + a.attributes[x].nodeName + '="' +
+                a.attributes[x].nodeValue + '"';
+        }
+        var css = window.getComputedStyle(a);
+        if (css.getPropertyValue('fill'))
+            str += ' fill="' + css.getPropertyValue('fill') + '"';
+        if (css.getPropertyValue('stroke'))
+            str += ' stroke="' + css.getPropertyValue('stroke') + '"';
+        if (css.getPropertyValue('opacity'))
+            str += ' opacity="' + css.getPropertyValue('opacity') + '"';
+        if (css.getPropertyValue('font-face'))
+            str += ' font-face="' + css.getPropertyValue('font-face') + '"';
+        if (css.getPropertyValue('font-size'))
+            str += ' font-size="' + css.getPropertyValue('font-size') + '"';
+        if (css.getPropertyValue('text-anchor'))
+            str += ' text-anchor="' + css.getPropertyValue('text-anchor') + '"';
+
+        if (a.tagName == 'svg') {
+            str += ' width="' + css.getPropertyValue('width') + '"';
+            str += ' height="' + css.getPropertyValue('height') + '"';
+            str += ' xmlns="http://www.w3.org/2000/svg"';
+            // bg color hack
+            str += '><rect width="100%" height="100%" fill="';
+            var body = document.getElementsByTagName('body')[0];
+            var style = window.getComputedStyle(body);
+            str += style.getPropertyValue('background-color');
+            str += '"></rect';
+        }
+
+        str += '>';
+        for (var x = 0; x < a.childElementCount; x++) {
+            str += serialise(a.childNodes[x]);
+        }
+        if (a.tagName == 'text') {
+            str += htmlEscape(a.textContent);
+        }
+        str += '</' + a.tagName + '>';
+        return str;
+    }
+
+
+    var xml = serialise(viewstate._svg[0][0]);
+
+    jQuery('input[name=data][type=hidden]').val(xml);
+    jQuery('input[name=svgstyle][type=hidden]').val(
+        viewstate._svg[0][0].getAttribute('style'));
+
+    // update ui
+    cancelSaveToDisk();
+
+    // submit form
+    saveToDiskForm.submit();
+}
+
+/** Cancel saving the view as an SVG/PNG. */
+function cancelSaveToDisk() {
+     jQuery('#saveToDiskForm').addClass('hidden');
 }
