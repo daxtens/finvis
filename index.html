@@ -33,21 +33,32 @@ Hi! You seem to be using Internet Explorer 8 or below. Unfortunately this websit
   }
   </style>
   <![endif]-->
-  <div style="float:right; width:200px;">
-<div id="rightToolBox" style="position:fixed;"
+  <div style="float:right; width:200px; text-align:right">
+<div id="rightToolBox" style="position:fixed; right:5px"
   onmousedown="javascript:event.stopPropagation();"
   onmouseup="javascript:event.stopPropagation();">
-<a href="#" onClick="javascript:viewstate.zoom(4/3,[viewstate.width/2,viewstate.height/2]); return false;">Zoom in</a><br/>
-<a href="#" onClick="javascript:viewstate.zoom(3/4),[viewstate.width/2,viewstate.height/2]; return false;">Zoom out</a><br/>
-Drag things around, double-click, right-click, use the scroll wheel: explore!
-<hr />
-<!--  <select onChange="javascript:periodChange(this);" id="periodSelector">
+<a href="#" title="Zoom in" onClick="javascript:viewstate.zoom(4/3,[viewstate.width/2,viewstate.height/2]); return false;"><img class="btnimg" src="images/icons/zoom-in.png" alt="Zoom in"/></a><br/>
+<a href="#" title="Zoom out" onClick="javascript:viewstate.zoom(3/4,[viewstate.width/2,viewstate.height/2]); return false;"><img class="btnimg" src="images/icons/zoom-out.png" alt="Zoom out"/></a><br/>
+<!--<a href="#" onClick="javascript:return false;"><img src="images/icons/zoom-box.png" class="btnimg" alt="Zoom in on a region"/></a><br/>
+<a href="#" onClick="javascript:return false;"><img src="images/icons/zoom-original.png" class="btnimg" alt="Restore original zoom"/></a><br/>
+<a href="#" onClick="javascript:return false;"><img src="images/icons/document-export.png" class="btnimg" alt="Save to disk"/></a><br/>-->
+<hr style="width: 32px; float:right;"/>
+<br style="clear:both; height:0px;"/>
+<a href="#" id="initAddEntity"><img src="images/icons/list-add.png" class="btnimg" alt="Add an entity"/></a><br/>
+<div id="addEntityContainer" class="hidden">
+  <select id="entitySel" style="width:190px;"></select><br/>
+<a href="#" id="addEntity"><img src="images/icons/dialog-apply.png" class="btnimg" alt="Add this entity"/></a>
+<a href="#" id="cancelAddEntity"><img src="images/icons/dialog-cancel.png" class="btnimg" alt="Cancel"/></a>
+<p id="clickToPlaceTxt" class="hidden">Click to place</p>
+</div>
+<!--<input type="button" id="entityAdd"  onClick="javascript:addEntity();" value="Add Entity"></input>-->
+
+<!--<select onChange="javascript:periodChange(this);" id="periodSelector">
 	<option value="2010-11">2010-11</option>
 	<option value="2011-12" selected="selected">2011-12</option>
   </select>
   <hr/>-->
-  <select id="entitySel" style="width:190px;"></select><br/>
-  <input type="button" id="entityAdd"  onClick="javascript:addEntity();" value="Add Entity"></input>
+
   </div>
   </div>
 <div id="wedgeMenu" class="contextMenu">

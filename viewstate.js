@@ -83,7 +83,7 @@ ViewState.prototype.calculateSize = function(scaleMax) {
     this.scaler = d3.scale.sqrt()
         .domain([0, this.scaleMax]).range([0, maxOuterRadius]);
 };
-/** 
+/**
  * Move the ViewState object to the centre of the display
  */
 ViewState.prototype.centreView = function() {
@@ -144,7 +144,7 @@ ViewState.prototype.zoom = function(factor, about, immediate) {
 /**
  * Centre display around an object
  *
- * @param {Object} viewObj Object on which to centre display
+ * @param {Object} viewObj Object on which to centre display.
 */
 ViewState.prototype.centreViewOn = function(viewObj) {
     var bbox = viewObj.svg[0][0].getBBox();
@@ -178,9 +178,9 @@ ViewState.prototype.centreViewOn = function(viewObj) {
 };
 
 /**
- * Use svg to translate the current object to a new position
- *  
- * @param {Position} position Array of x,y location
+ * Move the viewport so that we're looking at the given position.
+ *
+ * @param {Position} position Array of x,y location.
  */
 ViewState.prototype.moveTo = function(position) {
     this.position = position;
@@ -190,9 +190,9 @@ ViewState.prototype.moveTo = function(position) {
 };
 
 /**
- * Use svg to translate the current object to an offset from the current position
- *  
- * @param {Position} position Array of x,y location as offset
+ * Offset the viewport by the position vector given.
+ *
+ * @param {Position} position Array of x,y location as offset.
  */
 ViewState.prototype.move = function(position) {
     this.position[0] += position[0];
@@ -202,14 +202,14 @@ ViewState.prototype.move = function(position) {
 
 /**
  * repositionChildren stub
- *  
+ *
  */
 ViewState.prototype.repositionChildren = function() {};
 
 /**
  * Begin process to add view data
- *  
- * @param {Object} data Dropped data to view
+ *
+ * @param {Object} data Dropped data to view.
  */
 ViewState.prototype.beginAddingView = function(data) {
     this._addingData = data;
@@ -217,9 +217,10 @@ ViewState.prototype.beginAddingView = function(data) {
 };
 
 /**
- * Complete add view data by specifying offset from current location to display it
- *  
- * @param {Position} position Array of x,y location as offset
+ * Finish adding a new entity to the viewstate, now that we know its
+ * position.
+ *
+ * @param {Position} position Array of x,y location as offset.
  */
 ViewState.prototype.finishAddingView = function(position) {
 
@@ -232,5 +233,17 @@ ViewState.prototype.finishAddingView = function(position) {
     vo.period('2011-12');
     vo.render();
 
+    this.mouseData.inDropState = false;
+
+    // UI Callback
+    hasPlacedEntity();
+};
+
+
+/**
+ * Cancel the process of adding a view
+ */
+ViewState.prototype.cancelAddingView = function() {
+    this._addingData = null;
     this.mouseData.inDropState = false;
 };

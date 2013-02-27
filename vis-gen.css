@@ -107,3 +107,12 @@ text.link {
 	text-decoration: underline; /* haha, doesn't work in firefox; 7 year old bug. https://bugzilla.mozilla.org/show_bug.cgi?id=317196 */
 	fill: blue;
 }
+
+img.btnimg {
+    height: 32px;
+    width: 32px;
+}
+
+.hidden {
+    display: none;
+}
