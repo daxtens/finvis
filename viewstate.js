@@ -144,7 +144,8 @@ ViewState.prototype.zoom = function(factor, about, immediate) {
 /**
  * Centre display around an object
  *
- * @param {Object} viewObj Object on which to centre display.
+ * @param {Object} viewObj Object (viewObj or viewstate) on which to centre
+ *                         display.
 */
 ViewState.prototype.centreViewOn = function(viewObj) {
     var bbox = viewObj.svg[0][0].getBBox();

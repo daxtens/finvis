@@ -55,6 +55,7 @@ window.onresize = function() {
 jQuery('document').ready(function() {
 
     // wire up a bundle of event handlers
+    jQuery('#fitToScreen').on('click', fitToScreen);
     jQuery('#initAddEntity').on('click', initAddEntity);
     jQuery('#addEntity').on('click', addEntity);
     jQuery('#cancelAddEntity').on('click', cancelAddEntity);
@@ -86,6 +87,11 @@ window['periodChange'] = function(sel) {
     viewstate.children().map(function(obj) {obj.render();});
 };
 
+/** Fit every viewObj currently in the viewstate on to the screen
+ */
+function fitToScreen() {
+    viewstate.centreViewOn(viewstate);
+}
 
 /** Begin the entity selection and adding process.
  */
