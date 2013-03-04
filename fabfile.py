@@ -7,6 +7,10 @@ srcfiles = ['circles.js', 'data.js', 'theopenbudget.js', 'parenting.js',
 def hello():
         print( "Hello world!" )
 
+def setup():
+        local("pip install bottle")
+        local("pip install CherryPy")
+
 def compile(advanced="False"):
         files = ['d3.v3.js', 'jquery-1.8.3.js', 'jquery.contextmenu.r2.js'] + \
             srcfiles
