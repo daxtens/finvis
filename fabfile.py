@@ -7,9 +7,15 @@ srcfiles = ['circles.js', 'data.js', 'theopenbudget.js', 'parenting.js',
 def hello():
         print( "Hello world!" )
 
-def setup():
+def setup(dev="False"):
         local("pip install bottle")
         local("pip install CherryPy")
+
+	if dev == "True":
+		local("pip install pep8")
+		local("pip install http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download")
+		local("pip install nose")
+
 
 def compile(advanced="False"):
         files = ['d3.v3.js', 'jquery-1.8.3.js', 'jquery.contextmenu.r2.js'] + \
