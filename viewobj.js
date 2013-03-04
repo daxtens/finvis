@@ -361,7 +361,8 @@ function ViewObj(data, parent, position) {
                 var angle = angleOffset;
             }
             if (tangentPad) angle += angleScaler(psi(sectorPtRadius,
-                                                     bubblePtRadii[start]));
+                                                     bubblePtRadii[itemIdxs[0]])
+                                                );
 
             for (var i = 0; i < itemIdxs.length; i++) {
                 var item = itemIdxs[i];
@@ -469,14 +470,13 @@ ViewObj.prototype.popIn = function() {
  * Create a new ViewObj for every item with a value > 0
  *    and render it with bubbleRenderer
  * Reposition.
- * Call render method of object's first non-ViewObj parent
- * @param {aggregate} aggregate The ?
+ * Call render method of object's most distant ViewObj ancestor
+ * @param {number=} aggregate The index of the aggregate
+ *                  (revenue/expenditure/assets/liabilites) to pop out.
+ *                  Ignored if not a sector based object.
  *
  */
 ViewObj.prototype.popOut = function(aggregate) {
-    this.poppedOutAggregate = aggregate;
-    this.poppedOut = true;
-
     if ('aggregates' in this.data()) {
         var items = this.data()['aggregates'][aggregate]['items'];
         var cssClass = this.data()['aggregates'][aggregate]['metadata']['cssClass'];
@@ -485,6 +485,10 @@ ViewObj.prototype.popOut = function(aggregate) {
         var cssClass = this.renderMode.cssClass;
     }
     if (!items) return;
+
+    this.poppedOutAggregate = aggregate;
+    this.poppedOut = true;
+
     items = JSON.parse(JSON.stringify(items));
     var that = this;
     items.sort(function(a, b) {
@@ -786,6 +790,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
 
     var enterer = paths.enter().append('path')
         .classed('wedge', true)
+        .classed('poppedOut', viewObj.poppedOut)
         .attr('d', arc)
     //.on('mousedown', viewObj.onmousedownMaker())
     //.on('mousemove', viewObj.onmousemoveMaker())
@@ -805,7 +810,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
 
     // update arcs, ergh
     var updater = paths
-        .attr('d', arc);
+        .attr('d', arc)
+        .classed('poppedOut', viewObj.poppedOut);
 
     // d3 does not seem to provide a nice way to set dynamic styles...
     for (var style in cssStyles) {
@@ -1283,6 +1289,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
         .attr('r', function(d) {return viewstate.scaler(d['periods'][p]['value']);})
         .classed(renderMode['cssClass'], true)
         .classed('wedge', true)
+        .classed('poppedOut', function() {return viewObj.poppedOut;})
     //.on('mousedown', viewObj.onmousedownMaker())
     //.on('mousemove', viewObj.onmousemoveMaker())
     //.on('mouseup', viewObj.onmouseupMaker())
@@ -1295,7 +1302,8 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
 
     circle.attr('r', function(d) {
         return viewstate.scaler(d['periods'][p]['value']);
-    });
+    })
+        .classed('poppedOut', viewObj.poppedOut);
 
     /* Create section labels */
     var labelsGroup = viewObj.svg.select('g.labels');
@@ -1370,7 +1378,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
 
     var enclosingCircleData = [];
 
-    if (viewObj.children().length) {
+    if (viewObj.children().length && window.enclosingCircles) {
         enclosingCircleData.push(viewObj.boundingCircle);
     }
 

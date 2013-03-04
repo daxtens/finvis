@@ -63,6 +63,7 @@ jQuery('document').ready(function() {
     jQuery('#saveToDisk').on('click', saveToDisk);
     jQuery('#cancelSaveToDisk').on('click', cancelSaveToDisk);
     jQuery('#packingSel').on('change', changePacking);
+    jQuery('#enclosingCircles').on('change', enclosingCirclesChange);
 
     // populate the entity list
     var entitySel = jQuery('#entitySel');
@@ -158,8 +159,14 @@ function saveToDisk() {
             str += ' fill="' + css.getPropertyValue('fill') + '"';
         if (css.getPropertyValue('stroke'))
             str += ' stroke="' + css.getPropertyValue('stroke') + '"';
+        if (css.getPropertyValue('stroke-width'))
+            str += ' stroke-width="' + css.getPropertyValue('stroke-width') +
+            '"';
         if (css.getPropertyValue('opacity'))
             str += ' opacity="' + css.getPropertyValue('opacity') + '"';
+        if (css.getPropertyValue('fill-opacity'))
+            str += ' fill-opacity="' + css.getPropertyValue('fill-opacity') +
+            '"';
         if (css.getPropertyValue('font-face'))
             str += ' font-face="' + css.getPropertyValue('font-face') + '"';
         if (css.getPropertyValue('font-size'))
@@ -229,4 +236,15 @@ function recalcPackingEfficiency() {
     }, 0);
     result = result / viewstate.children().length * 100;
     jQuery('#packingEfficiency').text(result.toFixed(2) + '%');
+}
+
+/** default enclosing circles choice */
+window.enclosingCircles = true;
+
+/** Handle change in enclosed circles checkbox */
+function enclosingCirclesChange() {
+    window.enclosingCircles = jQuery('#enclosingCircles').prop('checked');
+    viewstate.children().map(function(child) {
+        child.render();
+    });
 }
