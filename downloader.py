@@ -26,14 +26,15 @@ def download():
     elif request.forms.get('format') == "png":
         response.content_type = 'image/png'
         response.add_header('Content-Disposition', 'attachment; filename="Visualisation.png"')
-        tf = tempfile.NamedTemporaryFile(delete=False)
+        tf = tempfile.NamedTemporaryFile(delete=False, suffix='.svg')
         tf.write(svg)
         tf.close()
         # probably a race condition here.
         subprocess.call( ['inkscape', '--export-png', tf.name+'.png', tf.name] )
         os.unlink(tf.name)
-        return open(tf.name+'.png').read()
-
+        png = open(tf.name+'.png','rb').read()
+        os.unlink(tf.name + '.png')
+        return png
 
 #debug(True) useless on cherrypy
 run(server=CherryPyServer,reloader=True)
