@@ -196,7 +196,31 @@ function ViewObj(data, parent, position) {
     this.repositionItemsGivenParameters = function(
         list2Start, initialRadius) {
 
-        // all the functions here should be [lowerbound, upperbound)
+        var dendritic = (window.packing == 'dendritic' &&
+                         this.renderMode.name != 'defaultSectorRenderer');
+
+        // translate [lowerbound, upperbound) to a list, optionally
+        // reordering it dendritically.
+        var boundsToList = function(lowerbound, upperbound, dendritic) {
+            var itemIdxs = [];
+            if (dendritic) {
+                // sort the items so that the biggest is in the middle
+                // then they reduce in size alternately on either side.
+                // e.g. 1 2 3 4 5 6 7 8 9
+                // ---> 9 7 5 3 1 2 4 6 8
+                for (var i = lowerbound; i < upperbound; i += 2) {
+                    itemIdxs.push(i);
+                }
+                for (var i = lowerbound + 1; i < upperbound; i += 2) {
+                    itemIdxs.unshift(i);
+                }
+            } else {
+                for (var item = lowerbound; item < upperbound; item++) {
+                    itemIdxs.push(item);
+                }
+            }
+            return itemIdxs;
+        };
 
         var items = this.children();
 
@@ -220,38 +244,42 @@ function ViewObj(data, parent, position) {
             return Math.asin(r / (r + R));
         };
 
-        var sumFnAcross = function(fn, R, i1, i2) {
+        var sumFnAcross = function(fn, R, list) {
             var sum = 0;
-            for (var j = i1; j < i2 - 1; j++) {
-                sum += fn(R, bubblePtRadii[j], bubblePtRadii[j + 1]);
+            for (var j = 0; j < list.length - 1; j++) {
+                sum += fn(R, bubblePtRadii[list[j]],
+                          bubblePtRadii[list[j + 1]]);
             }
             return sum;
         };
 
-        var sumPhiAcrossWithPadding = function(R, i1, i2) {
+        var sumPhiAcrossWithPadding = function(R, list) {
             var subangle;
-            subangle = psi(R, bubblePtRadii[i1]);
-            subangle += sumFnAcross(phi, R, i1, i2);
-            subangle += Math.asin(bubblePtRadii[i2 - 1] /
-                                  (bubblePtRadii[i2 - 1] + R));
+            subangle = psi(R, bubblePtRadii[list[0]]);
+            subangle += sumFnAcross(phi, R, list);
+            subangle += Math.asin(bubblePtRadii[list[list.length - 1]] /
+                                  (bubblePtRadii[list[list.length - 1]] + R));
             return subangle;
         };
 
         var f = function(R) {
             var sum = 0;
             if (list2Start == -1) {
-                sum += sumFnAcross(phi, R, 0, items.length);
-                sum += phi(R, bubblePtRadii[items.length - 1],
-                           bubblePtRadii[0]);
+                var list = boundsToList(0, items.length, dendritic);
+                sum += sumFnAcross(phi, R, list);
+                sum += phi(R, bubblePtRadii[list[list.length - 1]],
+                           bubblePtRadii[list[0]]);
             } else {
                 /* for each list:
                    - tangent to the perpendicular padding on each end.
                    - angle is max( pi, sum ): don't allow it to be squeezed out
                 */
                 var subangle;
-                subangle = sumPhiAcrossWithPadding(R, 0, list2Start);
+                var list1 = boundsToList(0, list2Start, dendritic);
+                subangle = sumPhiAcrossWithPadding(R, list1);
                 sum += Math.max(Math.PI, subangle);
-                subangle = sumPhiAcrossWithPadding(R, list2Start, items.length);
+                var list2 = boundsToList(list2Start, items.length, dendritic);
+                subangle = sumPhiAcrossWithPadding(R, list2);
                 sum += Math.max(Math.PI, subangle);
             }
             return 2 * Math.PI - sum;
@@ -272,24 +300,27 @@ function ViewObj(data, parent, position) {
             // this is massively complicated by the 2 list requirement
             var sum = 0;
             if (list2Start == -1) {
-                sum += sumFnAcross(dPhidR, R, 0, items.length);
-                sum += dPhidR(R, bubblePtRadii[items.length - 1],
-                              bubblePtRadii[0]);
+                var list = boundsToList(0, items.length, dendritic);
+                sum += sumFnAcross(dPhidR, R, list);
+                sum += dPhidR(R, bubblePtRadii[list[list.length - 1]],
+                              bubblePtRadii[list[0]]);
             } else {
                 var subangle;
-                subangle = sumPhiAcrossWithPadding(R, 0, list2Start);
+                var list1 = boundsToList(0, list2Start, dendritic);
+                subangle = sumPhiAcrossWithPadding(R, list1);
 
                 if (subangle > Math.PI) {
-                    sum += dPsidR(R, bubblePtRadii[0]);
-                    sum += sumFnAcross(dPhidR, R, 0, list2Start);
-                    sum += dPsidR(R, bubblePtRadii[list2Start - 1]);
+                    sum += dPsidR(R, bubblePtRadii[list1[0]]);
+                    sum += sumFnAcross(dPhidR, R, list1);
+                    sum += dPsidR(R, bubblePtRadii[list1[list1.length - 1]]);
                 } // else Pi, derivative = 0
 
-                subangle = sumPhiAcrossWithPadding(R, list2Start, items.length);
+                var list2 = boundsToList(list2Start, items.length, dendritic);
+                subangle = sumPhiAcrossWithPadding(R, list2);
                 if (subangle > Math.PI) {
-                    sum += dPsidR(R, bubblePtRadii[list2Start]);
-                    sum += sumFnAcross(dPhidR, R, list2Start, items.length);
-                    sum += dPsidR(R, bubblePtRadii[items.length - 1]);
+                    sum += dPsidR(R, bubblePtRadii[list2[0]]);
+                    sum += sumFnAcross(dPhidR, R, list2);
+                    sum += dPsidR(R, bubblePtRadii[list2[list2.length - 1]]);
                 } // else Pi, derivative = 0
             }
             return -sum;
@@ -317,46 +348,52 @@ function ViewObj(data, parent, position) {
             sectorPtRadius = Rn1;
         }
 
-
-        var actuallyPosition = function(start, end, domain, range, angleOffset,
+        var treeAngle = this.treeAngle;
+        var actuallyPosition = function(itemIdxs, domain, range, angleOffset,
                                         tangentPad) {
 
             var angleScaler = d3.scale.linear()
                 .domain([0, domain])
-                .range([0, range]);
-
-            var angle = angleOffset;
+                .range([0, (dendritic ? domain : range)]);
+            if (treeAngle && dendritic) {
+                var angle = treeAngle - domain / 2;
+            } else {
+                var angle = angleOffset;
+            }
             if (tangentPad) angle += angleScaler(psi(sectorPtRadius,
                                                      bubblePtRadii[start]));
 
-            for (var item = start; item < end; item++) {
+            for (var i = 0; i < itemIdxs.length; i++) {
+                var item = itemIdxs[i];
                 var itemPosition = [
                     (sectorPtRadius + bubblePtRadii[item]) * Math.cos(angle) -
                         viewstate.scaler(items[item].boundingCircle.cx),
                     (sectorPtRadius + bubblePtRadii[item]) * Math.sin(angle) -
                         viewstate.scaler(items[item].boundingCircle.cy)
                 ].map(viewstate.scaler.invert);
-
-                if (item + 1 < end) {
+                items[item].treeAngle = angle;
+                if (i + 1 < itemIdxs.length) {
                     angle += angleScaler(phi(sectorPtRadius,
                                              bubblePtRadii[item],
-                                             bubblePtRadii[item + 1]));
+                                             bubblePtRadii[itemIdxs[i + 1]]));
                 }
                 items[item].moveTo(itemPosition);
+
             }
         };
 
         if (list2Start == -1) {
-            actuallyPosition(0, items.length, bubbleAnglesSum(),
-                             2 * Math.PI, Math.PI);
+            var list = boundsToList(0, items.length, dendritic);
+            actuallyPosition(list, bubbleAnglesSum(),
+                             2 * Math.PI, Math.PI, false);
         } else {
-            actuallyPosition(0, list2Start,
-                             sumPhiAcrossWithPadding(sectorPtRadius,
-                                                     0, list2Start),
+            var list1 = boundsToList(0, list2Start);
+            actuallyPosition(list1,
+                             sumPhiAcrossWithPadding(sectorPtRadius, list1),
                              Math.PI, Math.PI, true);
-            actuallyPosition(list2Start, items.length,
-                             sumPhiAcrossWithPadding(sectorPtRadius,
-                                                     list2Start, items.length),
+            var list2 = boundsToList(list2Start, items.length, dendritic);
+            actuallyPosition(list2,
+                             sumPhiAcrossWithPadding(sectorPtRadius, list2),
                              Math.PI, 0, true);
         }
 
@@ -497,6 +534,7 @@ ViewObj.prototype.reposition = function() {
         obj = obj.parent;
     }
     obj._reposition();
+    recalcPackingEfficiency();
 };
 
 /**
@@ -1382,4 +1420,49 @@ function safeGetBBox(svg) {
     //        console.log(svg);
     //    }
     return bbox;
+}
+
+
+/**
+ * Evaluate the packing efficiency, defined as used space / total space.
+ *
+ * @param {ViewObj} viewObj The view object to evaluate the packing efficency
+ *                          for.
+ * @return {number} The packing efficiency (in [0, 1]).
+ */
+function packingEfficiency(viewObj) {
+    if (!viewObj.children().length) {
+        return 1;
+    }
+
+    var sum = 0;
+
+    //console.log(viewObj);
+
+    if (viewObj.renderMode['name'] == 'defaultSectorRenderer') {
+        // dsr doesn't grow with internals, so it's efficiency is the
+        // average of any children.
+        for (var i = 0; i < viewObj.children().length; i++) {
+            var child = viewObj.children()[i];
+            var childRadius = viewstate.scaler(child.boundingCircle.radius);
+            sum += packingEfficiency(child);
+        }
+        return (sum) / (viewObj.children().length);
+    }
+
+    for (var i = 0; i < viewObj.children().length; i++) {
+        var child = viewObj.children()[i];
+        var childRadius = viewstate.scaler(child.boundingCircle.radius);
+        //console.log(packingEfficiency(child), childRadius);
+        sum += packingEfficiency(child) * childRadius * childRadius;
+    }
+
+    var innerRadius = viewstate.scaler(
+        ViewObjRenderers[viewObj.renderMode['name']]
+        .dollarRadiusWhenRendered(viewObj,
+                                  viewObj.renderMode));
+    var outerRadius = viewstate.scaler(viewObj.boundingCircle.radius);
+
+    return (sum + innerRadius * innerRadius) /
+        (outerRadius * outerRadius);
 }

@@ -62,6 +62,7 @@ jQuery('document').ready(function() {
     jQuery('#initSaveToDisk').on('click', initSaveToDisk);
     jQuery('#saveToDisk').on('click', saveToDisk);
     jQuery('#cancelSaveToDisk').on('click', cancelSaveToDisk);
+    jQuery('#packingSel').on('change', changePacking);
 
     // populate the entity list
     var entitySel = jQuery('#entitySel');
@@ -206,4 +207,26 @@ function saveToDisk() {
 /** Cancel saving the view as an SVG/PNG. */
 function cancelSaveToDisk() {
      jQuery('#saveToDiskForm').addClass('hidden');
+}
+
+/** Change the packing model */
+function changePacking() {
+    window.packing = jQuery('#packingSel option:selected').val();
+    //console.log(window.packing);
+    viewstate.children().map(function(child) {
+        child.reposition();
+        child.render();
+    });
+}
+
+/** default packing model */
+window.packing = 'dendritic';
+
+/** Recalculate and display packing efficiency */
+function recalcPackingEfficiency() {
+    var result = viewstate.children().reduce(function(prev, curr) {
+        return prev + packingEfficiency(curr);
+    }, 0);
+    result = result / viewstate.children().length * 100;
+    jQuery('#packingEfficiency').text(result.toFixed(2) + '%');
 }
