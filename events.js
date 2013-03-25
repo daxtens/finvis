@@ -208,7 +208,8 @@ function saveToDisk() {
     cancelSaveToDisk();
 
     // submit form
-    saveToDiskForm.submit();
+    // #17 - don't just use saveToDiskForm.submit(), it breaks in older FF
+    jQuery('#saveToDiskForm')[0].submit();
 }
 
 /** Cancel saving the view as an SVG/PNG. */
