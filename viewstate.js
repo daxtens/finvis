@@ -34,6 +34,11 @@ function ViewState(svg) {
     var oldScale = 1;
     var zoomHandler = d3.behavior.zoom();
     zoomHandler.on('zoom', function(d) {
+        // after a drag, this gets invoked at even mouse move, with unchanged 
+        // scale. we don't want this; it causes wobble. (bug #14)
+        // I also have no idea why it gets invoked or how to stop it.
+        if (d3.event.scale == oldScale) return;
+
         var scale = d3.event.scale / oldScale;
         // because the preferred way doesn't work, attempt this to break the
         // double-click thingy
