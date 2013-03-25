@@ -26,7 +26,7 @@ function ViewState(svg) {
 
     this._svg.on('click', function() {
         if (that.mouseData.inDropState) {
-            that.finishAddingView([d3.event.x, d3.event.y]);
+            that.finishAddingView(d3.mouse(this));
         }
     });
 
