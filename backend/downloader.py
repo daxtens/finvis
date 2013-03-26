@@ -5,21 +5,6 @@ import os
 import urllib
 import crud
 
-rootdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-
-
-@route('/')
-def redir():
-    redirect('index.html')
-
-
-# Static files
-@route('/<filename:path>')
-def static(filename):
-    # todo move static assets to static.finvis or somesuch
-    # served directly out of nginx for speed
-    return static_file(filename, root=rootdir)
-
 
 # Download the current view as SVG or PNG
 @post('/download')
@@ -46,4 +31,4 @@ def download():
 if __name__ == "__main__":
     #debug(True)  # useless on cherrypy
     run(server=CherryPyServer, reloader=True)
-    #run(reloader=True)
+    run(reloader=True)

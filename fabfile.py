@@ -11,6 +11,8 @@ def setup(dev="False"):
         # web framework
         local("pip install bottle")
         local("pip install CherryPy")  # (accelerated server)
+        # auth
+        local("pip install bottle-cork")
         # excel
         local("pip install xlrd")
         # database
