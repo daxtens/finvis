@@ -3,6 +3,7 @@ from bottle import route, run, debug, template, static_file, redirect, \
 import export
 import os
 import urllib
+import crud
 
 rootdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 
@@ -43,5 +44,6 @@ def download():
         return png
 
 if __name__ == "__main__":
-    #debug(True) useless on cherrypy
+    #debug(True)  # useless on cherrypy
     run(server=CherryPyServer, reloader=True)
+    #run(reloader=True)

@@ -57,7 +57,7 @@ jQuery('document').ready(function() {
     // wire up a bundle of event handlers
     jQuery('#fitToScreen').on('click', fitToScreen);
     jQuery('#initAddEntity').on('click', initAddEntity);
-    jQuery('#addEntity').on('click', addEntity);
+    jQuery('#addEntity').on('click', addEntityBtn);
     jQuery('#cancelAddEntity').on('click', cancelAddEntity);
     jQuery('#initSaveToDisk').on('click', initSaveToDisk);
     jQuery('#saveToDisk').on('click', saveToDisk);
@@ -71,6 +71,27 @@ jQuery('document').ready(function() {
         entitySel.append(
             jQuery('<option />').val(index).text(entities[index].name)
         );
+    });
+
+    // ephemeral upload
+    jQuery('#ephemeralUploadForm').on('submit', function(e) {
+        e.preventDefault();
+        jQuery(this).ajaxSubmit({
+            success: function(d) {
+                if ('error' in d) {
+                    alert('Error:' + d['error']);
+                    cancelAddEntity();
+                } else {
+                    //console.log(d);
+                    viewstate.beginAddingView(d);
+                }
+            },
+            error: function(d) {
+                alert('An unknown error occured.');
+                cancelAddEntity();
+            }
+        });
+        addEntityUI();
     });
 
     // set up the viewstate and initial view object
@@ -101,12 +122,21 @@ function initAddEntity() {
     jQuery('#addEntityContainer').removeClass('hidden');
 }
 
-/** Actually start adding an entity.
+/** Change the UI to indicate that an entity is being added.
  */
-function addEntity() {
+function addEntityUI() {
     jQuery('#entitySel').prop('disabled', true);
     jQuery('#addEntity').addClass('hidden');
     jQuery('#clickToPlaceTxt').removeClass('hidden');
+    jQuery('#ephemeralUploadFile').prop('disabled', true);
+    jQuery('#ephemeralUploadBtn').prop('disabled', true);
+}
+
+
+/** Actually start adding an entity. (Button)
+ */
+function addEntityBtn() {
+    addEntityUI();
     var entitySel = jQuery('#entitySel')[0];
     viewstate.beginAddingView(entities[entitySel.selectedIndex]);
 }
@@ -116,6 +146,8 @@ function addEntity() {
 function cancelAddEntity() {
     jQuery('#addEntityContainer').addClass('hidden');
     jQuery('#entitySel').prop('disabled', false);
+    jQuery('#ephemeralUploadFile').prop('disabled', false);
+    jQuery('#ephemeralUploadBtn').prop('disabled', false);
     jQuery('#addEntity').removeClass('hidden');
     jQuery('#clickToPlaceTxt').addClass('hidden');
     viewstate.cancelAddingView();
