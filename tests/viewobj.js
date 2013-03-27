@@ -1,73 +1,114 @@
+var packingEffTestData = {
+    'name': 'Test Data for packingEfficiency',
+    'aggregates': [
+        {
+            'name': 'Revenue',
+            'periods': {
+                '2011-12': {
+                    'value': 5
+                },
+            },
+            'category': 'revenue',
+            'items': [
+                {
+                    'name': 'A',
+                    'items': [
+                        {
+                            'name': 'Aa',
+                            'periods': {
+                                '2011-12': {
+                                    'value': 3
+                                }
+                            }
+                        }
+                    ],
+                    'periods': {
+                        '2011-12': {
+                            'value': 3
+                        }
+                    }
+                },
+                {
+                    'name': 'B',
+                    'items': [
+                        {
+                            'name': 'Ba',
+                            'periods': {
+                                '2011-12': {
+                                    'value': 1
+                                }
+                            }
+                        },
+                        {
+                            'name': 'Ba',
+                            'periods': {
+                                '2011-12': {
+                                    'value': 1
+                                }
+                            }
+                        }
+                    ],
+                    'periods': {
+                        '2011-12': {
+                            'value': 2
+                        }
+                    }
+                },
+            ]
+        }
+    ]
+};
+
+test('viewObj basic render tests', function() {
+    // reset. TODO port to use a fixture.
+    reset();
+
+    var vo = new ViewObj(packingEffTestData, viewstate, [0, 0]);
+    vo.period('2011-12');
+    vo.render();
+
+
+
+    // hasClass is misbehaving for some reason?
+    ok(jQuery('path.wedge').attr("class").indexOf("poppedOut") == -1,
+       "Un-popped out has no poppedOut class.");
+
+    vo.popOut(0);
+    ok(jQuery('path.wedge').attr("class").indexOf("poppedOut") != -1,
+       "Popping out adds poppedOut class.");
+    
+    vo.popIn();
+    ok(jQuery('path.wedge').attr("class").indexOf("poppedOut") == -1,
+       "Popping in removes poppedOut class.");
+
+    vo.remove();
+
+    for (x in cssStyles) {
+        data = jQuery.extend({}, packingEffTestData);
+        data.aggregates[0].category=cssStyles[x];
+        vo = new ViewObj(data, viewstate, [0, 0]);
+        vo.period('2011-12');
+        vo.render();
+        //console.log(jQuery('path.wedge').attr("class"))
+        ok(jQuery('path.wedge').attr("class").indexOf(cssStyles[x]) != -1, 
+           "Category " + cssStyles[x] + " ends up as a class.");
+        vo.remove();
+    }
+
+    vo = new ViewObj(abudhabi, viewstate, [0, 0]);
+    vo.period('2011-12');
+    vo.render();
+    ok(jQuery('circle').attr('class').indexOf('assets') != -1,
+       "Categories for single bubbles work.");
+    vo.remove();
+});
+
 test('viewObj packingEfficiency tests', function() {
 
     // reset. TODO port to use a fixture.
     reset();
 
-    var mydata = {
-        'name': 'Test Data for packingEfficiency',
-        'aggregates': [
-            {
-                'name': 'Revenue',
-                'periods': {
-                    '2011-12': {
-                        'value': 5
-                    },
-                },
-                'metadata': {
-                    'cssClass': 'revenue'
-                },
-                'items': [
-                    {
-                        'name': 'A',
-                        'items': [
-                            {
-                                'name': 'Aa',
-                                'periods': {
-                                    '2011-12': {
-                                        'value': 3
-                                    }
-                                }
-                            }
-                        ],
-                        'periods': {
-                            '2011-12': {
-                                'value': 3
-                            }
-                        }
-                    },
-                    {
-                        'name': 'B',
-                        'items': [
-                            {
-                                'name': 'Ba',
-                                'periods': {
-                                    '2011-12': {
-                                        'value': 1
-                                    }
-                                }
-                            },
-                            {
-                                'name': 'Ba',
-                                'periods': {
-                                    '2011-12': {
-                                        'value': 1
-                                    }
-                                }
-                            }
-                        ],
-                        'periods': {
-                            '2011-12': {
-                                'value': 2
-                            }
-                        }
-                    },
-                ]
-            }
-        ]
-    };
-    
-
-    var vo = new ViewObj(mydata, viewstate, [0, 0]);
+    var vo = new ViewObj(packingEffTestData, viewstate, [0, 0]);
     vo.period('2011-12');
     vo.render();
 
@@ -80,7 +121,7 @@ test('viewObj packingEfficiency tests', function() {
     assertNearlyEqual(packingEfficiency(vo.children()[0]), 0.5, 0.00001,
                       'Packing efficiency of two identical items is 0.5');
     vo.popIn();
-   
+    
 
     window.packing = 'default';
     vo.popOut(0);

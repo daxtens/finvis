@@ -17,9 +17,7 @@ var cth_fbo = {
                     'value': 309900000000
                 }
             },
-            'metadata': {
-                'cssClass': 'revenue'
-            },
+            'category': 'revenue',
             'items': [
                 {
                     'name': 'Income Tax',
@@ -133,9 +131,7 @@ var cth_fbo = {
                     'value': 356100000000
                 }
             },
-            'metadata': {
-                'cssClass': 'expenses'
-            },
+            'category': 'expenses',
             'items': [
                 {
                     'name': 'General public services',
@@ -299,9 +295,7 @@ var cth_fbo = {
                     'value': 320400000000
                 }
             },
-            'metadata': {
-                'cssClass': 'assets'
-            }
+            'category': 'assets'
         },
         {
             'name': 'Liabilities',
@@ -313,9 +307,7 @@ var cth_fbo = {
                     'value': 415800000000
                 }
             },
-            'metadata': {
-                'cssClass': 'liabilities'
-            }
+            'category': 'liabilities'
         }
     ],
     'relations': {
@@ -346,9 +338,7 @@ var wa_fbo = {
                     'value': 23.764 * bil
                 }
             },
-            'metadata': {
-                'cssClass': 'revenue'
-            }
+            'category': 'revenue'
         },
         {
             'name': 'Expenses',
@@ -360,9 +350,7 @@ var wa_fbo = {
                     'value': 22.98 * bil
                 }
             },
-            'metadata': {
-                'cssClass': 'expenses'
-            }
+            'category': 'expenses'
         },
         {
             'name': 'Assets',
@@ -374,9 +362,7 @@ var wa_fbo = {
                     'value': 129.116 * bil
                 }
             },
-            'metadata': {
-                'cssClass': 'assets'
-            }
+            'category': 'assets'
         },
         {
             'name': 'Liabilities',
@@ -388,9 +374,7 @@ var wa_fbo = {
                     'value': 17.851 * bil
                 }
             },
-            'metadata': {
-                'cssClass': 'liabilities'
-            }
+            'category': 'liabilities'
         }
     ],
 
@@ -419,9 +403,7 @@ var bhp = {
                     'value': 72226 * mil
                 }
             },
-            'metadata': {
-                'cssClass': 'revenue'
-            }
+            'category': 'revenue'
         },
         {
             'name': 'Expenses',
@@ -430,9 +412,7 @@ var bhp = {
                     'value': 57600 * mil
                 }
             },
-            'metadata': {
-                'cssClass': 'expenses'
-            }
+            'category': 'expenses'
         },
         {
             'name': 'Assets',
@@ -441,9 +421,7 @@ var bhp = {
                     'value': 129273 * mil
                 }
             },
-            'metadata': {
-                'cssClass': 'assets'
-            }
+            'category': 'assets'
         },
         {
             'name': 'Liabilities',
@@ -452,9 +430,7 @@ var bhp = {
                     'value': 62188 * mil
                 }
             },
-            'metadata': {
-                'cssClass': 'liabilities'
-            }
+            'category': 'liabilities'
         }
     ],
 
@@ -475,8 +451,9 @@ var abudhabi = {
             'value': 627 * bil
         }
     },
+    'category': 'assets',
     'metadata': {
-        'renderMode': { 'name': 'bubbleRenderer', 'cssClass': 'assets' }
+        'renderMode': { 'name': 'bubbleRenderer' }
     }
 };
 
@@ -488,8 +465,9 @@ var futurefund = {
             'value': 73 * bil
         }
     },
+    'category': 'assets',
     'metadata': {
-        'renderMode': { 'name': 'bubbleRenderer', 'cssClass': 'assets' }
+        'renderMode': { 'name': 'bubbleRenderer' }
     }
 };
 
@@ -501,8 +479,9 @@ var submarines = {
             'value': 40 * bil
         }
     },
+    'category': 'expenses',
     'metadata': {
-        'renderMode': { 'name': 'bubbleRenderer', 'cssClass': 'expenses' }
+        'renderMode': { 'name': 'bubbleRenderer' }
     }
 };
 
@@ -514,8 +493,9 @@ var australiansuper = {
             'value': 1277 * bil
         }
     },
+    'category': 'revenue',
     'metadata': {
-        'renderMode': { 'name': 'bubbleRenderer', 'cssClass': 'revenue' }
+        'renderMode': { 'name': 'bubbleRenderer' }
     }
 };
 
@@ -532,9 +512,7 @@ var usa = {
                     'value': 2363.8 * bil
                 }
             },
-            'metadata': {
-                'cssClass': 'revenue'
-            }
+            'category': 'revenue'
         },
         {
             'name': 'Outlays',
@@ -543,9 +521,7 @@ var usa = {
                     'value': 3660.8 * bil
                 }
             },
-            'metadata': {
-                'cssClass': 'expenses'
-            }
+            'category': 'expenses'
         },
         {
             'name': 'Assets',
@@ -554,9 +530,7 @@ var usa = {
                     'value': 2707.3 * bil
                 }
             },
-            'metadata': {
-                'cssClass': 'assets'
-            }
+            'category': 'assets'
         },
         {
             'name': 'Liabilities',
@@ -565,9 +539,7 @@ var usa = {
                     'value': 17492.7 * bil
                 }
             },
-            'metadata': {
-                'cssClass': 'liabilities'
-            }
+            'category': 'liabilities'
         }
     ],
     'relations': {
@@ -590,9 +562,7 @@ var greens_budget = {
                     'value': 25487000000
                 }
             },
-            'metadata': {
-                'cssClass': 'revenue'
-            },
+            'category': 'revenue',
             'items': [
                 {
                     'name': 'Revised MRRT',
@@ -749,9 +719,7 @@ var greens_budget = {
                     'value': 23943300000
                 }
             },
-            'metadata': {
-                'cssClass': 'expenses'
-            },
+            'category': 'expenses',
             'items': [
                 {
                     'name': 'Environment',

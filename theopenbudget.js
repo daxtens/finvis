@@ -4437,9 +4437,7 @@ var openbudget = {
                }
             }
          ],
-         "metadata":{
-            "cssClass":"expenses"
-         }
+          "category":"expenses"
       }
    ]
 }

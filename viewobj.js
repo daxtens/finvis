@@ -18,8 +18,10 @@
  *  @param {Object} data an entity or item.
  *  @param {Object} parent a viewObj, or at the root level, a viewstate.
  *  @param {Array.<number>} position an (x$, y$) pair.
+ *  @param {string=} category The category to give the item. This forms an
+*                             inconsistent mess around where category is stored.
  */
-function ViewObj(data, parent, position) {
+function ViewObj(data, parent, position, category) {
     this._data = data;
 
     this.ParentingObject = ParentingObject;
@@ -30,6 +32,8 @@ function ViewObj(data, parent, position) {
 
     this.position = position;
     this.boundingCircle = {};
+
+    if (category) this['category'] = category;
 
     /* getter and setter for data
      */
@@ -103,8 +107,8 @@ function ViewObj(data, parent, position) {
                     (that.renderMode.specifiedAggregates == undefined ||
                      that.renderMode.specifiedAggregates.length == 4)) {
                     // full entity: go down to relation
-                    if (d.data.metadata.cssClass == 'revenue' ||
-                        d.data.metadata.cssClass == 'expenses') {
+                    if (d.data['category'] == 'revenue' ||
+                        d.data['category'] == 'expenses') {
                         that.renderMode.specifiedAggregates = ['revenue',
                                                                'expenses'];
                     } else {
@@ -118,15 +122,15 @@ function ViewObj(data, parent, position) {
                             that.renderMode.specifiedAggregates.length == 2)) {
                     // a relation: go down to a single
                     that.renderMode.specifiedAggregates =
-                        [d.data.metadata.cssClass];
+                        [d.data['category']];
                     that.render();
                 } else {
                     // a single: pop in/out
                     if (that.poppedOut) that.popIn();
                     else {
                         for (var idx in that.data().aggregates) {
-                            if (that.data().aggregates[idx].metadata.cssClass ==
-                                d.data.metadata.cssClass) {
+                            if (that.data().aggregates[idx]['category'] ==
+                                d.data['category']) {
 
                                 that.popOut(idx);
                                 break;
@@ -163,11 +167,9 @@ function ViewObj(data, parent, position) {
             var list2Start = -1;
 
             // mess to pop out 2 aggregates at once.
-            // TODO: refactor with a better way of publishing my type than a
-            // cssClass
-            prevType = items[0].renderMode.cssClass;
+            prevType = items[0]['category'];
             for (var item = 1; item < items.length; item++) {
-                if (items[item].renderMode.cssClass != prevType) {
+                if (items[item]['category'] != prevType) {
                     list2Start = item;
                     break;
                 }
@@ -464,7 +466,7 @@ ViewObj.prototype.popIn = function() {
 };
 
 /**
- * Select items and cssClass of instance data()
+ * Select items and category of instance data()
  *  or of its aggregates if aggregates are present
  * Sort items on value within period.
  * Create a new ViewObj for every item with a value > 0
@@ -479,10 +481,10 @@ ViewObj.prototype.popIn = function() {
 ViewObj.prototype.popOut = function(aggregate) {
     if ('aggregates' in this.data()) {
         var items = this.data()['aggregates'][aggregate]['items'];
-        var cssClass = this.data()['aggregates'][aggregate]['metadata']['cssClass'];
+        var category = this.data()['aggregates'][aggregate]['category'];
     } else {
         var items = this.data().items;
-        var cssClass = this.renderMode.cssClass;
+        var category = this['category'];
     }
     if (!items) return;
 
@@ -501,9 +503,9 @@ ViewObj.prototype.popOut = function(aggregate) {
     for (var item in items) {
         // it it's non-zero, create it.
         if (items[item]['periods'][this.period()]['value'] <= 0) continue;
-        var itemObj = new ViewObj(items[item], this, [0, 0]);
+        var itemObj = new ViewObj(items[item], this, [0, 0], category);
         itemObj.period(this.period());
-        itemObj.render({'name': 'bubbleRenderer', 'cssClass': cssClass });
+        itemObj.render({'name': 'bubbleRenderer'});
     }
 
     this.reposition();
@@ -669,7 +671,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
     if (renderMode['specifiedAggregates']) {
         data['aggregates'] = data['aggregates'].filter(function(aggregate) {
             for (var specAgg in renderMode['specifiedAggregates']) {
-                if (aggregate.metadata.cssClass ==
+                if (aggregate.category ==
                     renderMode['specifiedAggregates'][specAgg]) {
                     return true;
                 }
@@ -684,7 +686,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
                         'revenue': 1,
                         'expenses': 2,
                         'liabilities': 3 };
-            return ref[a.metadata.cssClass] - ref[b.metadata.cssClass];
+            return ref[a.category] - ref[b.category];
         });
 
     /***** Calculate ranges etc */
@@ -802,7 +804,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
     for (var style in cssStyles) {
         enterer.classed(cssStyles[style],
                         function(d) {
-                            return d.data.metadata.cssClass == cssStyles[style];
+                            return d.data['category'] == cssStyles[style];
                         });
     }
 
@@ -817,7 +819,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
     for (var style in cssStyles) {
         updater.classed(cssStyles[style],
                         function(d) {
-                            return d.data.metadata.cssClass == cssStyles[style];
+                            return d.data.category == cssStyles[style];
                         });
     }
 
@@ -831,8 +833,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
     // General Case
     // ... utility functions
     function isTop(d) {
-        if (d.data.metadata.cssClass == 'revenue' ||
-            d.data.metadata.cssClass == 'assets') {
+        if (d.data['category'] == 'revenue' ||
+            d.data['category'] == 'assets') {
             return true;
         } else {
             return false;
@@ -845,8 +847,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
         if (data['aggregates'].length == 2) {
             return 'middle';
         } else {
-            if (d.data.metadata.cssClass == 'revenue' ||
-                d.data.metadata.cssClass == 'expenses') {
+            if (d.data['category'] == 'revenue' ||
+                d.data['category'] == 'expenses') {
                 return 'right';
             } else {
                 return 'left';
@@ -906,6 +908,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
             return 0;
         var height = safeGetBBox(this)['height'];
         // save the value for the outer label
+        if (!('metadata' in d.data)) d.data.metadata = {};
         d.data.metadata.computedTextHeight = height;
         if (isTop(d)) {
             return -15;
@@ -1013,13 +1016,13 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
     var rVeData, aVlData;
 
     for (var aggregate in data['aggregates']) {
-        if (data['aggregates'][aggregate]['metadata']['cssClass'] == 'revenue') {
+        if (data['aggregates'][aggregate]['category'] == 'revenue') {
             revenue = data['aggregates'][aggregate]['periods'][p]['value'];
-        } else if (data['aggregates'][aggregate]['metadata']['cssClass'] == 'expenses') {
+        } else if (data['aggregates'][aggregate]['category'] == 'expenses') {
             expenses = data['aggregates'][aggregate]['periods'][p]['value'];
-        } else if (data['aggregates'][aggregate]['metadata']['cssClass'] == 'assets') {
+        } else if (data['aggregates'][aggregate]['category'] == 'assets') {
             assets = data['aggregates'][aggregate]['periods'][p]['value'];
-        } else if (data['aggregates'][aggregate]['metadata']['cssClass'] == 'liabilities') {
+        } else if (data['aggregates'][aggregate]['category'] == 'liabilities') {
             liabilities = data['aggregates'][aggregate]['periods'][p]['value'];
         }
     }
@@ -1239,7 +1242,8 @@ ViewObjRenderers.defaultSectorRenderer.dollarRadiusWhenRendered = function(
     if (renderMode['specifiedAggregates']) {
         data['aggregates'] = data['aggregates'].filter(function(aggregate) {
             for (var specAgg in renderMode['specifiedAggregates']) {
-                if (aggregate.metadata.cssClass == renderMode['specifiedAggregates'][specAgg])
+                if (aggregate['category'] ==
+                    renderMode['specifiedAggregates'][specAgg])
                     return true;
             }
             return false;
@@ -1267,6 +1271,7 @@ ViewObjRenderers.defaultSectorRenderer.dollarRadiusWhenRendered = function(
 ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
 
     var p = viewObj.period();
+    var category = (viewObj['category'] || viewObj.data()['category']);
 
     function link(d) {
         if (d.href) window.open(d.href, d.target);
@@ -1286,8 +1291,10 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
         .data([data], function(d) {return d['name'];});
 
     circle.enter().append('circle')
-        .attr('r', function(d) {return viewstate.scaler(d['periods'][p]['value']);})
-        .classed(renderMode['cssClass'], true)
+        .attr('r', function(d) {
+            return viewstate.scaler(d['periods'][p]['value']);
+        })
+        .classed(category, true)
         .classed('wedge', true)
         .classed('poppedOut', function() {return viewObj.poppedOut;})
     //.on('mousedown', viewObj.onmousedownMaker())
