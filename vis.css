@@ -13,14 +13,17 @@ circle.axis_circle {
 	stroke: #333;
 }
 
+.poppedOut {
+        stroke-width: 2;
+        fill-opacity: 0.2;
+}
+
 .revenue {
 	fill: #00995e;
 }
 
 .revenue.poppedOut {
 	stroke: #00995e;
-        stroke-width: 2;
-        fill-opacity: 0.2;
 }
 
 
@@ -28,8 +31,16 @@ circle.axis_circle {
 	fill: #00759d;
 }
 
+.assets.poppedOut {
+	stroke: #00759d;
+}
+
 .liabilities {
 	fill: #be2900;
+}
+
+.liabilities.poppedOut {
+	stroke: #be2900;
 }
 
 .expenses {
@@ -38,7 +49,6 @@ circle.axis_circle {
 
 .expenses.poppedOut {
 	stroke: #8b003d;
-        stroke-width: 2;
         fill-opacity: 0.4;
 }
 
