@@ -143,8 +143,7 @@ var cth_fbo = {
                 },
                 {
                     'name': 'Defence',
-                    'href': 'http://defence.gov.au/',
-                    'target': '_blank',
+                    'metadata': {'link': 'http://defence.gov.au/'},
                     'periods': {
                         '2011-12': {
                             'value': 21692000000
@@ -195,7 +194,7 @@ var cth_fbo = {
                     'name': 'Recreation and culture',
                     'periods': {
                         '2011-12': {
-                            'value': 6464000000
+                            'value': 3809000000
                         }
                     }
                 },
@@ -241,7 +240,10 @@ var cth_fbo = {
                 },
                 {
                     'name': 'Other purposes',
-                    'href': 'javascript:alert(\"This item reflects mostly intergovernmental transfers.\")',
+                    'metadata': {
+                        'link': 'javascript:alert(\"This item reflects mostly intergovernmental transfers.\")',
+                        'target': '_self'
+                    },
                     'target': '_self',
                     'items': [
                         {
@@ -445,58 +447,70 @@ var bhp = {
 
 var abudhabi = {
     'name': 'Abu Dhabi Investment Auth.',
-    // TODO FIXME: check date
-    'periods': {
-        '2011-12': {
-            'value': 627 * bil
-        }
-    },
+    'username': 'System',
+    'public': true,
+    'units': 1000000000,
     'category': 'assets',
-    'metadata': {
-        'renderMode': { 'name': 'bubbleRenderer' }
+    'item': {
+        'name': 'Abu Dhabi Investment Auth.',
+        // TODO FIXME: check date
+        'periods': {
+            '2011-12': {
+                'value': 627 * bil
+            }
+        }
     }
 };
 
 var futurefund = {
     'name': 'Future Fund',
-    // TODO FIXME: check date
-    'periods': {
-        '2011-12': {
-            'value': 73 * bil
+    'username': 'System',
+    'public': true,
+    'units': 1000000000,
+    'item': {
+        'name': 'Future Fund',
+        // TODO FIXME: check date
+        'periods': {
+            '2011-12': {
+                'value': 73 * bil
+            }
         }
     },
-    'category': 'assets',
-    'metadata': {
-        'renderMode': { 'name': 'bubbleRenderer' }
-    }
+    'category': 'assets'
 };
 
 var submarines = {
     'name': 'Submarines',
+    'username': 'System',
+    'public': true,
+    'units': 1000000000,
     // TODO FIXME: check date
-    'periods': {
-        '2011-12': {
-            'value': 40 * bil
+    'item': {
+        'name': 'Submarines',
+        'periods': {
+            '2011-12': {
+                'value': 40 * bil
+            }
         }
     },
-    'category': 'expenses',
-    'metadata': {
-        'renderMode': { 'name': 'bubbleRenderer' }
-    }
+    'category': 'expenses'
 };
 
 var australiansuper = {
     'name': 'Aus Super Funds',
-    // TODO FIXME: check date
-    'periods': {
-        '2011-12': {
-            'value': 1277 * bil
+    'item': {
+        'name': 'Aus Super Funds',
+        // TODO FIXME: check date
+        'periods': {
+            '2011-12': {
+                'value': 1277 * bil
+            }
         }
     },
     'category': 'revenue',
-    'metadata': {
-        'renderMode': { 'name': 'bubbleRenderer' }
-    }
+    'username': 'System',
+    'public': true,
+    'units': 1000000000
 };
 
 
@@ -566,8 +580,9 @@ var greens_budget = {
             'items': [
                 {
                     'name': 'Revised MRRT',
-                    'href': 'http://greensmps.org.au/content/news-stories/economy-serves-people-and-nature-not-other-way-around',
-                    'target': '_blank',
+                    'metadata': {
+                        'link': 'http://greensmps.org.au/content/news-stories/economy-serves-people-and-nature-not-other-way-around'
+                    },
                     'periods': {
                         '2011-12': {
                             'value': 6000000000

@@ -34,6 +34,8 @@ function ViewObj(data, parent, position, category) {
     this.boundingCircle = {};
 
     if (category) this['category'] = category;
+    else if (this._data['category']) this['category'] = this._data['category'];
+    if (this._data['item']) this._data = this._data['item'];
 
     /* getter and setter for data
      */
@@ -72,7 +74,11 @@ function ViewObj(data, parent, position, category) {
     if (this.data().metadata && this.data().metadata.renderMode) {
         this.renderMode = this.data().metadata.renderMode;
     } else {
-        this.renderMode = {'name': 'defaultSectorRenderer'};
+        if ('aggregates' in this.data()) {
+            this.renderMode = {'name': 'defaultSectorRenderer'};
+        } else {
+            this.renderMode = {'name': 'bubbleRenderer'};
+        }
     }
 
     /* Event handling */
@@ -483,10 +489,10 @@ ViewObj.prototype.popOut = function(aggregate) {
         var items = this.data()['aggregates'][aggregate]['items'];
         var category = this.data()['aggregates'][aggregate]['category'];
     } else {
-        var items = this.data().items;
+        var items = this.data()['items'];
         var category = this['category'];
     }
-    if (!items) return;
+    if (items && items.length < 1) return;
 
     this.poppedOutAggregate = aggregate;
     this.poppedOut = true;
@@ -523,9 +529,9 @@ ViewObj.prototype.popOut = function(aggregate) {
  */
 ViewObj.prototype.canPopOut = function(aggregate) {
     if ('aggregates' in this.data()) {
-        return this.data()['aggregates'][aggregate]['items'].length;
+        return this.data()['aggregates'][aggregate]['items'].length > 0;
     } else {
-        return this.data()['items'] && this.data()['items'].length;
+        return ('items' in this.data()) && (this.data()['items'].length > 0);
     }
 };
 
@@ -1271,10 +1277,25 @@ ViewObjRenderers.defaultSectorRenderer.dollarRadiusWhenRendered = function(
 ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
 
     var p = viewObj.period();
-    var category = (viewObj['category'] || viewObj.data()['category']);
+    var category = viewObj['category'];
+
+    function isLinked(d) {
+        return (('metadata' in d && 'link' in d['metadata']) ||
+                ('metadata' in d['periods'][p] &&
+                 'link' in d['periods'][p]['metadata']));
+    }
 
     function link(d) {
-        if (d.href) window.open(d.href, d.target);
+        var target = '_blank';
+        if ('metadata' in d['periods'][p] &&
+            'link' in d['periods'][p]['metadata']) {
+            if ('target' in d['periods'][p]['metadata'])
+                target = d['periods'][p]['metadata']['target'];
+            window.open(d['periods'][p]['metadata']['link'], target);
+        } else if ('metadata' in d && 'link' in d['metadata']) {
+            if ('target' in d['metadata']) target = d['metadata']['target'];
+            window.open(d['metadata']['link'], target);
+        }
     }
 
     // create the bubble
@@ -1302,7 +1323,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
     //.on('mouseup', viewObj.onmouseupMaker())
         .call(viewObj.dragHandler)
         .on('dblclick', viewObj.ondblclickMaker())
-        .classed('link', function(d) { return d.href })
+        .classed('link', isLinked)
         .classed('cannotPopOut', function() {return !viewObj.canPopOut();});
 
     circle.exit().remove();
@@ -1355,7 +1376,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
         .call(viewObj.dragHandler)
         .attr('x', centredTextLabelX)
         .attr('y', -10)
-        .classed('link', function(d) { return d.href })
+        .classed('link', isLinked)
         .on('click', link);
 
 
@@ -1366,7 +1387,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
         .classed('wedgeLabel', true).classed('value', true)
         .attr('x', centredTextLabelX)
         .attr('y', valueLabelY)
-        .classed('link', function(d) { return d.href })
+        .classed('link', isLinked)
         .call(viewObj.dragHandler)
         .on('click', link);
 
