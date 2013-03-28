@@ -76,6 +76,7 @@ jQuery('document').ready(function() {
     // ephemeral upload
     jQuery('#ephemeralUploadForm').on('submit', function(e) {
         e.preventDefault();
+        jQuery('#clickToPlaceTxt').text('Processing...');
         jQuery(this).ajaxSubmit({
             success: function(d) {
                 if ('error' in d) {
@@ -89,6 +90,9 @@ jQuery('document').ready(function() {
             error: function(d) {
                 alert('An unknown error occured.');
                 cancelAddEntity();
+            },
+            complete: function() {
+                jQuery('#clickToPlaceTxt').text('Click to place');
             }
         });
         addEntityUI();
