@@ -8,8 +8,15 @@ def hello():
         print( "Hello world!" )
 
 def setup(dev="False"):
+        # web framework
         local("pip install bottle")
-        local("pip install CherryPy")
+        local("pip install CherryPy")  # (accelerated server)
+        # excel
+        local("pip install xlrd")
+        # database
+        local("pip install mongoengine")
+        # PNG export: verify inkscape is installed
+        local("inkscape --version")
 
 	if dev == "True":
 		local("pip install pep8")
@@ -38,3 +45,4 @@ def compile(advanced="False"):
 def docs():
         local( "../jsdoc/jsdoc " + \
                " ".join(srcfiles) + " --destination ./docs/" )
+
