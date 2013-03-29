@@ -542,6 +542,16 @@ ViewObj.prototype.reposition = function() {
     while (obj.parent instanceof ViewObj) {
         obj = obj.parent;
     }
+    /* to fix the tree-angle bug (#15), we really need to do the following:
+       - descend to get signs accurate (bottom-up)
+       - place things now we know precise sizes and therefore angles (top-down)
+       this requires 2 runs through the tree. Short of using SVG rotate, this
+       at least afaict, is going to need 2 cracks at appolonious' problem,
+       however you slice it. So just run reposition twice for now.
+
+    Also thanks to the wonders of the dendritic layout, it requires two passes
+    through the *entire* tree: you can't skip sections. */
+    obj._reposition();
     obj._reposition();
     recalcPackingEfficiency();
 };
