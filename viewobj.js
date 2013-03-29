@@ -130,7 +130,7 @@ function ViewObj(data, parent, position, category) {
                     // a single: pop in/out
                     if (that.poppedOut) {
                         that.popIn();
-                        that.reposition();
+                        that.render();
                     } else {
                         for (var idx in that.data().aggregates) {
                             if (that.data().aggregates[idx]['category'] ==
