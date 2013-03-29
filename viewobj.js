@@ -54,10 +54,6 @@ function ViewObj(data, parent, position, category) {
             this._period = arguments[0];
             var thePeriod = arguments[0];
             this.children().map(function(child) { child.period(thePeriod); });
-            if (this.poppedOut) {
-                this.popIn();
-                this.popOut(this.poppedOutAggregate);
-            }
         }
     };
 
@@ -132,13 +128,17 @@ function ViewObj(data, parent, position, category) {
                     that.render();
                 } else {
                     // a single: pop in/out
-                    if (that.poppedOut) that.popIn();
-                    else {
+                    if (that.poppedOut) {
+                        that.popIn();
+                        that.reposition();
+                    } else {
                         for (var idx in that.data().aggregates) {
                             if (that.data().aggregates[idx]['category'] ==
                                 d.data['category']) {
 
                                 that.popOut(idx);
+                                that.reposition();
+                                that.render();
                                 break;
                             }
                         }
@@ -146,8 +146,15 @@ function ViewObj(data, parent, position, category) {
                 }
             } else {
                 // a bubble: pop in/out
-                if (that.poppedOut) that.popIn();
-                else that.popOut();
+                if (that.poppedOut) {
+                    that.popIn();
+                } else {
+                    that.popOut();
+                }
+                that.reposition();
+                var o = that;
+                while (o.parent instanceof ViewObj) o = o.parent;
+                o.render();
             }
         };
     };
@@ -157,8 +164,7 @@ function ViewObj(data, parent, position, category) {
            then position and bound on the way back up.
         */
         var innerRadius = ViewObjRenderers[this.renderMode['name']]
-            .dollarRadiusWhenRendered(this,
-                                      this.renderMode);
+            .dollarRadiusWhenRendered(this);
 
         this.boundingCircle = {cx: 0, cy: 0,
                                radius: innerRadius};
@@ -450,7 +456,7 @@ ViewObj.prototype.remove = function() {
 };
 
 /**
- * Pops-in popped-out children and repositions them.
+ * Pops-in popped-out children.
  * Finds the first parent object that is not a ViewObj and calls its render
  * method.
  */
@@ -465,10 +471,6 @@ ViewObj.prototype.popIn = function() {
         if (this.children()[i]) this.children()[i].remove();
     }
     this.poppedOut = false;
-    this.reposition();
-    var obj = this;
-    while (obj.parent instanceof ViewObj) obj = obj.parent;
-    obj.render();
 };
 
 /**
@@ -492,7 +494,7 @@ ViewObj.prototype.popOut = function(aggregate) {
         var items = this.data()['items'];
         var category = this['category'];
     }
-    if (items && items.length < 1) return;
+    if (!items || items.length < 1) return;
 
     this.poppedOutAggregate = aggregate;
     this.poppedOut = true;
@@ -511,13 +513,8 @@ ViewObj.prototype.popOut = function(aggregate) {
         if (items[item]['periods'][this.period()]['value'] <= 0) continue;
         var itemObj = new ViewObj(items[item], this, [0, 0], category);
         itemObj.period(this.period());
-        itemObj.render({'name': 'bubbleRenderer'});
+        itemObj.renderMode = {'name': 'bubbleRenderer'};
     }
-
-    this.reposition();
-    var obj = this;
-    while (obj.parent instanceof ViewObj) obj = obj.parent;
-    obj.render();
 };
 
 /**
@@ -552,16 +549,8 @@ ViewObj.prototype.reposition = function() {
 /**
  * Render
  *
- * @param {String} mode Render mode.
  */
-ViewObj.prototype.render = function(mode) {
-
-    this.moveTo(this.position);
-
-    // this is a pretty naive way of handling the transition.
-    // we probably need an 'unrender'/destroy method in the renderers
-    if (mode != null) this.renderMode = mode;
-    ViewObjRenderers[this.renderMode['name']](this, this.renderMode);
+ViewObj.prototype.render = function() {
 
     // as much as it irks me to do context menus this way, better to include
     // jQuery than try to write my own context menus!
@@ -602,6 +591,7 @@ ViewObj.prototype.render = function(mode) {
     }
     jQuery(this.svg[0][0]).find('.tinyHalo').contextMenu('wedgeMenu', bindings);
 
+    ViewObjRenderers[this.renderMode['name']](this);
     // render all children
     this.children().map(function(child) { child.render(); });
 
@@ -663,12 +653,11 @@ ViewObjRenderers.scaleFactor = function(minValue, naturalValue) {
  * Draws either 4, 2 or 1 sectors, depending on the data and metadata.
  * Draws scale rings.
  * @param {ViewObj} viewObj The viewObj to render.
- * @param {Object} renderMode A rendermode specification.
- *                            See ViewObj's constructor.
  */
-ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
+ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
 
     var p = viewObj.period();
+    var renderMode = viewObj.renderMode;
 
     /***** Pre-process the data */
     var data = JSON.parse(JSON.stringify(viewObj.data()));
@@ -1240,9 +1229,10 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj, renderMode) {
 };
 
 ViewObjRenderers.defaultSectorRenderer.dollarRadiusWhenRendered = function(
-    viewObj, renderMode) {
+    viewObj) {
 
     var data = JSON.parse(JSON.stringify(viewObj.data()));
+    var renderMode = viewObj.renderMode;
 
     // which aggregates are we interested in?
     if (renderMode['specifiedAggregates']) {
@@ -1274,7 +1264,7 @@ ViewObjRenderers.defaultSectorRenderer.dollarRadiusWhenRendered = function(
 };
 
 /************************************************************ Bubble Renderer */
-ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
+ViewObjRenderers.bubbleRenderer = function(viewObj) {
 
     var p = viewObj.period();
     var category = viewObj['category'];
@@ -1430,7 +1420,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, renderMode) {
 };
 
 ViewObjRenderers.bubbleRenderer.dollarRadiusWhenRendered =
-    function(viewObj, renderMode) {
+    function(viewObj) {
         return viewObj.data()['periods'][viewObj.period()]['value'];
     };
 
@@ -1495,8 +1485,7 @@ function packingEfficiency(viewObj) {
 
     var innerRadius = viewstate.scaler(
         ViewObjRenderers[viewObj.renderMode['name']]
-        .dollarRadiusWhenRendered(viewObj,
-                                  viewObj.renderMode));
+        .dollarRadiusWhenRendered(viewObj));
     var outerRadius = viewstate.scaler(viewObj.boundingCircle.radius);
 
     return (sum + innerRadius * innerRadius) /

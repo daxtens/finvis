@@ -74,10 +74,14 @@ test('viewObj basic render tests', function() {
        "Un-popped out has no poppedOut class.");
 
     vo.popOut(0);
+    vo.reposition();
+    vo.render();
     ok(jQuery('path.wedge').attr("class").indexOf("poppedOut") != -1,
        "Popping out adds poppedOut class.");
     
     vo.popIn();
+    vo.reposition();
+    vo.render();
     ok(jQuery('path.wedge').attr("class").indexOf("poppedOut") == -1,
        "Popping in removes poppedOut class.");
 
@@ -115,9 +119,13 @@ test('viewObj packingEfficiency tests', function() {
     ok(packingEfficiency(vo) == 1, 'Unexpanded DSR has efficiency 1');
     
     vo.popOut(0);
+    vo.reposition();
+    vo.render();
     ok(packingEfficiency(vo) == 1, 'Expanded DSR has efficiency 1');
 
     vo.children()[0].popOut(0);
+    vo.reposition();
+    vo.render();
     assertNearlyEqual(packingEfficiency(vo.children()[0]), 0.5, 0.00001,
                       'Packing efficiency of two identical items is 0.5');
     vo.popIn();
@@ -126,6 +134,8 @@ test('viewObj packingEfficiency tests', function() {
     window.packing = 'default';
     vo.popOut(0);
     vo.children()[1].popOut();
+    vo.reposition();
+    vo.render();
     assertNearlyEqual(packingEfficiency(vo.children()[1]), 
                       4 / ((Math.sqrt(2) + 2) * (Math.sqrt(2) + 2)), 0.00001,
                       'Packing efficiency of 2=1+1 in old packing model is ' +
@@ -136,6 +146,8 @@ test('viewObj packingEfficiency tests', function() {
     window.packing = 'dendritic';
     vo.popOut(0);
     vo.children()[1].popOut();
+    vo.reposition();
+    vo.render();
     assertNearlyEqual(packingEfficiency(vo.children()[1]), 0.641412, 0.00001,
                       'Packing efficiency of 2=1+1 in new packing model is a ' +
                       'known constant: TODO rigorously verify.')
