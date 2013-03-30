@@ -13,7 +13,7 @@ test('viewstate zoom basics', function() {
 
     viewstate.zoom(2, [viewstate.width / 2, viewstate.height / 2], true);
     var newsize = vo.svg[0][0].getBBox();
-    console.log(size, newsize);
+    
     // these are worrying inexact
     assertNearlyEqual(newsize.width, Math.sqrt(2) * size.width, epsilon,
                       'Upscaled width OK?');
@@ -73,8 +73,7 @@ test('viewstate: dollar positions remain invariant upon scaling', function() {
         var vo1width = vo1.svg[0][0].getBBox()['width'];
         var vo1x = vo1.svg.attr('transform').match(re)[1]*1;
         var vo2x = vo2.svg.attr('transform').match(re)[1]*1;
-        console.log(vo1width, vo1x, vo2x, vo1x+vo1width);
-
+        
         return (Math.abs((vo1x + vo1width) - vo2x) < epsilon);
     }
 
