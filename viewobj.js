@@ -22,20 +22,11 @@
 *                             inconsistent mess around where category is stored.
  */
 function ViewObj(data, parent, position, category) {
-    this._data = data;
-
     this.ParentingObject = ParentingObject;
     this.ParentingObject();
 
     this.parent = parent;
     this.parent.addChild(this);
-
-    this.position = position;
-    this.boundingCircle = {};
-
-    if (category) this['category'] = category;
-    else if (this._data['category']) this['category'] = this._data['category'];
-    if (this._data['item']) this._data = this._data['item'];
 
     /* getter and setter for data
      */
@@ -43,7 +34,19 @@ function ViewObj(data, parent, position, category) {
         if (arguments.length == 0) return this._data;
 
         this._data = arguments[0];
+        
+        /* Category */
+        if (this._data['category']) this['category'] = this._data['category'];
+
+        /* Extract item from Item Entity */
+        if (this._data['item']) this._data = this._data['item'];
+
     };
+
+
+    this.data(data);
+    // potentially override category.
+    if (category) this['category'] = category;
 
     /* getter and setter for year/time period
      */
@@ -76,6 +79,10 @@ function ViewObj(data, parent, position, category) {
             this.renderMode = {'name': 'bubbleRenderer'};
         }
     }
+    this.boundingCircle = {};
+
+    /* Position */
+    this.moveTo(position);
 
     /* Event handling */
     var that = this;
