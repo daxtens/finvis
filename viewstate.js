@@ -134,7 +134,11 @@ ViewState.prototype.zoom = function(factor, about, immediate) {
         that.children().map(function(child) {
             // zooming changes the scaler. This keeps the pt position up to
             // date with the dollar position.
-            child.moveTo(child.position);
+            var reposition = function(child) {
+                child.moveTo(child.position);
+                child.children().map(reposition);
+            }
+            reposition(child);
             child.render();
         });
         that.scaleFactor = 1;

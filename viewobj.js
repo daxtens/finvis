@@ -587,6 +587,8 @@ ViewObj.prototype.render = function() {
                          that.popIn();
                          that.popOut(0);
                          that.popOut(1);
+                         that.reposition();
+                         that.render();
                      }
                    };
 
