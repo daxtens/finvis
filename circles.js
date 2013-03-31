@@ -129,7 +129,10 @@ function symmetricBoundingCircleForCircles(circles, tangentPt, centerPt) {
 
     // 'assume' that |pt2 - pt1| is our original radius
     var start = 2 * lineLength(tangentPt, centerPt);
-    var end = start + 4 * max;
+    // there's really no limit to how much this can blow out
+    // 4 * is insufficient (the open budget 2012-13: pop out EEWR, Early 
+    // Childhood fully and T&LFSS fully)
+    var end = start + 8 * max;
 
     var diameter = bSearch(start, end, 0.01, evaluateSolution);
 
