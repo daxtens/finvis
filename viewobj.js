@@ -299,7 +299,7 @@ function ViewObj(data, parent, position, category) {
             var sum = 0;
             for (var j = 0; j < list.length - 1; j++) {
                 sum += fn(R, bubblePtRadii[list[j]],
-                                bubblePtRadii[list[j + 1]]);
+                          bubblePtRadii[list[j + 1]]);
             }
             return sum;
         },
@@ -354,14 +354,14 @@ function ViewObj(data, parent, position, category) {
                                     bubblePtRadii[list1[0]]);
             } else {
                 var subangle;
-                subangle = sumPhiAcrossWithPadding(R, list1, bubblePtRadii);
+                subangle = calcs.sumPhiAcrossWithPadding(R, list1, bubblePtRadii);
                 if (subangle > Math.PI) {
                     sum += calcs.dPsidR(R, bubblePtRadii[list1[0]]);
                     sum += calcs.sumFnAcross(calcs.dPhidR, R, list1, bubblePtRadii);
                     sum += calcs.dPsidR(R, bubblePtRadii[list1[list1.length - 1]]);
                 } // else Pi, derivative = 0
 
-                subangle = sumPhiAcrossWithPadding(R, list2, bubblePtRadii);
+                subangle = calcs.sumPhiAcrossWithPadding(R, list2, bubblePtRadii);
                 if (subangle > Math.PI) {
                     sum += calcs.dPsidR(R, bubblePtRadii[list2[0]]);
                     sum += calcs.sumFnAcross(calcs.dPhidR, R, list2, bubblePtRadii);
@@ -738,8 +738,7 @@ function ViewObj(data, parent, position, category) {
         if (dendritic) {
             //console.log(sectorPtRadius, initialRadius);
             var tangentPt = [-sectorPtRadius, 0];
-            var result = symmetricBoundingCircleForCircles(circles, tangentPt,
-                                                           [0, 0]);
+            var result = optimisedDendriticBoundingCircleForCircles(circles, tangentPt, [0,0]);
         } else {
             var result = minimumBoundingCircleForCircles(circles);
         }
