@@ -84,7 +84,9 @@ jQuery('document').ready(function() {
                     cancelAddEntity();
                 } else {
                     //console.log(d);
-                    viewstate.beginAddingView(d);
+                    var sel = jQuery('#periodSel')[0];
+                    viewstate.beginAddingView(d, sel.options[
+                        sel.selectedIndex].value);
                 }
             },
             error: function(d) {
@@ -110,8 +112,11 @@ jQuery('document').ready(function() {
  */
 window['periodChange'] = function(sel) {
     var chosenoption = sel.options[sel.selectedIndex];
-    viewstate.children().map(function(obj) {obj.period(chosenoption.value);});
-    viewstate.children().map(function(obj) {obj.render();});
+    viewstate.children().map(function(obj) {
+        obj.period(chosenoption.value);
+        obj.reposition(true);
+        obj.render(true);
+    });
 };
 
 /** Fit every viewObj currently in the viewstate on to the screen
@@ -142,7 +147,9 @@ function addEntityUI() {
 function addEntityBtn() {
     addEntityUI();
     var entitySel = jQuery('#entitySel')[0];
-    viewstate.beginAddingView(entities[entitySel.selectedIndex]);
+    var sel = jQuery('#periodSel')[0];
+    viewstate.beginAddingView(entities[entitySel.selectedIndex], 
+                              sel.options[sel.selectedIndex].value);
 }
 
 /** Cancel the entity selection and adding process.
@@ -150,7 +157,7 @@ function addEntityBtn() {
 function cancelAddEntity() {
     jQuery('#addEntityContainer').addClass('hidden');
     jQuery('#entitySel').prop('disabled', false);
-    jQuery('#ephemeralUploadFile').prop('disabled', false);
+    jQuery('#ephemeralUploadFile').prop('disabled', false)
     jQuery('#ephemeralUploadBtn').prop('disabled', false);
     jQuery('#addEntity').removeClass('hidden');
     jQuery('#clickToPlaceTxt').addClass('hidden');

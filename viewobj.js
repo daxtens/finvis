@@ -49,26 +49,47 @@ function ViewObj(data, parent, position, category) {
     if (category) this['category'] = category;
 
     /* getter and setter for year/time period
+       guaranteed to always return a period for which we have data
+       if a period is set for which we have no data, .isInvalidPeriod is set.
      */
     this.period = function() {
-        if (arguments.length == 0) return this._period;
+        if (arguments.length == 0) {
+            if (!this.isInvalidPeriod) return this._period;
+            else return this._oldPeriod;
+        }
 
         if (this._period != arguments[0]) {
-            this._period = arguments[0];
-            var thePeriod = arguments[0];
-            this.children().map(function(child) { child.period(thePeriod); });
+            var oldPeriod = this._period;
+            var newPeriod = arguments[0];
+            this._period = newPeriod;
+
+            var periods = ('periods' in this.data()) ? this.data()['periods'] :
+                this.data()['aggregates'][0]['periods'];
+
+            if (newPeriod in periods) { 
+                this.isInvalidPeriod = false;
+            } else {
+                if (oldPeriod) this._oldPeriod = oldPeriod;
+                else this._oldPeriod = Object.keys(periods)[0];
+                this.isInvalidPeriod = true;
+            }
+            this.children().map(function(child) { child.period(newPeriod); });
         }
     };
 
     /* Rendering
 
-       svg is the context to draw stuff into.
+       svg is the context to draw stuff into. It's position is affected by the
+       bounding circle's cx and cy.
+
+       _svg is the context that moves the viewObj and children as a whole.
 
        renderMode choses a renderer, render() kicks the process off,
        the heavy lifting is done by the renderers stored in the ViewObjRenders
        array.
     */
-    this.svg = this.parent.svg.append('g');
+    this._svg = this.parent.svg.append('g');
+    this.svg = this._svg.append('g');
 
     if (this.data().metadata && this.data().metadata.renderMode) {
         this.renderMode = this.data().metadata.renderMode;
@@ -98,9 +119,8 @@ function ViewObj(data, parent, position, category) {
             that.position = that.position.map(viewstate.scaler);
             that.position[0] += d3.event.x;
             that.position[1] += d3.event.y;
-            that.svg.attr('transform',
-                          'translate( ' + that.position.join(',') + ' )');
             that.position = that.position.map(viewstate.scaler.invert);
+            that.moveTo(that.position);
         });
 
 
@@ -166,7 +186,7 @@ function ViewObj(data, parent, position, category) {
         };
     };
 
-    this._reposition = function() {
+    this._repositionBottomUp = function(animate) {
         /* having bubbled up to the top, now descend to get correct sizes,
            then position and bound on the way back up.
         */
@@ -179,7 +199,7 @@ function ViewObj(data, parent, position, category) {
         var items = this.children();
         if (items.length) {
             for (var item = 0; item < items.length; item++) {
-                items[item]._reposition();
+                items[item]._repositionBottomUp(animate);
             }
 
             var prevType = '';
@@ -193,8 +213,38 @@ function ViewObj(data, parent, position, category) {
                     break;
                 }
             }
+            this.boundingCircle.radius =
+                this.determineSizesGivenParameters(list2Start, innerRadius);
+            //console.log(this.data().name, this.boundingCircle.radius);
+        }
+    };
+
+    this._repositionTopDown = function(animate) {
+
+        var innerRadius = ViewObjRenderers[this.renderMode['name']]
+            .dollarRadiusWhenRendered(this);
+
+        var items = this.children();
+        if (items.length) {
+
+            var prevType = '';
+            var list2Start = -1;
+
+            // mess to pop out 2 aggregates at once.
+            prevType = items[0]['category'];
+            for (var item = 1; item < items.length; item++) {
+                if (items[item]['category'] != prevType) {
+                    list2Start = item;
+                    break;
+                }
+            }
             this.boundingCircle =
-                this.repositionItemsGivenParameters(list2Start, innerRadius);
+                this.repositionItemsGivenParameters(list2Start, innerRadius,
+                                                    animate);
+
+            for (var item = 0; item < items.length; item++) {
+                items[item]._repositionTopDown(animate);
+            }
         }
     };
 
@@ -202,7 +252,6 @@ function ViewObj(data, parent, position, category) {
      * Actually do the work of repositioning items.
      * Based on:
      * http://math.stackexchange.com/questions/251399/what-is-the-smallest-circle-such-that-an-arbitrary-set-of-circles-can-be-placed
-     * Assumes the items are presorted.
      * Massively complicated by the thought of handling 2 lists:
      * - each must fit completely in the pi radians their sector traces out
      * -- this requires tangent to the perpendicular padding at each end
@@ -212,38 +261,53 @@ function ViewObj(data, parent, position, category) {
      * @param {number} list2Start The index at which list 2 begins,
      *                            or -1 if there's only 1 list.
      * @param {number} initialRadius the inner radius of the object.
+     * @param {boolean} animate animate the transition?
      * @return {number} the resultant outer radius.
      */
     this.repositionItemsGivenParameters = function(
-        list2Start, initialRadius) {
+        list2Start, initialRadius, animate) {
 
         var dendritic = (window.packing == 'dendritic' &&
                          this.renderMode.name != 'defaultSectorRenderer');
 
-        // translate [lowerbound, upperbound) to a list, optionally
+
+        var items = this.children();
+
+        // translate [lowerbound, upperbound) to a sorted list, optionally
         // reordering it dendritically.
+        var that = this;
         var boundsToList = function(lowerbound, upperbound, dendritic) {
             var itemIdxs = [];
+            // create a sorting map
+            var map = [];
+            for (var i = 0; i < upperbound - lowerbound; i++) {
+                var d = items[lowerbound + i].data();
+                map.push({'index': lowerbound + i,
+                          'value': d['periods'][that.period()]['value']
+                         });
+            }
+            map.sort(function(a, b) {
+                return b['value'] - a['value'];
+            });
+                
             if (dendritic) {
                 // sort the items so that the biggest is in the middle
                 // then they reduce in size alternately on either side.
                 // e.g. 1 2 3 4 5 6 7 8 9
                 // ---> 9 7 5 3 1 2 4 6 8
-                for (var i = lowerbound; i < upperbound; i += 2) {
-                    itemIdxs.push(i);
+                for (var i = 0; i < upperbound - lowerbound; i += 2) {
+                    itemIdxs.push(map[i].index);
                 }
-                for (var i = lowerbound + 1; i < upperbound; i += 2) {
-                    itemIdxs.unshift(i);
+                for (var i = 1; i < upperbound - lowerbound; i += 2) {
+                    itemIdxs.unshift(map[i].index);
                 }
             } else {
-                for (var item = lowerbound; item < upperbound; item++) {
-                    itemIdxs.push(item);
+                for (var item = 0; item < upperbound - lowerbound; item++) {
+                    itemIdxs.push(map[item].index);
                 }
             }
             return itemIdxs;
         };
-
-        var items = this.children();
 
         /* do maths to figure out how to position and space the bubbles
 
@@ -370,13 +434,14 @@ function ViewObj(data, parent, position, category) {
         }
 
         var treeAngle = this.treeAngle;
+        var that  = this;
         var actuallyPosition = function(itemIdxs, domain, range, angleOffset,
                                         tangentPad) {
 
             var angleScaler = d3.scale.linear()
                 .domain([0, domain])
                 .range([0, (dendritic ? domain : range)]);
-            if (treeAngle && dendritic) {
+            if (('treeAngle' in that) && dendritic) {
                 var angle = treeAngle - domain / 2;
             } else {
                 var angle = angleOffset;
@@ -388,10 +453,8 @@ function ViewObj(data, parent, position, category) {
             for (var i = 0; i < itemIdxs.length; i++) {
                 var item = itemIdxs[i];
                 var itemPosition = [
-                    (sectorPtRadius + bubblePtRadii[item]) * Math.cos(angle) -
-                        viewstate.scaler(items[item].boundingCircle.cx),
-                    (sectorPtRadius + bubblePtRadii[item]) * Math.sin(angle) -
-                        viewstate.scaler(items[item].boundingCircle.cy)
+                    (sectorPtRadius + bubblePtRadii[item]) * Math.cos(angle),
+                    (sectorPtRadius + bubblePtRadii[item]) * Math.sin(angle)
                 ].map(viewstate.scaler.invert);
                 items[item].treeAngle = angle;
                 if (i + 1 < itemIdxs.length) {
@@ -399,7 +462,7 @@ function ViewObj(data, parent, position, category) {
                                              bubblePtRadii[item],
                                              bubblePtRadii[itemIdxs[i + 1]]));
                 }
-                items[item].moveTo(itemPosition);
+                items[item].moveTo(itemPosition, animate);
 
             }
         };
@@ -423,35 +486,287 @@ function ViewObj(data, parent, position, category) {
 
         var circles = items.map(function(child) {
             var circle = child.boundingCircle;
-            return {cx: viewstate.scaler(circle.cx) +
-                    viewstate.scaler(child.position[0]),
-                    cy: viewstate.scaler(circle.cy) +
-                    viewstate.scaler(child.position[1]),
+            return {cx: viewstate.scaler(child.position[0]),
+                    cy: viewstate.scaler(child.position[1]),
                     radius: viewstate.scaler(circle.radius) };
         });
         circles.push({cx: 0, cy: 0, radius: viewstate.scaler(initialRadius)});
 
-        result = minimumBoundingCircleForCircles(circles);
+        if (dendritic) {
+            var tangentPt = [ -sectorPtRadius * Math.cos(treeAngle),
+                          -sectorPtRadius * Math.sin(treeAngle)];
+            result = symmetricBoundingCircleForCircles(circles, tangentPt, [0,0]);
+        } else {
+            result = minimumBoundingCircleForCircles(circles);
+        }
         result.radius = viewstate.scaler.invert(result.radius);
         result.cx = viewstate.scaler.invert(result.cx);
         result.cy = viewstate.scaler.invert(result.cy);
         return result;
     };
 
+    this.determineSizesGivenParameters = function(
+        list2Start, initialRadius) {
+
+        var dendritic = (window.packing == 'dendritic' &&
+                         this.renderMode.name != 'defaultSectorRenderer');
+
+
+        var items = this.children();
+
+        // translate [lowerbound, upperbound) to a sorted list, optionally
+        // reordering it dendritically.
+        var that = this;
+        var boundsToList = function(lowerbound, upperbound, dendritic) {
+            var itemIdxs = [];
+            // create a sorting map
+            var map = [];
+            for (var i = 0; i < upperbound - lowerbound; i++) {
+                var d = items[i + lowerbound].data();
+                map.push({'index': i + lowerbound,
+                          'value': d['periods'][that.period()]['value']
+                         });
+            }
+            map.sort(function(a, b) {
+                return b['value'] - a['value'];
+            });
+                
+            if (dendritic) {
+                // sort the items so that the biggest is in the middle
+                // then they reduce in size alternately on either side.
+                // e.g. 1 2 3 4 5 6 7 8 9
+                // ---> 9 7 5 3 1 2 4 6 8
+                for (var i = 0; i < upperbound - lowerbound; i += 2) {
+                    itemIdxs.push(map[i].index);
+                }
+                for (var i = 1; i < upperbound - lowerbound; i += 2) {
+                    itemIdxs.unshift(map[i].index);
+                }
+            } else {
+                for (var item = 0; item < upperbound - lowerbound; item++) {
+                    itemIdxs.push(map[item].index);
+                }
+            }
+            return itemIdxs;
+        };
+
+        /* do maths to figure out how to position and space the bubbles
+
+           NB: We can't add dollar values to get the new radius due to sqrt
+           scaling.
+        */
+        var sectorPtRadius = viewstate.scaler(initialRadius);
+        var bubblePtRadii = [];
+        var bubbleAngles = [];
+        var count = 0;
+
+        var phi = function(R, ri, ri1) {
+            return Math.acos((R * R + R * ri + R * ri1 - ri * ri1) /
+                             ((R + ri) * (R + ri1)));
+        };
+
+        // this is the function for tangent padding
+        var psi = function(R, r) {
+            return Math.asin(r / (r + R));
+        };
+
+        var sumFnAcross = function(fn, R, list) {
+            var sum = 0;
+            for (var j = 0; j < list.length - 1; j++) {
+                sum += fn(R, bubblePtRadii[list[j]],
+                          bubblePtRadii[list[j + 1]]);
+            }
+            return sum;
+        };
+
+        var sumPhiAcrossWithPadding = function(R, list) {
+            var subangle;
+            subangle = psi(R, bubblePtRadii[list[0]]);
+            subangle += sumFnAcross(phi, R, list);
+            subangle += Math.asin(bubblePtRadii[list[list.length - 1]] /
+                                  (bubblePtRadii[list[list.length - 1]] + R));
+            return subangle;
+        };
+
+        var f = function(R) {
+            var sum = 0;
+            if (list2Start == -1) {
+                var list = boundsToList(0, items.length, dendritic);
+                sum += sumFnAcross(phi, R, list);
+                sum += phi(R, bubblePtRadii[list[list.length - 1]],
+                           bubblePtRadii[list[0]]);
+            } else {
+                /* for each list:
+                   - tangent to the perpendicular padding on each end.
+                   - angle is max( pi, sum ): don't allow it to be squeezed out
+                */
+                var subangle;
+                var list1 = boundsToList(0, list2Start, dendritic);
+                subangle = sumPhiAcrossWithPadding(R, list1);
+                sum += Math.max(Math.PI, subangle);
+                var list2 = boundsToList(list2Start, items.length, dendritic);
+                subangle = sumPhiAcrossWithPadding(R, list2);
+                sum += Math.max(Math.PI, subangle);
+            }
+            return 2 * Math.PI - sum;
+        };
+
+        var dPhidR = function(R, ri, ri1) {
+            var radicand = (R * ri * ri1 * (R + ri + ri1)) /
+                (Math.pow((R + ri) * (R + ri1), 2));
+            var numerator = Math.sqrt(radicand) * (2 * R + ri + ri1);
+            return - numerator / (R * (R + ri + ri1));
+        };
+
+        var dPsidR = function(R, r) {
+            return - r / ((r + R) * Math.sqrt(R * (2 * r + R)));
+        };
+
+        var dFdR = function(R) {
+            // this is massively complicated by the 2 list requirement
+            var sum = 0;
+            if (list2Start == -1) {
+                var list = boundsToList(0, items.length, dendritic);
+                sum += sumFnAcross(dPhidR, R, list);
+                sum += dPhidR(R, bubblePtRadii[list[list.length - 1]],
+                              bubblePtRadii[list[0]]);
+            } else {
+                var subangle;
+                var list1 = boundsToList(0, list2Start, dendritic);
+                subangle = sumPhiAcrossWithPadding(R, list1);
+
+                if (subangle > Math.PI) {
+                    sum += dPsidR(R, bubblePtRadii[list1[0]]);
+                    sum += sumFnAcross(dPhidR, R, list1);
+                    sum += dPsidR(R, bubblePtRadii[list1[list1.length - 1]]);
+                } // else Pi, derivative = 0
+
+                var list2 = boundsToList(list2Start, items.length, dendritic);
+                subangle = sumPhiAcrossWithPadding(R, list2);
+                if (subangle > Math.PI) {
+                    sum += dPsidR(R, bubblePtRadii[list2[0]]);
+                    sum += sumFnAcross(dPhidR, R, list2);
+                    sum += dPsidR(R, bubblePtRadii[list2[list2.length - 1]]);
+                } // else Pi, derivative = 0
+            }
+            return -sum;
+        };
+
+        var bubbleAnglesSum = function() {
+            return 2 * Math.PI - f(sectorPtRadius);
+        };
+
+        for (var item = 0; item < items.length; item++) {
+            var itemRadius = items[item].boundingCircle.radius;
+            bubblePtRadii[item] = viewstate.scaler(itemRadius);
+        }
+
+        // Newton's method
+        if (bubbleAnglesSum() > 2 * Math.PI) {
+
+            var Rn = sectorPtRadius;
+            var Rn1 = Rn - f(Rn) / dFdR(Rn);
+
+            while (Math.abs((Rn - Rn1) / Rn) > 0.01 || f(Rn1) < 0) {
+                Rn = Rn1;
+                Rn1 = Rn - f(Rn) / dFdR(Rn);
+            }
+            sectorPtRadius = Rn1;
+        }
+
+        var treeAngle = this.treeAngle;
+        var generatePositions = function(itemIdxs, domain, range, angleOffset,
+                                        tangentPad) {
+
+            var angleScaler = d3.scale.linear()
+                .domain([0, domain])
+                .range([0, (dendritic ? domain : range)]);
+            if (treeAngle && dendritic) {
+                var angle = 0 - domain / 2;
+            } else {
+                var angle = angleOffset;
+            }
+            if (tangentPad) angle += angleScaler(psi(sectorPtRadius,
+                                                     bubblePtRadii[itemIdxs[0]])
+                                                );
+
+            circles = []
+            for (var i = 0; i < itemIdxs.length; i++) {
+                var item = itemIdxs[i];
+                var itemPosition = [
+                    (sectorPtRadius + bubblePtRadii[item]) * Math.cos(angle),
+                    (sectorPtRadius + bubblePtRadii[item]) * Math.sin(angle)
+                ];
+                if (i + 1 < itemIdxs.length) {
+                    angle += angleScaler(phi(sectorPtRadius,
+                                             bubblePtRadii[item],
+                                             bubblePtRadii[itemIdxs[i + 1]]));
+                }
+                circles.push({'cx': itemPosition[0],
+                              'cy': itemPosition[1],
+                              'radius': viewstate.scaler(
+                                  items[item].boundingCircle.radius)});
+
+            }
+            return circles;
+        };
+
+        if (list2Start == -1) {
+            var list = boundsToList(0, items.length, dendritic);
+            var circles = generatePositions(list, bubbleAnglesSum(),
+                             2 * Math.PI, Math.PI, false);
+        } else {
+            var list1 = boundsToList(0, list2Start);
+            var circles = generatePositions(list1,
+                             sumPhiAcrossWithPadding(sectorPtRadius, list1),
+                             Math.PI, Math.PI, true);
+            var list2 = boundsToList(list2Start, items.length, dendritic);
+            var circles = generatePositions(list2,
+                             sumPhiAcrossWithPadding(sectorPtRadius, list2),
+                             Math.PI, 0, true);
+        }
+
+        circles.push({cx: 0, cy: 0, radius: viewstate.scaler(initialRadius)});
+
+        //console.log(circles);
+        if (dendritic) {
+            console.log(sectorPtRadius, initialRadius);
+            var tangentPt = [-sectorPtRadius, 0];
+            var result = symmetricBoundingCircleForCircles(circles, tangentPt,
+                                                           [0, 0]);
+        } else {
+            var result = minimumBoundingCircleForCircles(circles);
+        }
+        result.radius = viewstate.scaler.invert(result.radius);
+        return result.radius;
+    };
+
+
+}
+
+ViewObj.prototype.peek = function() {
+    var method = arguments[0];
+    var args = [];
+    for (var i = 1; i<arguments.length; i++) args.push(arguments[i]);
+    this[method].apply(this, args);
 }
 
 /**
  * Move myself to the given position.
  * units are dollars
  * @param {Array.<number>} position New position.
+ * @param {boolean=} animate Should the movement be animated?
  */
-ViewObj.prototype.moveTo = function(position) {
-    if (arguments.length == 2) position = arguments;
+ViewObj.prototype.moveTo = function(position, animate) {
     this.position = position;
-    this.svg.attr('transform',
-                  'translate(' +
-                  this.position.map(viewstate.scaler).join(',') +
-                  ')');};
+    var updater;
+    if (animate) updater = this._svg.transition().duration(1000);
+    else updater = this._svg;
+    updater.attr('transform',
+                'translate(' +
+                this.position.map(viewstate.scaler).join(',') +
+                ')');
+};
 
 /**
  * Removes current object from svg.
@@ -483,11 +798,8 @@ ViewObj.prototype.popIn = function() {
 /**
  * Select items and category of instance data()
  *  or of its aggregates if aggregates are present
- * Sort items on value within period.
  * Create a new ViewObj for every item with a value > 0
  *    and render it with bubbleRenderer
- * Reposition.
- * Call render method of object's most distant ViewObj ancestor
  * @param {number=} aggregate The index of the aggregate
  *                  (revenue/expenditure/assets/liabilites) to pop out.
  *                  Ignored if not a sector based object.
@@ -506,13 +818,6 @@ ViewObj.prototype.popOut = function(aggregate) {
     this.poppedOutAggregate = aggregate;
     this.poppedOut = true;
 
-    items = JSON.parse(JSON.stringify(items));
-    var that = this;
-    items.sort(function(a, b) {
-        return b['periods'][that.period()]['value'] -
-            a['periods'][that.period()]['value'];
-    });
-
     var numChildren = items.length;
 
     for (var item in items) {
@@ -520,6 +825,8 @@ ViewObj.prototype.popOut = function(aggregate) {
         if (items[item]['periods'][this.period()]['value'] <= 0) continue;
         var itemObj = new ViewObj(items[item], this, [0, 0], category);
         itemObj.period(this.period());
+        itemObj._oldPeriod = this._oldPeriod;
+        itemObj.isInvalidPeriod = this.isInvalidPeriod;
         itemObj.renderMode = {'name': 'bubbleRenderer'};
     }
 };
@@ -541,8 +848,9 @@ ViewObj.prototype.canPopOut = function(aggregate) {
 
 /**
  * Find parent which is not a ViewObj then call _reposition method.
+ * @param {boolean=} animate Animate the movements?
  */
-ViewObj.prototype.reposition = function() {
+ViewObj.prototype.reposition = function(animate) {
     // calling reposition on anything in the chain causes the whole thing to be
     // rejigged
     var obj = this;
@@ -558,8 +866,18 @@ ViewObj.prototype.reposition = function() {
 
     Also thanks to the wonders of the dendritic layout, it requires two passes
     through the *entire* tree: you can't skip sections. */
-    obj._reposition();
-    obj._reposition();
+    obj._repositionBottomUp(animate);
+    obj._repositionTopDown(animate);
+    var recenterChild = function (child) {
+        child.svg.attr("transform", "translate(" +
+                  -viewstate.scaler(child.boundingCircle.cx) + "," +
+                  -viewstate.scaler(child.boundingCircle.cy) + ")");
+        child.children().map(recenterChild)
+    }
+    // don't apply circle movement to top level, otherwise it bounces around.
+    // just apply it to children.
+    obj.children().map(recenterChild);
+
     recalcPackingEfficiency();
 };
 
@@ -572,6 +890,8 @@ ViewObj.prototype.render = function() {
     // as much as it irks me to do context menus this way, better to include
     // jQuery than try to write my own context menus!
     // ... do this before children so they can do their own.
+    ViewObjRenderers[this.renderMode['name']](this);
+
     var that = this;
 
     var bindings = { 'deleteMenuItem' : function() { that.remove() },
@@ -610,7 +930,7 @@ ViewObj.prototype.render = function() {
     }
     jQuery(this.svg[0][0]).find('.tinyHalo').contextMenu('wedgeMenu', bindings);
 
-    ViewObjRenderers[this.renderMode['name']](this);
+    
     // render all children
     this.children().map(function(child) { child.render(); });
 
@@ -807,10 +1127,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
     var enterer = paths.enter().append('path')
         .classed('wedge', true)
         .classed('poppedOut', viewObj.poppedOut)
+        .classed('invalidPeriod', viewObj.isInvalidPeriod)
         .attr('d', arc)
-    //.on('mousedown', viewObj.onmousedownMaker())
-    //.on('mousemove', viewObj.onmousemoveMaker())
-    //.on('mouseup', viewObj.onmouseupMaker())
         .call(viewObj.dragHandler)
         .on('dblclick', viewObj.ondblclickMaker());
 
@@ -827,7 +1145,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
     // update arcs, ergh
     var updater = paths
         .attr('d', arc)
-        .classed('poppedOut', viewObj.poppedOut);
+        .classed('poppedOut', viewObj.poppedOut)
+        .classed('invalidPeriod', viewObj.isInvalidPeriod);
 
     // d3 does not seem to provide a nice way to set dynamic styles...
     for (var style in cssStyles) {
@@ -1327,9 +1646,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj) {
         .classed(category, true)
         .classed('wedge', true)
         .classed('poppedOut', function() {return viewObj.poppedOut;})
-    //.on('mousedown', viewObj.onmousedownMaker())
-    //.on('mousemove', viewObj.onmousemoveMaker())
-    //.on('mouseup', viewObj.onmouseupMaker())
+        .classed('invalidPeriod', viewObj.isInvalidPeriod)
         .call(viewObj.dragHandler)
         .on('dblclick', viewObj.ondblclickMaker())
         .classed('link', isLinked)
@@ -1340,7 +1657,8 @@ ViewObjRenderers.bubbleRenderer = function(viewObj) {
     circle.attr('r', function(d) {
         return viewstate.scaler(d['periods'][p]['value']);
     })
-        .classed('poppedOut', viewObj.poppedOut);
+        .classed('poppedOut', viewObj.poppedOut)
+        .classed('invalidPeriod', viewObj.isInvalidPeriod);
 
     /* Create section labels */
     var labelsGroup = viewObj.svg.select('g.labels');
@@ -1400,23 +1718,25 @@ ViewObjRenderers.bubbleRenderer = function(viewObj) {
         .call(viewObj.dragHandler)
         .on('click', link);
 
+    valueLabel
+        .text(function(d) {return formatDollarValue(d['periods'][p]['value']);});
+
     valueLabel.exit().remove();
 
     /* If I have children, draw a little circle around us all to indicate that
        we go together */
 
-    var enclosingCircleGroup = viewObj.svg.select('g.enclosingCircle');
-    if (enclosingCircleGroup.empty()) {
-        enclosingCircleGroup = viewObj.svg
-            .append('g')
-            .classed('enclosingCircle', true);
-    }
-
-
     var enclosingCircleData = [];
 
     if (viewObj.children().length && window.enclosingCircles) {
         enclosingCircleData.push(viewObj.boundingCircle);
+    }
+
+    var enclosingCircleGroup = viewObj.svg
+        .select('g.enclosingCircle');
+    if (enclosingCircleGroup.empty()) {
+        enclosingCircleGroup = viewObj.svg.append('g')
+            .classed('enclosingCircle', true);
     }
 
     var enclosingCircle = enclosingCircleGroup

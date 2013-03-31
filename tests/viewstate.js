@@ -70,9 +70,9 @@ test('viewstate: dollar positions remain invariant upon scaling', function() {
     
     function isTouching() {
         var re = "translate\\\(([-0-9.]+),"
-        var vo1width = vo1.svg[0][0].getBBox()['width'];
-        var vo1x = vo1.svg.attr('transform').match(re)[1]*1;
-        var vo2x = vo2.svg.attr('transform').match(re)[1]*1;
+        var vo1width = vo1._svg[0][0].getBBox()['width'];
+        var vo1x = vo1._svg.attr('transform').match(re)[1]*1;
+        var vo2x = vo2._svg.attr('transform').match(re)[1]*1;
         
         return (Math.abs((vo1x + vo1width) - vo2x) < epsilon);
     }
@@ -94,8 +94,8 @@ test('viewstate: dollar positions remain invariant upon scaling', function() {
     vo2 = vo1.children()[0];
 
     function isChildTouching() {
-        var parentWidth = vo1.svg[0][0].getBBox()['width'];
-        var childWidth = vo2.svg[0][0].getBBox()['width'];
+        var parentWidth = vo1._svg[0][0].getBBox()['width'];
+        var childWidth = vo2._svg[0][0].getBBox()['width'];
 
         return (Math.abs(parentWidth - 2 * childWidth) < epsilon);
     }

@@ -137,6 +137,16 @@ ViewState.prototype.zoom = function(factor, about, immediate) {
             var reposition = function(child) {
                 child.moveTo(child.position);
                 child.children().map(reposition);
+                var recenterChild = function (child) {
+                    child.svg.attr("transform", "translate(" +
+                                   -viewstate.scaler(child.boundingCircle.cx) + "," +
+                                   -viewstate.scaler(child.boundingCircle.cy) + ")");
+                    child.children().map(recenterChild);
+                };
+                // don't apply circle movement to top level, 
+                // otherwise it bounces around.
+                // just apply it to children.
+                child.children().map(recenterChild);
             }
             reposition(child);
             child.render();
@@ -162,7 +172,7 @@ ViewState.prototype.zoom = function(factor, about, immediate) {
  *                         display.
 */
 ViewState.prototype.centreViewOn = function(viewObj) {
-    var bbox = viewObj.svg[0][0].getBBox();
+    var bbox = viewObj._svg[0][0].getBBox();
 
     var doesHeightLimit =
         ((this.height / bbox.height) < (this.width / bbox.width)) ?
@@ -177,7 +187,7 @@ ViewState.prototype.centreViewOn = function(viewObj) {
     }
 
     this.zoom(scaleFactor, [0, 0], true);
-    bbox = viewObj.svg[0][0].getBBox();
+    bbox = viewObj._svg[0][0].getBBox();
 
     var xpos = bbox.x;
     var ypos = bbox.y;
@@ -225,9 +235,11 @@ ViewState.prototype.repositionChildren = function() {};
  * Begin process to add view data
  *
  * @param {Object} data Dropped data to view.
+ * @param {string} period The period to set for the new entity.
  */
-ViewState.prototype.beginAddingView = function(data) {
+ViewState.prototype.beginAddingView = function(data, period) {
     this._addingData = data;
+    this._addingPeriod = period;
     this.mouseData.inDropState = true;
 };
 
@@ -245,7 +257,7 @@ ViewState.prototype.finishAddingView = function(position) {
     position = position.map(this.scaler.invert);
 
     var vo = new ViewObj(this._addingData, this, position);
-    vo.period('2011-12');
+    vo.period(this._addingPeriod);
     vo.render();
 
     this.mouseData.inDropState = false;

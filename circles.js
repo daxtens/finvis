@@ -63,20 +63,13 @@ function minimumBoundingCircle(pts) {
  */
 function minimumBoundingCircleForCircles(circles) {
 
-    var areAllCirclesInOrOnCircle = function(circle) {
-        for (var i = 0; i < circles.length; i++) {
-            if (!isCircleInOrOnCircle(circles[i], circle)) return false;
-        }
-        return true;
-    };
-
     // try every pair and triple
     var best = {radius: 9E9};
 
     for (var i = 0; i < circles.length; i++) {
         for (var j = i + 1; j < circles.length; j++) {
             var circle = circleFrom2Circles(circles[i], circles[j]);
-            if (areAllCirclesInOrOnCircle(circle) &&
+            if (areAllCirclesInOrOnCircle(circles, circle) &&
                 circle.radius < best.radius) {
                 best.cx = circle.cx; best.cy = circle.cy;
                 best.radius = circle.radius;
@@ -86,7 +79,7 @@ function minimumBoundingCircleForCircles(circles) {
                 var signs = [-1, 1, 1, 1];
                 circle = apollonius(circles[i], circles[j], circles[k],
                                     signs);
-                if (areAllCirclesInOrOnCircle(circle) &&
+                if (areAllCirclesInOrOnCircle(circles, circle) &&
                     circle.radius < best.radius) {
                     best.cx = circle.cx; best.cy = circle.cy;
                     best.radius = circle.radius;
@@ -98,6 +91,63 @@ function minimumBoundingCircleForCircles(circles) {
     return best;
 }
 
+function symmetricBoundingCircleForCircles(circles, tangentPt, centerPt) {
+    // I don't know the equation, don't trust my geometry and don't have time
+    // to ask math.stackexchange. Do a binary search.
+
+    //console.log('begin', circles, tangentPt, centerPt);
+
+    // solve the following once to save time
+    var theta = Math.atan2((centerPt[1] - tangentPt[1]),
+                           (centerPt[0] - tangentPt[0]))
+
+    var evaluateSolution = function(diameter) {
+        //console.log(diameter);
+        // extend the line p2-p1 to have length diameter
+        var endPt = [tangentPt[0] + diameter * Math.cos(theta),
+                     tangentPt[1] + diameter * Math.sin(theta)];
+
+        // construct circle from p1, result
+        var result = circleFrom2Pts(tangentPt, endPt);
+
+        // are all circles within this circle?
+        if (areAllCirclesInOrOnCircle(circles, result)) {
+            // assume it's over-generous
+            //console.log('too big');
+            return 1;
+        } else {
+            //console.log('too small');
+            return -1;
+        }
+    }
+
+    // figure out the biggest circle to bound the bSearch
+    var max = -1;
+    for (var i = 0; i < circles.length; i++) {
+        if (circles[i].radius > max) max = circles[i].radius;
+    }
+
+    // 'assume' that |pt2 - pt1| is our original radius
+    var start = 2 * lineLength(tangentPt, centerPt);
+    var end = start + 4 * max;
+
+    var diameter = bSearch(start, end, 0.01, evaluateSolution);
+
+    var endPt = [tangentPt[0] + diameter * Math.cos(theta),
+                 tangentPt[1] + diameter * Math.sin(theta)];
+
+    //console.log(diameter, endPt);
+
+    // construct circle from p1, result
+    var result = circleFrom2Pts(tangentPt, endPt);   
+    //console.log('1end', result);
+    var altresult = minimumBoundingCircleForCircles(circles);
+    if (result.radius /  1.25 > altresult.radius) {
+        result = altresult;
+        console.log('2end', result);
+    }
+    return result;
+}
 
 
 /**
@@ -241,6 +291,15 @@ function apollonius(circle1, circle2, circle3, signs) {
     return {cx: x, cy: y, radius: r};
 }
 
+//
+var areAllCirclesInOrOnCircle = function(circles, circle) {
+        for (var i = 0; i < circles.length; i++) {
+            if (!isCircleInOrOnCircle(circles[i], circle)) return false;
+        }
+        return true;
+    };
+
+
 /**
  * Is the circle inside/on another circle?
  *
@@ -275,4 +334,25 @@ function lineLength(pt1, pt2) {
 function lineMidpoint(pt1, pt2) {
     return [(pt1[0] + pt2[0]) / 2,
             (pt1[1] + pt2[1]) / 2];
+}
+
+
+// Binary search
+function bSearch(start, end, tol, f) {
+    var guess = (start + end) / 2;
+    //var iterations = 0;
+    while (end - start > tol) {
+        //iterations++;
+        guess = (start + end) / 2;
+        var result = f(guess);
+        if (result == 0) {
+            return guess;
+        } else if (result > 0) {// too high
+            end = guess;
+        } else {
+            start = guess;
+        }
+    }
+    //console.log(iterations);
+    return (start + end) / 2;
 }

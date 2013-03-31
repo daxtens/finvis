@@ -8,6 +8,9 @@ circle.axis_circle {
   opacity: 0.8;
 }
 
+.wedge.invalidPeriod {
+    fill: #444;
+}
 
 .wedge.cannotPopOut {
 	stroke: #333;
