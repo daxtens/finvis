@@ -152,7 +152,7 @@ function optimisedDendriticBoundingCircleForCircles(circles, tangentPt, centerPt
     var altresult = minimumBoundingCircleForCircles(circles);
     if (result.radius /  1.25 > altresult.radius) {
         result = altresult;
-        console.log('2end', result);
+        //console.log('2end', result);
     }
     return result;
 }

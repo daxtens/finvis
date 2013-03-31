@@ -186,7 +186,7 @@ function ViewObj(data, parent, position, category) {
         };
     };
 
-    this._repositionBottomUp = function(animate) {
+    this._determineSizes = function() {
         /* having bubbled up to the top, now descend to get correct sizes,
            then position and bound on the way back up.
         */
@@ -194,29 +194,29 @@ function ViewObj(data, parent, position, category) {
             .dollarRadiusWhenRendered(this);
 
         this.boundingCircle = {cx: 0, cy: 0,
-                               radius: innerRadius};
+                               radius: innerRadius,
+                               innerRadius: innerRadius};
 
         var items = this.children();
-        if (items.length) {
-            for (var item = 0; item < items.length; item++) {
-                items[item]._repositionBottomUp(animate);
-            }
-
-            var prevType = '';
-            var list2Start = -1;
-
-            // mess to pop out 2 aggregates at once.
-            prevType = items[0]['category'];
-            for (var item = 1; item < items.length; item++) {
-                if (items[item]['category'] != prevType) {
-                    list2Start = item;
-                    break;
-                }
-            }
-            this.boundingCircle.radius =
-                this.determineSizesGivenParameters(list2Start, innerRadius);
-            //console.log(this.data().name, this.boundingCircle.radius);
+        if (!items.length) return;
+        
+        for (var item = 0; item < items.length; item++) {
+            items[item]._determineSizes();
         }
+
+        var prevType = '';
+        var list2Start = -1;
+        
+        // mess to pop out 2 aggregates at once.
+        prevType = items[0]['category'];
+        for (var item = 1; item < items.length; item++) {
+            if (items[item]['category'] != prevType) {
+                list2Start = item;
+                break;
+            }
+        }
+        this.boundingCircle =
+            this.determineSizeGivenParameters(list2Start, innerRadius);
     };
 
     this._repositionTopDown = function(animate) {
@@ -225,30 +225,38 @@ function ViewObj(data, parent, position, category) {
             .dollarRadiusWhenRendered(this);
 
         var items = this.children();
-        if (items.length) {
+        if (!items.length) return;
 
-            var prevType = '';
-            var list2Start = -1;
-
-            // mess to pop out 2 aggregates at once.
-            prevType = items[0]['category'];
-            for (var item = 1; item < items.length; item++) {
-                if (items[item]['category'] != prevType) {
-                    list2Start = item;
-                    break;
-                }
+        var prevType = '';
+        var list2Start = -1;
+        
+        // mess to pop out 2 aggregates at once.
+        prevType = items[0]['category'];
+        for (var item = 1; item < items.length; item++) {
+            if (items[item]['category'] != prevType) {
+                list2Start = item;
+                break;
             }
-            this.boundingCircle =
-                this.repositionItemsGivenParameters(list2Start, innerRadius,
-                                                    animate);
-
-            for (var item = 0; item < items.length; item++) {
-                items[item]._repositionTopDown(animate);
-            }
+        }
+        this.boundingCircle =
+            this.repositionItemsGivenParameters(list2Start, innerRadius,
+                                                animate);
+        
+        for (var item = 0; item < items.length; item++) {
+            items[item]._repositionTopDown(animate);
         }
     };
 
     var that = this;
+    /* The calculations for positioning stuff
+     * Based on:
+     * http://math.stackexchange.com/questions/251399/what-is-the-smallest-circle-such-that-an-arbitrary-set-of-circles-can-be-placed
+     * Massively complicated by the thought of handling 2 lists:
+     * - each must fit completely in the pi radians their sector traces out
+     * -- this requires tangent to the perpendicular padding at each end
+     * -- a big list cannot squeeze out a small list: angle = max(pi, sum)
+     * -- hence derivatives get reeeeeeally messy.
+     */
     var calcs = {
         // translate [lowerbound, upperbound) to a sorted list, optionally
         // reordering it dendritically.
@@ -378,19 +386,12 @@ function ViewObj(data, parent, position, category) {
 
     /**
      * Actually do the work of repositioning items.
-     * Based on:
-     * http://math.stackexchange.com/questions/251399/what-is-the-smallest-circle-such-that-an-arbitrary-set-of-circles-can-be-placed
-     * Massively complicated by the thought of handling 2 lists:
-     * - each must fit completely in the pi radians their sector traces out
-     * -- this requires tangent to the perpendicular padding at each end
-     * -- a big list cannot squeeze out a small list: angle = max(pi, sum)
-     * -- hence derivatives get reeeeeeally messy.
      *
      * @param {number} list2Start The index at which list 2 begins,
      *                            or -1 if there's only 1 list.
      * @param {number} initialRadius the inner radius of the object.
      * @param {boolean} animate animate the transition?
-     * @return {number} the resultant outer radius.
+     * @return {Object} the resultant bounding circle.
      */
     this.repositionItemsGivenParameters = function(
         list2Start, initialRadius, animate) {
@@ -414,31 +415,14 @@ function ViewObj(data, parent, position, category) {
            NB: We can't add dollar values to get the new radius due to sqrt
            scaling.
         */
-        var sectorPtRadius = viewstate.scaler(initialRadius);
+        var sectorPtRadius = viewstate.scaler(this.boundingCircle.innerRadius);
         var bubblePtRadii = [];
         var bubbleAngles = [];
         var count = 0;
 
-
         for (var item = 0; item < items.length; item++) {
             var itemRadius = items[item].boundingCircle.radius;
             bubblePtRadii[item] = viewstate.scaler(itemRadius);
-        }
-
-        // Newton's method
-        if (calcs.bubbleAnglesSum(sectorPtRadius, list1, list2, bubblePtRadii) > 2 * Math.PI) {
-
-            var Rn = sectorPtRadius;
-            var Rn1 = Rn - calcs.f(Rn, list1, list2, bubblePtRadii) /
-                calcs.dFdR(Rn, list1, list2, bubblePtRadii);
-
-            while (Math.abs((Rn - Rn1) / Rn) > 0.01 ||
-                   calcs.f(Rn1, list1, list2, bubblePtRadii) < 0) {
-                Rn = Rn1;
-                Rn1 = Rn - calcs.f(Rn, list1, list2, bubblePtRadii) /
-                    calcs.dFdR(Rn, list1, list2, bubblePtRadii);
-            }
-            sectorPtRadius = Rn1;
         }
 
         var treeAngle = this.treeAngle;
@@ -511,7 +495,15 @@ function ViewObj(data, parent, position, category) {
         return result;
     };
 
-    this.determineSizesGivenParameters = function(
+    /**
+     * Determine my inner and outer radius.
+     *
+     * @param {number} list2Start The index at which list 2 begins,
+     *                            or -1 if there's only 1 list.
+     * @param {number} initialRadius the inner radius of the object.
+     * @return {Object} the resultant partial bounding circle.
+     */
+    this.determineSizeGivenParameters = function(
         list2Start, initialRadius) {
 
         var dendritic = (window.packing == 'dendritic' &&
@@ -624,17 +616,11 @@ function ViewObj(data, parent, position, category) {
             var result = minimumBoundingCircleForCircles(circles);
         }
         result.radius = viewstate.scaler.invert(result.radius);
-        return result.radius;
+        result.innerRadius = viewstate.scaler.invert(sectorPtRadius);
+        return result;
     };
 
 
-}
-
-ViewObj.prototype.peek = function() {
-    var method = arguments[0];
-    var args = [];
-    for (var i = 1; i<arguments.length; i++) args.push(arguments[i]);
-    this[method].apply(this, args);
 }
 
 /**
@@ -733,7 +719,9 @@ ViewObj.prototype.canPopOut = function(aggregate) {
 };
 
 /**
- * Find parent which is not a ViewObj then call _reposition method.
+ * Recalculate all the children positions. As this depends on positions
+ * throughout the entire tree, this will ascend to the top level and work down,
+ * regardless of where in the tree it is called.
  * @param {boolean=} animate Animate the movements?
  */
 ViewObj.prototype.reposition = function(animate) {
@@ -747,17 +735,14 @@ ViewObj.prototype.reposition = function(animate) {
        - descend to get signs accurate (bottom-up)
        - place things now we know precise sizes and therefore angles (top-down)
        this requires 2 runs through the tree. Short of using SVG rotate, this
-       at least afaict, is going to need 2 cracks at appolonious' problem,
-       however you slice it. So just run reposition twice for now.
-
-    Also thanks to the wonders of the dendritic layout, it requires two passes
-    through the *entire* tree: you can't skip sections. */
-    obj._repositionBottomUp(animate);
+       at least afaict, is going to need two passes through the *entire* tree. 
+    */
+    obj._determineSizes();
     obj._repositionTopDown(animate);
     var recenterChild = function (child) {
         child.svg.attr("transform", "translate(" +
-                  -viewstate.scaler(child.boundingCircle.cx) + "," +
-                  -viewstate.scaler(child.boundingCircle.cy) + ")");
+                       -viewstate.scaler(child.boundingCircle.cx) + "," +
+                       -viewstate.scaler(child.boundingCircle.cy) + ")");
         child.children().map(recenterChild)
     }
     // don't apply circle movement to top level, otherwise it bounces around.
