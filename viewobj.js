@@ -350,7 +350,7 @@ function ViewObj(data, parent, position, category) {
             var sum = 0;
             if (!(list2 && list2.length)) {
                 sum += calcs.sumFnAcross(calcs.dPhidR, R, list1, bubblePtRadii);
-                sum += calcs.dPhidR(R, bubblePtRadii[list[list1.length - 1]],
+                sum += calcs.dPhidR(R, bubblePtRadii[list1[list1.length - 1]],
                                     bubblePtRadii[list1[0]]);
             } else {
                 var subangle;
