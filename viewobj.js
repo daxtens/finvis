@@ -773,14 +773,14 @@ ViewObj.prototype.reposition = function(animate) {
 
 /**
  * Render
- *
+ * @param {boolean=} animate Should the transition be animated?
  */
-ViewObj.prototype.render = function() {
+ViewObj.prototype.render = function(animate) {
 
     // as much as it irks me to do context menus this way, better to include
     // jQuery than try to write my own context menus!
     // ... do this before children so they can do their own.
-    ViewObjRenderers[this.renderMode['name']](this);
+    ViewObjRenderers[this.renderMode['name']](this, animate);
 
     var that = this;
 
@@ -822,7 +822,7 @@ ViewObj.prototype.render = function() {
 
     
     // render all children
-    this.children().map(function(child) { child.render(); });
+    this.children().map(function(child) { child.render(animate); });
 
 };
 
@@ -1492,7 +1492,7 @@ ViewObjRenderers.defaultSectorRenderer.dollarRadiusWhenRendered = function(
 };
 
 /************************************************************ Bubble Renderer */
-ViewObjRenderers.bubbleRenderer = function(viewObj) {
+ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
 
     var p = viewObj.period();
     var category = viewObj['category'];
@@ -1544,9 +1544,13 @@ ViewObjRenderers.bubbleRenderer = function(viewObj) {
 
     circle.exit().remove();
 
-    circle.attr('r', function(d) {
+    var updater = circle;
+    if (animate) updater = circle.transition().duration(1000);
+    updater.attr('r', function(d) {
         return viewstate.scaler(d['periods'][p]['value']);
     })
+
+    circle
         .classed('poppedOut', viewObj.poppedOut)
         .classed('invalidPeriod', viewObj.isInvalidPeriod);
 
@@ -1575,8 +1579,10 @@ ViewObjRenderers.bubbleRenderer = function(viewObj) {
         .selectAll('text.wedgeLabel.value')
         .data(labelData);
 
-    labelsGroup.attr('transform',
-                     function(d) {return 'scale(' + scaleFactor + ')'; });
+    var updater = labelsGroup;
+    if (animate) updater = labelsGroup.transition().duration(1000);
+    updater.attr('transform',
+                 function(d) {return 'scale(' + scaleFactor + ')'; });
 
     function valueLabelY(d) {
         // safety switch: getBBox fails if scaled too hard(?)
@@ -1596,8 +1602,12 @@ ViewObjRenderers.bubbleRenderer = function(viewObj) {
         .classed('link', isLinked)
         .on('click', link);
 
-    nameLabel
+    var updater = nameLabel;
+    if (animate) updater = updater.transition().duration(1000);
+    updater
         .attr('x', centredTextLabelX)
+    
+    nameLabel
         .classed('link', isLinked);
 
     nameLabel.exit().remove();
@@ -1613,9 +1623,14 @@ ViewObjRenderers.bubbleRenderer = function(viewObj) {
 
     valueLabel
         .text(function(d) {return formatDollarValue(d['periods'][p]['value']);})
-        .attr('x', centredTextLabelX)
-        .attr('y', valueLabelY)
         .classed('link', isLinked);
+
+    var updater = valueLabel;
+    if (animate) updater = valueLabel.transition().duration(1000);
+    updater
+        .attr('x', centredTextLabelX)
+        .attr('y', valueLabelY);
+
 
     valueLabel.exit().remove();
 
@@ -1646,7 +1661,10 @@ ViewObjRenderers.bubbleRenderer = function(viewObj) {
         .attr('cx', function(d) { return viewstate.scaler(d.cx); })
         .attr('cy', function(d) { return viewstate.scaler(d.cy); });
 
-    enclosingCircle
+
+    var updater = enclosingCircle;
+    if (animate) updater = enclosingCircle.transition().duration(1000);
+    updater
         .attr('r', function(d) { return viewstate.scaler(d.radius); })
         .attr('cx', function(d) { return viewstate.scaler(d.cx); })
         .attr('cy', function(d) { return viewstate.scaler(d.cy); });
