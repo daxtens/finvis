@@ -172,7 +172,7 @@ ViewState.prototype.zoom = function(factor, about, immediate) {
  *                         display.
 */
 ViewState.prototype.centreViewOn = function(viewObj) {
-    var bbox = viewObj._svg[0][0].getBBox();
+    var bbox = viewObj.svg[0][0].getBBox();
 
     var doesHeightLimit =
         ((this.height / bbox.height) < (this.width / bbox.width)) ?
@@ -187,7 +187,7 @@ ViewState.prototype.centreViewOn = function(viewObj) {
     }
 
     this.zoom(scaleFactor, [0, 0], true);
-    bbox = viewObj._svg[0][0].getBBox();
+    bbox = viewObj.svg[0][0].getBBox();
 
     var xpos = bbox.x;
     var ypos = bbox.y;
