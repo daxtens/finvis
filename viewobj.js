@@ -520,41 +520,13 @@ function ViewObj(data, parent, position, category) {
 
         var items = this.children();
 
-        // translate [lowerbound, upperbound) to a sorted list, optionally
-        // reordering it dendritically.
-        var that = this;
-        var boundsToList = function(lowerbound, upperbound, dendritic) {
-            var itemIdxs = [];
-            // create a sorting map
-            var map = [];
-            for (var i = 0; i < upperbound - lowerbound; i++) {
-                var d = items[i + lowerbound].data();
-                map.push({'index': i + lowerbound,
-                          'value': d['periods'][that.period()]['value']
-                         });
-            }
-            map.sort(function(a, b) {
-                return b['value'] - a['value'];
-            });
-                
-            if (dendritic) {
-                // sort the items so that the biggest is in the middle
-                // then they reduce in size alternately on either side.
-                // e.g. 1 2 3 4 5 6 7 8 9
-                // ---> 9 7 5 3 1 2 4 6 8
-                for (var i = 0; i < upperbound - lowerbound; i += 2) {
-                    itemIdxs.push(map[i].index);
-                }
-                for (var i = 1; i < upperbound - lowerbound; i += 2) {
-                    itemIdxs.unshift(map[i].index);
-                }
-            } else {
-                for (var item = 0; item < upperbound - lowerbound; item++) {
-                    itemIdxs.push(map[item].index);
-                }
-            }
-            return itemIdxs;
-        };
+        if (list2Start == -1) {
+            var list1 = calcs.boundsToList(items, 0, items.length, dendritic);
+            var list2 = [];
+        } else {
+            var list1 = calcs.boundsToList(items, 0, list2Start, false);
+            var list2 = calcs.boundsToList(items, list2Start, items.length, false);
+        }
 
         /* do maths to figure out how to position and space the bubbles
 
@@ -566,119 +538,27 @@ function ViewObj(data, parent, position, category) {
         var bubbleAngles = [];
         var count = 0;
 
-        var phi = function(R, ri, ri1) {
-            return Math.acos((R * R + R * ri + R * ri1 - ri * ri1) /
-                             ((R + ri) * (R + ri1)));
-        };
-
-        // this is the function for tangent padding
-        var psi = function(R, r) {
-            return Math.asin(r / (r + R));
-        };
-
-        var sumFnAcross = function(fn, R, list) {
-            var sum = 0;
-            for (var j = 0; j < list.length - 1; j++) {
-                sum += fn(R, bubblePtRadii[list[j]],
-                          bubblePtRadii[list[j + 1]]);
-            }
-            return sum;
-        };
-
-        var sumPhiAcrossWithPadding = function(R, list) {
-            var subangle;
-            subangle = psi(R, bubblePtRadii[list[0]]);
-            subangle += sumFnAcross(phi, R, list);
-            subangle += Math.asin(bubblePtRadii[list[list.length - 1]] /
-                                  (bubblePtRadii[list[list.length - 1]] + R));
-            return subangle;
-        };
-
-        var f = function(R) {
-            var sum = 0;
-            if (list2Start == -1) {
-                var list = boundsToList(0, items.length, dendritic);
-                sum += sumFnAcross(phi, R, list);
-                sum += phi(R, bubblePtRadii[list[list.length - 1]],
-                           bubblePtRadii[list[0]]);
-            } else {
-                /* for each list:
-                   - tangent to the perpendicular padding on each end.
-                   - angle is max( pi, sum ): don't allow it to be squeezed out
-                */
-                var subangle;
-                var list1 = boundsToList(0, list2Start, dendritic);
-                subangle = sumPhiAcrossWithPadding(R, list1);
-                sum += Math.max(Math.PI, subangle);
-                var list2 = boundsToList(list2Start, items.length, dendritic);
-                subangle = sumPhiAcrossWithPadding(R, list2);
-                sum += Math.max(Math.PI, subangle);
-            }
-            return 2 * Math.PI - sum;
-        };
-
-        var dPhidR = function(R, ri, ri1) {
-            var radicand = (R * ri * ri1 * (R + ri + ri1)) /
-                (Math.pow((R + ri) * (R + ri1), 2));
-            var numerator = Math.sqrt(radicand) * (2 * R + ri + ri1);
-            return - numerator / (R * (R + ri + ri1));
-        };
-
-        var dPsidR = function(R, r) {
-            return - r / ((r + R) * Math.sqrt(R * (2 * r + R)));
-        };
-
-        var dFdR = function(R) {
-            // this is massively complicated by the 2 list requirement
-            var sum = 0;
-            if (list2Start == -1) {
-                var list = boundsToList(0, items.length, dendritic);
-                sum += sumFnAcross(dPhidR, R, list);
-                sum += dPhidR(R, bubblePtRadii[list[list.length - 1]],
-                              bubblePtRadii[list[0]]);
-            } else {
-                var subangle;
-                var list1 = boundsToList(0, list2Start, dendritic);
-                subangle = sumPhiAcrossWithPadding(R, list1);
-
-                if (subangle > Math.PI) {
-                    sum += dPsidR(R, bubblePtRadii[list1[0]]);
-                    sum += sumFnAcross(dPhidR, R, list1);
-                    sum += dPsidR(R, bubblePtRadii[list1[list1.length - 1]]);
-                } // else Pi, derivative = 0
-
-                var list2 = boundsToList(list2Start, items.length, dendritic);
-                subangle = sumPhiAcrossWithPadding(R, list2);
-                if (subangle > Math.PI) {
-                    sum += dPsidR(R, bubblePtRadii[list2[0]]);
-                    sum += sumFnAcross(dPhidR, R, list2);
-                    sum += dPsidR(R, bubblePtRadii[list2[list2.length - 1]]);
-                } // else Pi, derivative = 0
-            }
-            return -sum;
-        };
-
-        var bubbleAnglesSum = function() {
-            return 2 * Math.PI - f(sectorPtRadius);
-        };
-
         for (var item = 0; item < items.length; item++) {
             var itemRadius = items[item].boundingCircle.radius;
             bubblePtRadii[item] = viewstate.scaler(itemRadius);
         }
 
         // Newton's method
-        if (bubbleAnglesSum() > 2 * Math.PI) {
+        if (calcs.bubbleAnglesSum(sectorPtRadius, list1, list2, bubblePtRadii) > 2 * Math.PI) {
 
             var Rn = sectorPtRadius;
-            var Rn1 = Rn - f(Rn) / dFdR(Rn);
+            var Rn1 = Rn - calcs.f(Rn, list1, list2, bubblePtRadii) /
+                calcs.dFdR(Rn, list1, list2, bubblePtRadii);
 
-            while (Math.abs((Rn - Rn1) / Rn) > 0.01 || f(Rn1) < 0) {
+            while (Math.abs((Rn - Rn1) / Rn) > 0.01 ||
+                   calcs.f(Rn1, list1, list2, bubblePtRadii) < 0) {
                 Rn = Rn1;
-                Rn1 = Rn - f(Rn) / dFdR(Rn);
+                Rn1 = Rn - calcs.f(Rn, list1, list2, bubblePtRadii) /
+                    calcs.dFdR(Rn, list1, list2, bubblePtRadii);
             }
             sectorPtRadius = Rn1;
         }
+
 
         var treeAngle = this.treeAngle;
         var generatePositions = function(itemIdxs, domain, range, angleOffset,
@@ -692,8 +572,8 @@ function ViewObj(data, parent, position, category) {
             } else {
                 var angle = angleOffset;
             }
-            if (tangentPad) angle += angleScaler(psi(sectorPtRadius,
-                                                     bubblePtRadii[itemIdxs[0]])
+            if (tangentPad) angle += angleScaler(calcs.psi(sectorPtRadius,
+                                                           bubblePtRadii[itemIdxs[0]])
                                                 );
 
             circles = []
@@ -704,9 +584,9 @@ function ViewObj(data, parent, position, category) {
                     (sectorPtRadius + bubblePtRadii[item]) * Math.sin(angle)
                 ];
                 if (i + 1 < itemIdxs.length) {
-                    angle += angleScaler(phi(sectorPtRadius,
-                                             bubblePtRadii[item],
-                                             bubblePtRadii[itemIdxs[i + 1]]));
+                    angle += angleScaler(calcs.phi(sectorPtRadius,
+                                                   bubblePtRadii[item],
+                                                   bubblePtRadii[itemIdxs[i + 1]]));
                 }
                 circles.push({'cx': itemPosition[0],
                               'cy': itemPosition[1],
@@ -717,19 +597,20 @@ function ViewObj(data, parent, position, category) {
             return circles;
         };
 
-        if (list2Start == -1) {
-            var list = boundsToList(0, items.length, dendritic);
-            var circles = generatePositions(list, bubbleAnglesSum(),
-                             2 * Math.PI, Math.PI, false);
+        if (list2.length == 0) {
+            var circles = generatePositions(
+                list1,
+                calcs.bubbleAnglesSum(sectorPtRadius, list1, list2, bubblePtRadii),
+                2 * Math.PI, Math.PI, false);
         } else {
-            var list1 = boundsToList(0, list2Start);
-            var circles = generatePositions(list1,
-                             sumPhiAcrossWithPadding(sectorPtRadius, list1),
-                             Math.PI, Math.PI, true);
-            var list2 = boundsToList(list2Start, items.length, dendritic);
-            var circles = generatePositions(list2,
-                             sumPhiAcrossWithPadding(sectorPtRadius, list2),
-                             Math.PI, 0, true);
+            var circles = generatePositions(
+                list1,
+                calcs.sumPhiAcrossWithPadding(sectorPtRadius, list1, bubblePtRadii),
+                Math.PI, Math.PI, true);
+            var circles = generatePositions(
+                list2,
+                calcs.sumPhiAcrossWithPadding(sectorPtRadius, list1, bubblePtRadii),
+                Math.PI, 0, true);
         }
 
         circles.push({cx: 0, cy: 0, radius: viewstate.scaler(initialRadius)});
