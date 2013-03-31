@@ -397,7 +397,7 @@ function ViewObj(data, parent, position, category) {
         list2Start, initialRadius, animate) {
 
         var dendritic = (window.packing == 'dendritic' &&
-                         this.renderMode.name != 'defaultSectorRenderer');
+                         this.parent instanceof ViewObj);
 
 
         var items = this.children();
@@ -425,7 +425,11 @@ function ViewObj(data, parent, position, category) {
             bubblePtRadii[item] = viewstate.scaler(itemRadius);
         }
 
-        var treeAngle = this.treeAngle;
+        if ('treeAngle' in this) {
+            var treeAngle = this.treeAngle;
+        } else {
+            var treeAngle = 0;
+        }
         var that  = this;
         var actuallyPosition = function(itemIdxs, domain, range, angleOffset,
                                         tangentPad) {
@@ -433,7 +437,7 @@ function ViewObj(data, parent, position, category) {
             var angleScaler = d3.scale.linear()
                 .domain([0, domain])
                 .range([0, (dendritic ? domain : range)]);
-            if (('treeAngle' in that) && dendritic) {
+            if (dendritic) {
                 var angle = treeAngle - domain / 2;
             } else {
                 var angle = angleOffset;
@@ -482,7 +486,7 @@ function ViewObj(data, parent, position, category) {
         });
         circles.push({cx: 0, cy: 0, radius: viewstate.scaler(initialRadius)});
 
-        if (dendritic) {
+        if (dendritic && 'treeAngle' in this) {
             var tangentPt = [ -sectorPtRadius * Math.cos(treeAngle),
                           -sectorPtRadius * Math.sin(treeAngle)];
             result = optimisedDendriticBoundingCircleForCircles(circles, tangentPt, [0,0]);
@@ -507,7 +511,7 @@ function ViewObj(data, parent, position, category) {
         list2Start, initialRadius) {
 
         var dendritic = (window.packing == 'dendritic' &&
-                         this.renderMode.name != 'defaultSectorRenderer');
+                         this.parent instanceof ViewObj);
 
 
         var items = this.children();
@@ -1600,6 +1604,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj) {
     var enclosingCircleData = [];
 
     if (viewObj.children().length && window.enclosingCircles) {
+        console.log(viewObj.boundingCircle);
         enclosingCircleData.push(viewObj.boundingCircle);
     }
 
