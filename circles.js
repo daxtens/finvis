@@ -141,6 +141,11 @@ function symmetricBoundingCircleForCircles(circles, tangentPt, centerPt) {
     // construct circle from p1, result
     var result = circleFrom2Pts(tangentPt, endPt);   
     //console.log('1end', result);
+    return result;
+}
+
+function optimisedDendriticBoundingCircleForCircles(circles, tangentPt, centerPt) {
+    var result = symmetricBoundingCircleForCircles(circles, tangentPt, centerPt);
     var altresult = minimumBoundingCircleForCircles(circles);
     if (result.radius /  1.25 > altresult.radius) {
         result = altresult;
@@ -148,7 +153,6 @@ function symmetricBoundingCircleForCircles(circles, tangentPt, centerPt) {
     }
     return result;
 }
-
 
 /**
  * Calculates a circle from 2 pts.
