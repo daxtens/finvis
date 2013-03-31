@@ -30,6 +30,7 @@ function ViewObj(data, parent, position, category) {
 
     /* getter and setter for data
      */
+    // todo: properly hide ._data
     this.data = function() {
         if (arguments.length == 0) return this._data;
 
@@ -52,6 +53,7 @@ function ViewObj(data, parent, position, category) {
        guaranteed to always return a period for which we have data
        if a period is set for which we have no data, .isInvalidPeriod is set.
      */
+    // todo: properly hide ._period
     this.period = function() {
         if (arguments.length == 0) {
             if (!this.isInvalidPeriod) return this._period;
@@ -723,6 +725,19 @@ ViewObj.prototype.canPopOut = function(aggregate) {
 };
 
 /**
+ * What periods are available to display?
+ * (Assumes uniformity throughout the data.)
+ * @return {Array.<string>} Available periods.
+ */
+ViewObj.prototype.availablePeriods = function() {
+    if ('aggregates' in this.data()) {
+        return Object.keys(this.data()['aggregates'][0]['periods']);
+    } else {
+        return Object.keys(this.data()['periods']);
+    }
+};
+
+/**
  * Recalculate all the children positions. As this depends on positions
  * throughout the entire tree, this will ascend to the top level and work down,
  * regardless of where in the tree it is called.
@@ -769,7 +784,7 @@ ViewObj.prototype.render = function() {
 
     var that = this;
 
-    var bindings = { 'deleteMenuItem' : function() { that.remove() },
+    var bindings = { 'deleteMenuItem' : function() { that.remove(); updatePeriodSelector(); },
                      'centreViewMenuItem' : function() {
                          viewstate.centreViewOn(that);
                      },

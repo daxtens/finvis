@@ -119,6 +119,29 @@ window['periodChange'] = function(sel) {
     });
 };
 
+/** Update Period Selector with periods of all extant ViewObjs */
+function updatePeriodSelector() {
+    var periods = viewstate.availablePeriods();
+    var sel = jQuery('#periodSel');
+    var oldOpt = jQuery('option:selected', sel).val();
+    var newOpt;
+    var found = false;
+    sel.empty();
+    for (var x in periods) {
+        newOpt = jQuery('<option value="' + periods[x] + '">' + periods[x] +
+                            '</option>');
+        if (oldOpt == periods[x]) newOpt.prop('selected',true);
+        sel.append(newOpt);
+
+        if (periods[x] == oldOpt) found = true;
+    }
+    if (!found) {
+        newOpt = jQuery('<option value="' + oldOpt + '" disabled="disabled"' + 
+                        ' selected="selected">' + oldOpt + '</option>');
+        sel.append(newOpt);
+    }
+}
+
 /** Fit every viewObj currently in the viewstate on to the screen
  */
 function fitToScreen() {
@@ -168,6 +191,7 @@ function cancelAddEntity() {
  */
 function hasPlacedEntity() {
     cancelAddEntity();
+    updatePeriodSelector();
 }
 
 /** Prepare to save the view as an SVG/PNG. */

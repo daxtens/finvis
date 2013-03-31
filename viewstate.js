@@ -226,6 +226,24 @@ ViewState.prototype.move = function(position) {
 };
 
 /**
+ * What periods are available to display by at least one ViewObj?
+ * @return {Array.<string>} Valid periods for 1+ ViewObjs.
+ */
+ViewState.prototype.availablePeriods = function() {
+    var allPeriods = this.children().map(function(child) {
+        return child.availablePeriods();
+    });
+    var result = allPeriods.reduce(function(prev, curr) {
+        for (var x in curr) {
+            if (!(curr[x] in prev)) prev.push(curr[x]);
+        }
+        return prev;
+    }, []);
+    result.sort();
+    return result;
+};
+
+/**
  * repositionChildren stub
  *
  */
