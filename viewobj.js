@@ -1596,6 +1596,9 @@ ViewObjRenderers.bubbleRenderer = function(viewObj) {
         .classed('link', isLinked)
         .on('click', link);
 
+    nameLabel
+        .attr('x', centredTextLabelX)
+        .classed('link', isLinked);
 
     nameLabel.exit().remove();
 
@@ -1609,7 +1612,10 @@ ViewObjRenderers.bubbleRenderer = function(viewObj) {
         .on('click', link);
 
     valueLabel
-        .text(function(d) {return formatDollarValue(d['periods'][p]['value']);});
+        .text(function(d) {return formatDollarValue(d['periods'][p]['value']);})
+        .attr('x', centredTextLabelX)
+        .attr('y', valueLabelY)
+        .classed('link', isLinked);
 
     valueLabel.exit().remove();
 
@@ -1619,7 +1625,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj) {
     var enclosingCircleData = [];
 
     if (viewObj.children().length && window.enclosingCircles) {
-        console.log(viewObj.boundingCircle);
+        //console.log(viewObj.boundingCircle);
         enclosingCircleData.push(viewObj.boundingCircle);
     }
 
