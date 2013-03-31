@@ -64,6 +64,10 @@ jQuery('document').ready(function() {
     jQuery('#cancelSaveToDisk').on('click', cancelSaveToDisk);
     jQuery('#packingSel').on('change', changePacking);
     jQuery('#enclosingCircles').on('change', enclosingCirclesChange);
+    jQuery('#nextPeriodBtn').on('click', nextPeriodBtn);
+    jQuery('#prevPeriodBtn').on('click', prevPeriodBtn);
+    jQuery('#playBtn').on('click', playBtn);
+    jQuery('#stopBtn').on('click', stopBtn);
 
     // populate the entity list
     var entitySel = jQuery('#entitySel');
@@ -118,6 +122,50 @@ window['periodChange'] = function(sel) {
         obj.render(true);
     });
 };
+
+/** Move on to the next period */
+function nextPeriodBtn() {
+    var sel = jQuery('#periodSel')[0];
+    if (sel.selectedIndex < sel.options.length - 1) {    
+        sel.selectedIndex++;
+        window['periodChange'](sel);
+    }
+}
+
+/** Move to the previous period */
+function prevPeriodBtn() {
+    var sel = jQuery('#periodSel')[0];
+    if (sel.selectedIndex > 0) {    
+        sel.selectedIndex--;
+        window['periodChange'](sel);
+    }
+}
+
+/** Timer for playing */
+var playtimer;
+
+/** Start playing through the time-periods */
+function playBtn() {
+    var sel = jQuery('#periodSel')[0];
+    sel.selectedIndex = 0;
+    window['periodChange'](sel);
+    playtimer = window.setInterval(function() {
+        var sel = jQuery('#periodSel')[0];
+        //console.log(sel.selectedIndex);
+        sel.selectedIndex++;
+        if (sel.selectedIndex == sel.options.length - 1) {
+            stopBtn();
+        }
+        window['periodChange'](sel);
+    }, 2000);
+}
+
+/** Stop playing */
+function stopBtn() {
+    try {
+        window.clearInterval(playtimer);
+    } catch (e) {}
+}
 
 /** Update Period Selector with periods of all extant ViewObjs */
 function updatePeriodSelector() {
