@@ -124,6 +124,7 @@ window['periodChange'] = function(sel) {
         obj.reposition(true);
         obj.render(true);
     });
+    return false;
 };
 
 /** Move on to the next period */
@@ -133,6 +134,7 @@ function nextPeriodBtn() {
         sel.selectedIndex++;
         window['periodChange'](sel);
     }
+    return false;
 }
 
 /** Move to the previous period */
@@ -142,6 +144,7 @@ function prevPeriodBtn() {
         sel.selectedIndex--;
         window['periodChange'](sel);
     }
+    return false;
 }
 
 /** Timer for playing */
@@ -163,13 +166,15 @@ function playBtn() {
         }
         window['periodChange'](sel);
     }, 2000);
+    return false;
 }
 
 /** Stop playing */
 function stopBtn() {
     try {
         window.clearInterval(playtimer);
-    } catch (e) {}
+    } catch (e) {};
+    return false;
 }
 
 /** Update Period Selector with periods of all extant ViewObjs */
@@ -199,12 +204,14 @@ function updatePeriodSelector() {
  */
 function fitToScreen() {
     viewstate.centreViewOn(viewstate);
+    return false;
 }
 
 /** Begin the entity selection and adding process.
  */
 function initAddEntity() {
     jQuery('#addEntityContainer').removeClass('hidden');
+    return false;
 }
 
 /** Change the UI to indicate that an entity is being added.
@@ -226,6 +233,7 @@ function addEntityBtn() {
     var sel = jQuery('#periodSel')[0];
     viewstate.beginAddingView(entities[entitySel.selectedIndex], 
                               sel.options[sel.selectedIndex].value);
+    return false;
 }
 
 /** Cancel the entity selection and adding process.
@@ -238,6 +246,7 @@ function cancelAddEntity() {
     jQuery('#addEntity').removeClass('hidden');
     jQuery('#clickToPlaceTxt').addClass('hidden');
     viewstate.cancelAddingView();
+    return false;
 }
 
 /** The entity adding process has finished (the user has placed an entity).
@@ -330,11 +339,13 @@ function saveToDisk() {
     // submit form
     // #17 - don't just use saveToDiskForm.submit(), it breaks in older FF
     jQuery('#saveToDiskForm')[0].submit();
+    return false;
 }
 
 /** Cancel saving the view as an SVG/PNG. */
 function cancelSaveToDisk() {
-     jQuery('#saveToDiskForm').addClass('hidden');
+    jQuery('#saveToDiskForm').addClass('hidden');
+    return false;
 }
 
 /** Change the packing model */
