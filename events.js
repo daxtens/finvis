@@ -156,7 +156,7 @@ function playBtn() {
         var sel = jQuery('#periodSel')[0];
         //console.log(sel.selectedIndex);
         var nextIndex = sel.selectedIndex + 1;
-        if (nextIndex == sel.options.length - 1) {
+        if (nextIndex == sel.options.length) {
             stopBtn();
         } else {
             sel.selectedIndex = nextIndex;
