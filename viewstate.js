@@ -168,11 +168,18 @@ ViewState.prototype.zoom = function(factor, about, immediate) {
 /**
  * Centre display around an object
  *
- * @param {Object} viewObj Object (viewObj or viewstate) on which to centre
- *                         display.
+ * @param {Object} viewthing Object (viewObj or viewstate) on which to centre
+ *                           display.
 */
-ViewState.prototype.centreViewOn = function(viewObj) {
-    var bbox = viewObj.svg[0][0].getBBox();
+ViewState.prototype.centreViewOn = function(viewthing) {
+    // todo: introduce some semantic consistency around .svg/._svg
+    // also we so very badly need test cases.
+    if (viewthing instanceof ViewObj) {
+        var svg = viewthing._svg[0][0];
+    } else {
+        var svg = viewthing.svg[0][0];
+    }
+    var bbox = svg.getBBox();
 
     var doesHeightLimit =
         ((this.height / bbox.height) < (this.width / bbox.width)) ?
@@ -187,11 +194,11 @@ ViewState.prototype.centreViewOn = function(viewObj) {
     }
 
     this.zoom(scaleFactor, [0, 0], true);
-    bbox = viewObj.svg[0][0].getBBox();
+    bbox = svg.getBBox();
 
     var xpos = bbox.x;
     var ypos = bbox.y;
-    var obj = viewObj;
+    var obj = viewthing;
     while (!(obj instanceof ViewState)) {
         xpos += this.scaler(obj.position[0]);
         ypos += this.scaler(obj.position[1]);
