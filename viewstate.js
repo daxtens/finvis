@@ -242,7 +242,14 @@ ViewState.prototype.availablePeriods = function() {
     });
     var result = allPeriods.reduce(function(prev, curr) {
         for (var x in curr) {
-            if (!(curr[x] in prev)) prev.push(curr[x]);
+            var found = false;
+            for (var i = 0; i < prev.length; i++) {
+                if (curr[x] == prev[i]) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) prev.push(curr[x]);
         }
         return prev;
     }, []);
