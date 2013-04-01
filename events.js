@@ -115,6 +115,9 @@ jQuery('document').ready(function() {
  * @param {Object} sel The <select> tag.
  */
 window['periodChange'] = function(sel) {
+    if (sel.selectedIndex < 0 || sel.selectedIndex >= sel.options.length) {
+        return;
+    }
     var chosenoption = sel.options[sel.selectedIndex];
     viewstate.children().map(function(obj) {
         obj.period(chosenoption.value);
