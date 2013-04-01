@@ -265,11 +265,17 @@ function ViewObj(data, parent, position, category) {
         boundsToList: function(items, lowerbound, upperbound, dendritic) {
             var itemIdxs = [];
             // create a sorting map
+            // TODO extend to pick up data from excel
+            // sort based on last period
+            // todo cache this or something?
+            var periods = Object.keys(items[lowerbound].data()['periods']);
+            periods.sort()
+            var p = periods.pop();
             var map = [];
             for (var i = 0; i < upperbound - lowerbound; i++) {
                 var d = items[lowerbound + i].data();
                 map.push({'index': lowerbound + i,
-                          'value': d['periods'][that.period()]['value']
+                          'value': d['periods'][p]['value']
                          });
             }
             map.sort(function(a, b) {
