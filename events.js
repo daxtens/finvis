@@ -155,9 +155,11 @@ function playBtn() {
     playtimer = window.setInterval(function() {
         var sel = jQuery('#periodSel')[0];
         //console.log(sel.selectedIndex);
-        sel.selectedIndex++;
-        if (sel.selectedIndex == sel.options.length - 1) {
+        var nextIndex = sel.selectedIndex + 1;
+        if (nextIndex == sel.options.length - 1) {
             stopBtn();
+        } else {
+            sel.selectedIndex = nextIndex;
         }
         window['periodChange'](sel);
     }, 2000);

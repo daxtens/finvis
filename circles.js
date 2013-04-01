@@ -153,8 +153,9 @@ function optimisedDendriticBoundingCircleForCircles(circles, tangentPt, centerPt
     if (result.radius /  1.25 > altresult.radius || isNaN(result.radius) ||
         isNaN(result.cx) || isNaN(result.cy)) {
         //todo: post back the data that results in NaNs.
+        console.log('1end', result);
         result = altresult;
-        //console.log('2end', result);
+        console.log('2end', result);
     }
     return result;
 }
