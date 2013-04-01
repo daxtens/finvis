@@ -150,7 +150,9 @@ function symmetricBoundingCircleForCircles(circles, tangentPt, centerPt) {
 function optimisedDendriticBoundingCircleForCircles(circles, tangentPt, centerPt) {
     var result = symmetricBoundingCircleForCircles(circles, tangentPt, centerPt);
     var altresult = minimumBoundingCircleForCircles(circles);
-    if (result.radius /  1.25 > altresult.radius) {
+    if (result.radius /  1.25 > altresult.radius || isNaN(result.radius) ||
+        isNaN(result.cx) || isNaN(result.cy)) {
+        //todo: post back the data that results in NaNs.
         result = altresult;
         //console.log('2end', result);
     }
