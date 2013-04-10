@@ -1,10 +1,12 @@
 'use strict';
 
+
 /**
  * Epsilon value for floating point equality.
  * @const
  */
 var EPSILON = 1E-6;
+
 
 /**
  * Calculates the minimum bounding circle for a set of points.
@@ -15,43 +17,44 @@ var EPSILON = 1E-6;
  */
 function minimumBoundingCircle(pts) {
 
-    var areAllPtsInOrOnCircle = function(circle) {
-        for (var i = 0; i < pts.length; i++) {
-            if (!isPtInOrOnCircle(pts[i], circle)) return false;
-        }
-        return true;
-    };
-
-    // try every pair and triple
-    var best = {radius: 9E9};
-
+  var areAllPtsInOrOnCircle = function(circle) {
     for (var i = 0; i < pts.length; i++) {
-        for (var j = i + 1; j < pts.length; j++) {
-            var circle = circleFrom2Pts(pts[i], pts[j]);
-            if (areAllPtsInOrOnCircle(circle) &&
-                circle.radius < best.radius) {
-                best.cx = circle.cx; best.cy = circle.cy;
-                best.radius = circle.radius;
-            }
-
-            for (var k = j + 1; k < pts.length; k++) {
-                try {
-                    circle = circleFrom3Pts(pts[i], pts[j], pts[k]);
-                    if (areAllPtsInOrOnCircle(circle) &&
-                        circle.radius < best.radius) {
-                        best.cx = circle.cx; best.cy = circle.cy;
-                        best.radius = circle.radius;
-                    }
-                } catch (e) {
-                    // something went wrong; probably collinear pts.
-                    // ignore
-                }
-            }
-        }
+      if (!isPtInOrOnCircle(pts[i], circle)) return false;
     }
+    return true;
+  };
 
-    return best;
+  // try every pair and triple
+  var best = {radius: 9E9};
+
+  for (var i = 0; i < pts.length; i++) {
+    for (var j = i + 1; j < pts.length; j++) {
+      var circle = circleFrom2Pts(pts[i], pts[j]);
+      if (areAllPtsInOrOnCircle(circle) &&
+          circle.radius < best.radius) {
+        best.cx = circle.cx; best.cy = circle.cy;
+        best.radius = circle.radius;
+      }
+
+      for (var k = j + 1; k < pts.length; k++) {
+        try {
+          circle = circleFrom3Pts(pts[i], pts[j], pts[k]);
+          if (areAllPtsInOrOnCircle(circle) &&
+              circle.radius < best.radius) {
+            best.cx = circle.cx; best.cy = circle.cy;
+            best.radius = circle.radius;
+          }
+        } catch (e) {
+          // something went wrong; probably collinear pts.
+          // ignore
+        }
+      }
+    }
+  }
+
+  return best;
 }
+
 
 /**
  * Calculates the minimum bounding circle for a set of circles.
@@ -63,102 +66,104 @@ function minimumBoundingCircle(pts) {
  */
 function minimumBoundingCircleForCircles(circles) {
 
-    // try every pair and triple
-    var best = {radius: 9E9};
+  // try every pair and triple
+  var best = {radius: 9E9};
 
-    for (var i = 0; i < circles.length; i++) {
-        for (var j = i + 1; j < circles.length; j++) {
-            var circle = circleFrom2Circles(circles[i], circles[j]);
-            if (areAllCirclesInOrOnCircle(circles, circle) &&
-                circle.radius < best.radius) {
-                best.cx = circle.cx; best.cy = circle.cy;
-                best.radius = circle.radius;
-            }
+  for (var i = 0; i < circles.length; i++) {
+    for (var j = i + 1; j < circles.length; j++) {
+      var circle = circleFrom2Circles(circles[i], circles[j]);
+      if (areAllCirclesInOrOnCircle(circles, circle) &&
+          circle.radius < best.radius) {
+        best.cx = circle.cx; best.cy = circle.cy;
+        best.radius = circle.radius;
+      }
 
-            for (var k = j + 1; k < circles.length; k++) {
-                var signs = [-1, 1, 1, 1];
-                circle = apollonius(circles[i], circles[j], circles[k],
-                                    signs);
-                if (areAllCirclesInOrOnCircle(circles, circle) &&
-                    circle.radius < best.radius) {
-                    best.cx = circle.cx; best.cy = circle.cy;
-                    best.radius = circle.radius;
-                }
-            }
+      for (var k = j + 1; k < circles.length; k++) {
+        var signs = [-1, 1, 1, 1];
+        circle = apollonius(circles[i], circles[j], circles[k],
+            signs);
+        if (areAllCirclesInOrOnCircle(circles, circle) &&
+            circle.radius < best.radius) {
+          best.cx = circle.cx; best.cy = circle.cy;
+          best.radius = circle.radius;
         }
+      }
     }
+  }
 
-    return best;
+  return best;
 }
 
 function symmetricBoundingCircleForCircles(circles, tangentPt, centerPt) {
-    // I don't know the equation, don't trust my geometry and don't have time
-    // to ask math.stackexchange. Do a binary search.
+  // I don't know the equation, don't trust my geometry and don't have time
+  // to ask math.stackexchange. Do a binary search.
 
-    //console.log('begin', circles, tangentPt, centerPt);
+  //console.log('begin', circles, tangentPt, centerPt);
 
-    // solve the following once to save time
-    var theta = Math.atan2((centerPt[1] - tangentPt[1]),
-                           (centerPt[0] - tangentPt[0]))
+  // solve the following once to save time
+  var theta = Math.atan2((centerPt[1] - tangentPt[1]),
+      (centerPt[0] - tangentPt[0]));
 
-    var evaluateSolution = function(diameter) {
-        //console.log(diameter);
-        // extend the line p2-p1 to have length diameter
-        var endPt = [tangentPt[0] + diameter * Math.cos(theta),
-                     tangentPt[1] + diameter * Math.sin(theta)];
-
-        // construct circle from p1, result
-        var result = circleFrom2Pts(tangentPt, endPt);
-
-        // are all circles within this circle?
-        if (areAllCirclesInOrOnCircle(circles, result)) {
-            // assume it's over-generous
-            //console.log('too big');
-            return 1;
-        } else {
-            //console.log('too small');
-            return -1;
-        }
-    }
-
-    // figure out the biggest circle to bound the bSearch
-    var max = -1;
-    for (var i = 0; i < circles.length; i++) {
-        if (circles[i].radius > max) max = circles[i].radius;
-    }
-
-    // 'assume' that |pt2 - pt1| is our original radius
-    var start = 2 * lineLength(tangentPt, centerPt);
-    // there's really no limit to how much this can blow out
-    // 4 * is insufficient (the open budget 2012-13: pop out EEWR, Early 
-    // Childhood fully and T&LFSS fully)
-    var end = start + 8 * max;
-
-    var diameter = bSearch(start, end, 0.01, evaluateSolution);
-
+  var evaluateSolution = function(diameter) {
+    //console.log(diameter);
+    // extend the line p2-p1 to have length diameter
     var endPt = [tangentPt[0] + diameter * Math.cos(theta),
-                 tangentPt[1] + diameter * Math.sin(theta)];
-
-    //console.log(diameter, endPt);
+          tangentPt[1] + diameter * Math.sin(theta)];
 
     // construct circle from p1, result
-    var result = circleFrom2Pts(tangentPt, endPt);   
-    //console.log('1end', result);
-    return result;
+    var result = circleFrom2Pts(tangentPt, endPt);
+
+    // are all circles within this circle?
+    if (areAllCirclesInOrOnCircle(circles, result)) {
+      // assume it's over-generous
+      //console.log('too big');
+      return 1;
+    } else {
+      //console.log('too small');
+      return -1;
+    }
+  };
+
+  // figure out the biggest circle to bound the bSearch
+  var max = -1;
+  for (var i = 0; i < circles.length; i++) {
+    if (circles[i].radius > max) max = circles[i].radius;
+  }
+
+  // 'assume' that |pt2 - pt1| is our original radius
+  var start = 2 * lineLength(tangentPt, centerPt);
+  // there's really no limit to how much this can blow out
+  // 4 * is insufficient (the open budget 2012-13: pop out EEWR, Early
+  // Childhood fully and T&LFSS fully)
+  var end = start + 8 * max;
+
+  var diameter = bSearch(start, end, 0.01, evaluateSolution);
+
+  var endPt = [tangentPt[0] + diameter * Math.cos(theta),
+        tangentPt[1] + diameter * Math.sin(theta)];
+
+  //console.log(diameter, endPt);
+
+  // construct circle from p1, result
+  var result = circleFrom2Pts(tangentPt, endPt);
+  //console.log('1end', result);
+  return result;
 }
 
-function optimisedDendriticBoundingCircleForCircles(circles, tangentPt, centerPt) {
-    var result = symmetricBoundingCircleForCircles(circles, tangentPt, centerPt);
-    var altresult = minimumBoundingCircleForCircles(circles);
-    if (result.radius /  1.25 > altresult.radius || isNaN(result.radius) ||
-        isNaN(result.cx) || isNaN(result.cy)) {
-        //todo: post back the data that results in NaNs.
-        console.log('1end', result);
-        result = altresult;
-        console.log('2end', result);
-    }
-    return result;
+function optimisedDendriticBoundingCircleForCircles(
+    circles, tangentPt, centerPt) {
+  var result = symmetricBoundingCircleForCircles(circles, tangentPt, centerPt);
+  var altresult = minimumBoundingCircleForCircles(circles);
+  if (result.radius / 1.25 > altresult.radius || isNaN(result.radius) ||
+      isNaN(result.cx) || isNaN(result.cy)) {
+    //todo: post back the data that results in NaNs.
+    console.log('1end', result);
+    result = altresult;
+    console.log('2end', result);
+  }
+  return result;
 }
+
 
 /**
  * Calculates a circle from 2 pts.
@@ -169,17 +174,19 @@ function optimisedDendriticBoundingCircleForCircles(circles, tangentPt, centerPt
  */
 function circleFrom2Pts(pt1, pt2) {
 
-    // diameter is |pt1-pt2|
-    // the center is the midpoint of that line.
-    var center = lineMidpoint(pt1, pt2);
-    return { cx: center[0],
-             cy: center[1],
-             radius: lineLength(pt1, pt2) / 2 };
+  // diameter is |pt1-pt2|
+  // the center is the midpoint of that line.
+  var center = lineMidpoint(pt1, pt2);
+  return { cx: center[0],
+    cy: center[1],
+    radius: lineLength(pt1, pt2) / 2 };
 }
+
 
 /**
  * Calculates a circle from 3 pts.
- * Stolen from http://stackoverflow.com/questions/4103405/what-is-the-algorithm-for-finding-the-center-of-a-circle-from-three-points
+ * Stolen from http://stackoverflow.com/questions/4103405/
+ *  what-is-the-algorithm-for-finding-the-center-of-a-circle-from-three-points
  *
  * @param {Array.<number>} pt1 The first pt, [x, y].
  * @param {Array.<number>} pt2 The second pt, [x, y].
@@ -187,25 +194,26 @@ function circleFrom2Pts(pt1, pt2) {
  * @return {Object.<string, number>} cx, cy, radius of the circle.
  */
 function circleFrom3Pts(pt1, pt2, pt3) {
-    var TOL = EPSILON;
+  var TOL = EPSILON;
 
-    var offset = Math.pow(pt2[0], 2) + Math.pow(pt2[1], 2);
-    var bc = (Math.pow(pt1[0], 2) + Math.pow(pt1[1], 2) - offset) / 2.0;
-    var cd = (offset - Math.pow(pt3[0], 2) - Math.pow(pt3[1], 2)) / 2.0;
-    var det = (pt1[0] - pt2[0]) * (pt2[1] - pt3[1]) - (pt2[0] - pt3[0]) *
-              (pt1[1] - pt2[1]);
+  var offset = Math.pow(pt2[0], 2) + Math.pow(pt2[1], 2);
+  var bc = (Math.pow(pt1[0], 2) + Math.pow(pt1[1], 2) - offset) / 2.0;
+  var cd = (offset - Math.pow(pt3[0], 2) - Math.pow(pt3[1], 2)) / 2.0;
+  var det = (pt1[0] - pt2[0]) * (pt2[1] - pt3[1]) - (pt2[0] - pt3[0]) *
+      (pt1[1] - pt2[1]);
 
-    if (Math.abs(det) < TOL) { throw 'error constructing circle'; }
+  if (Math.abs(det) < TOL) { throw 'error constructing circle'; }
 
-    var idet = 1 / det;
+  var idet = 1 / det;
 
-    var centerx = (bc * (pt2[1] - pt3[1]) - cd * (pt1[1] - pt2[1])) * idet;
-    var centery = (cd * (pt1[0] - pt2[0]) - bc * (pt2[0] - pt3[0])) * idet;
-    var radius =
-       Math.sqrt(Math.pow(pt2[0] - centerx, 2) + Math.pow(pt2[1] - centery, 2));
+  var centerx = (bc * (pt2[1] - pt3[1]) - cd * (pt1[1] - pt2[1])) * idet;
+  var centery = (cd * (pt1[0] - pt2[0]) - bc * (pt2[0] - pt3[0])) * idet;
+  var radius =
+      Math.sqrt(Math.pow(pt2[0] - centerx, 2) + Math.pow(pt2[1] - centery, 2));
 
-    return {cx: centerx, cy: centery, radius: radius};
+  return {cx: centerx, cy: centery, radius: radius};
 }
+
 
 /**
  * Is the point inside/on the circle?
@@ -215,8 +223,9 @@ function circleFrom3Pts(pt1, pt2, pt3) {
  * @return {boolean} is the point inside/on the circle?
  */
 function isPtInOrOnCircle(pt, circle) {
-    return ((lineLength([circle.cx, circle.cy], pt) - EPSILON) < circle.radius);
+  return ((lineLength([circle.cx, circle.cy], pt) - EPSILON) < circle.radius);
 }
+
 
 /**
  * Calculates a circle from 2 circles.
@@ -227,21 +236,22 @@ function isPtInOrOnCircle(pt, circle) {
  */
 function circleFrom2Circles(circle1, circle2) {
 
-    var angle = Math.atan2(circle1.cy - circle2.cy,
-                           circle1.cx - circle2.cx);
+  var angle = Math.atan2(circle1.cy - circle2.cy,
+      circle1.cx - circle2.cx);
 
-    var lineBetweenExtrema = [[circle1.cx + circle1.radius * Math.cos(angle),
+  var lineBetweenExtrema = [[circle1.cx + circle1.radius * Math.cos(angle),
                                circle1.cy + circle1.radius * Math.sin(angle)],
-                              [circle2.cx - circle2.radius * Math.cos(angle),
+        [circle2.cx - circle2.radius * Math.cos(angle),
                                circle2.cy - circle2.radius * Math.sin(angle)]];
 
-    var center = lineMidpoint(lineBetweenExtrema[0], lineBetweenExtrema[1]);
-    return { cx: center[0],
-             cy: center[1],
-             radius: lineLength(lineBetweenExtrema[0],
-                                lineBetweenExtrema[1]) / 2
-           };
+  var center = lineMidpoint(lineBetweenExtrema[0], lineBetweenExtrema[1]);
+  return { cx: center[0],
+    cy: center[1],
+    radius: lineLength(lineBetweenExtrema[0],
+        lineBetweenExtrema[1]) / 2
+  };
 }
+
 
 /**
  * Solve the Problem of Apollonius: a circle tangent to all 3 circles.
@@ -256,58 +266,58 @@ function circleFrom2Circles(circle1, circle2) {
  */
 function apollonius(circle1, circle2, circle3, signs) {
 
-    var sqr = function(x) { return x * x };
+  var sqr = function(x) { return x * x };
 
-    var a1 = 2 * (circle1.cx - circle2.cx);
-    var a2 = 2 * (circle1.cx - circle3.cx);
-    var b1 = 2 * (circle1.cy - circle2.cy);
-    var b2 = 2 * (circle1.cy - circle3.cy);
-    var c1 = 2 * (signs[0] * circle1.radius + signs[1] * circle2.radius);
-    var c2 = 2 * (signs[0] * circle1.radius + signs[2] * circle3.radius);
-    var d1 = (sqr(circle1.cx) + sqr(circle1.cy) - sqr(circle1.radius)) -
-             (sqr(circle2.cx) + sqr(circle2.cy) - sqr(circle2.radius));
-    var d2 = (sqr(circle1.cx) + sqr(circle1.cy) - sqr(circle1.radius)) -
-             (sqr(circle3.cx) + sqr(circle3.cy) - sqr(circle3.radius));
+  var a1 = 2 * (circle1.cx - circle2.cx);
+  var a2 = 2 * (circle1.cx - circle3.cx);
+  var b1 = 2 * (circle1.cy - circle2.cy);
+  var b2 = 2 * (circle1.cy - circle3.cy);
+  var c1 = 2 * (signs[0] * circle1.radius + signs[1] * circle2.radius);
+  var c2 = 2 * (signs[0] * circle1.radius + signs[2] * circle3.radius);
+  var d1 = (sqr(circle1.cx) + sqr(circle1.cy) - sqr(circle1.radius)) -
+      (sqr(circle2.cx) + sqr(circle2.cy) - sqr(circle2.radius));
+  var d2 = (sqr(circle1.cx) + sqr(circle1.cy) - sqr(circle1.radius)) -
+      (sqr(circle3.cx) + sqr(circle3.cy) - sqr(circle3.radius));
 
-    // x = (p+q*r)/s; y = (t+u*r)/s
+  // x = (p+q*r)/s; y = (t+u*r)/s
 
-    var p = b2 * d1 - b1 * d2;
-    var q = (- b2 * c1) + (b1 * c2);
-    var s = a1 * b2 - b1 * a2;
-    var t = - a2 * d1 + a1 * d2;
-    var u = a2 * c1 - a1 * c2;
+  var p = b2 * d1 - b1 * d2;
+  var q = (- b2 * c1) + (b1 * c2);
+  var s = a1 * b2 - b1 * a2;
+  var t = - a2 * d1 + a1 * d2;
+  var u = a2 * c1 - a1 * c2;
 
-    // you are not expected to understand this.
-    // It was generated using Mathematica's Solve function.
-    var det = (2 * (-sqr(q) + sqr(s) - sqr(u)));
-    var r = (1 / det) *
-        (2 * p * q + 2 * circle1.radius * sqr(s) + 2 * t * u -
-         2 * q * s * circle1.cx - 2 * s * u * circle1.cy + signs[3] *
-         Math.sqrt(sqr(-2 * p * q - 2 * circle1.radius * sqr(s) - 2 * t * u +
+  // you are not expected to understand this.
+  // It was generated using Mathematica's Solve function.
+  var det = (2 * (-sqr(q) + sqr(s) - sqr(u)));
+  var r = (1 / det) *
+      (2 * p * q + 2 * circle1.radius * sqr(s) + 2 * t * u -
+      2 * q * s * circle1.cx - 2 * s * u * circle1.cy + signs[3] *
+      Math.sqrt(sqr(-2 * p * q - 2 * circle1.radius * sqr(s) - 2 * t * u +
                        2 * q * s * circle1.cx + 2 * s * u * circle1.cy) -
                    4 * (-sqr(q) + sqr(s) - sqr(u)) *
                    (-sqr(p) + sqr(circle1.radius) * sqr(s) - sqr(t) +
                     2 * p * s * circle1.cx - sqr(s) * sqr(circle1.cx) +
                     2 * s * t * circle1.cy - sqr(s) * sqr(circle1.cy))));
 
-    //console.log(r);
-    r = Math.abs(r);
+  //console.log(r);
+  r = Math.abs(r);
 
-    var x = (p + q * r) / s;
+  var x = (p + q * r) / s;
 
-    var y = (t + u * r) / s;
+  var y = (t + u * r) / s;
 
-    //console.log(x); console.log(y);
-    return {cx: x, cy: y, radius: r};
+  //console.log(x); console.log(y);
+  return {cx: x, cy: y, radius: r};
 }
 
 //
 var areAllCirclesInOrOnCircle = function(circles, circle) {
-        for (var i = 0; i < circles.length; i++) {
-            if (!isCircleInOrOnCircle(circles[i], circle)) return false;
-        }
-        return true;
-    };
+  for (var i = 0; i < circles.length; i++) {
+    if (!isCircleInOrOnCircle(circles[i], circle)) return false;
+  }
+  return true;
+};
 
 
 /**
@@ -318,8 +328,8 @@ var areAllCirclesInOrOnCircle = function(circles, circle) {
  * @return {boolean} is the circle inside/on the circle?
  */
 function isCircleInOrOnCircle(innerCircle, outerCircle) {
-    return ((lineLength([innerCircle.cx, innerCircle.cy],
-                        [outerCircle.cx, outerCircle.cy]) +
+  return ((lineLength([innerCircle.cx, innerCircle.cy],
+      [outerCircle.cx, outerCircle.cy]) +
              innerCircle.radius - EPSILON) < outerCircle.radius);
 }
 
@@ -331,9 +341,10 @@ function isCircleInOrOnCircle(innerCircle, outerCircle) {
  * @return {number} The length of the line.
  */
 function lineLength(pt1, pt2) {
-    return Math.sqrt(Math.pow(pt1[0] - pt2[0], 2) +
-                     Math.pow(pt1[1] - pt2[1], 2));
+  return Math.sqrt(Math.pow(pt1[0] - pt2[0], 2) +
+      Math.pow(pt1[1] - pt2[1], 2));
 }
+
 
 /**
  * Calculates the midpoint of a line.
@@ -342,27 +353,27 @@ function lineLength(pt1, pt2) {
  * @return {Array.<number>} The midpoint of the line, [x, y].
  */
 function lineMidpoint(pt1, pt2) {
-    return [(pt1[0] + pt2[0]) / 2,
-            (pt1[1] + pt2[1]) / 2];
+  return [(pt1[0] + pt2[0]) / 2,
+    (pt1[1] + pt2[1]) / 2];
 }
 
 
 // Binary search
 function bSearch(start, end, tol, f) {
-    var guess = (start + end) / 2;
-    //var iterations = 0;
-    while (end - start > tol) {
-        //iterations++;
-        guess = (start + end) / 2;
-        var result = f(guess);
-        if (result == 0) {
-            return guess;
-        } else if (result > 0) {// too high
-            end = guess;
-        } else {
-            start = guess;
-        }
+  var guess = (start + end) / 2;
+  //var iterations = 0;
+  while (end - start > tol) {
+    //iterations++;
+    guess = (start + end) / 2;
+    var result = f(guess);
+    if (result == 0) {
+      return guess;
+    } else if (result > 0) {// too high
+      end = guess;
+    } else {
+      start = guess;
     }
-    //console.log(iterations);
-    return (start + end) / 2;
+  }
+  //console.log(iterations);
+  return (start + end) / 2;
 }
