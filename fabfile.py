@@ -14,7 +14,7 @@ def setup(dev="False"):
         # excel
         local("pip install xlrd")
         # database
-        local("pip install mongoengine")
+        local("pip install pymongo mongoengine")
         # PNG export: verify inkscape is installed
         local("inkscape --version")
 
@@ -22,6 +22,7 @@ def setup(dev="False"):
 		local("pip install pep8")
 		local("pip install http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download")
 		local("pip install nose")
+		local("easy_install http://closure-linter.googlecode.com/files/closure_linter-latest.tar.gz")
 
 
 def compile(advanced="False"):
