@@ -115,17 +115,32 @@ function ViewObj(data, parent, position, category) {
   // this is working really weirdly... but see viewstate.js
   // where it works fine.
   this.dragHandler = d3.behavior.drag()
-        .origin(function(d) {
-            // needed, not sure why.
-            return {x: 0, y: 0};
+      .origin(function(d) {
+        // needed, not sure why.
+        return {x: 0, y: 0};
       })
-        .on('drag', function(d) {
-            that.position = that.position.map(viewstate.scaler);
-            that.position[0] += d3.event.x;
-            that.position[1] += d3.event.y;
-            that.position = that.position.map(viewstate.scaler.invert);
-            that.moveTo(that.position);
-      });
+      .on('drag', function(d) {
+        that.position = that.position.map(viewstate.scaler);
+        that.position[0] += d3.event.x;
+        that.position[1] += d3.event.y;
+        that.position = that.position.map(viewstate.scaler.invert);
+        that.moveTo(that.position);
+      })
+
+
+  /*this.ontouchstartMaker = function(e)
+      .on("touchstart",function(e){
+        var t2 = e.timeStamp,
+        t1 = jQuery(this).data('lastTouch') || t2,
+        dt = t2 - t1,
+        fingers = e.originalEvent.touches.length;
+        jQuery(this).data('lastTouch', t2);
+        if (!dt || dt > 500 || fingers > 1) return; // not double-tap
+        
+        e.preventDefault(); // double tap - prevent the zoom
+        jQuery(this).trigger('dblclick');
+      });*/
+
 
 
   // context menu is set up in render.
