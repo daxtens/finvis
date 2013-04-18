@@ -5,6 +5,9 @@ title: Uploading spreadsheets
 
 Excel spreadsheets are the primary way to load data into the visual budget. The format is somewhat brittle. On the plus side, I'm guaranteeing backwards compatibility, so if you can successfully upload a spreadsheet to this version, it will continue to work.
 
+Getting started
+---------------
+
 The easiest way to get started is to get an [example spreadsheet](#examples) and modify it. Check out the [annotated data sheet](#annotated_data_sheet) and [rules summary](#rules_summary) below if you're stuck. If that's still not enough, [get in touch](mailto:finvis@dja.id.au).
 
 Rules summary
