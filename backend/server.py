@@ -7,6 +7,7 @@ import auth_settings
 import os
 import auth
 import downloader
+from mongo import *
 
 rootdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 
@@ -32,6 +33,27 @@ app = SessionMiddleware(app, session_opts)
 def redir():
     bottle.redirect('index.html')
 
+@bottle.route('/vis.html')
+@bottle.view('vis')
+def vis():
+    if aaa.user_is_anonymous:
+        username = None
+    else:
+        username = aaa.current_user
+    
+    public_entities = Entity.objects(public=True).only("name")
+
+    if username:
+        user_entities = Entity.objects(username=username, public=False).only('name')
+    else:
+        user_entities = []
+
+    result = {'username': username,
+              'public_entities': public_entities,
+              'user_entities': user_entities
+              }
+    print(result)
+    return result
 
 # Static files
 @bottle.route('/<filename:path>')

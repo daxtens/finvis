@@ -1,3 +1,0 @@
-[submodule "backend/bottle-cork"]
-	path = backend/bottle-cork
-	url = git://github.com/23min/bottle-cork.git

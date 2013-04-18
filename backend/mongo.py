@@ -4,7 +4,7 @@ from bson import Binary, Code
 from bson.json_util import dumps
 
 
-#connect('finvis-data')
+connect('finvis-data')
 
 class Period(EmbeddedDocument):
     value = IntField(required=True)
