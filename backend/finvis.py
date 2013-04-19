@@ -1,18 +1,18 @@
+import os
+# web framework
 import bottle
+# AAA
 from beaker.middleware import SessionMiddleware
 from cork import Cork
 from cork.backends import MongoDBBackend
-import logging
 import auth_settings
-import os
 import auth
-import downloader
+# Various bits of the app
 from mongo import *
+import downloader
+import crud
 
 rootdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-
-logging.basicConfig(format='localhost - - [%(asctime)s] %(message)s', level=logging.DEBUG)
-log = logging.getLogger(__name__)
 
 aaa = Cork(backend=MongoDBBackend(db_name='finvis-auth'),
            email_sender='vis@dja.id.au',
@@ -33,13 +33,13 @@ app = SessionMiddleware(app, session_opts)
 def redir():
     bottle.redirect('index.html')
 
-@bottle.route('/vis.html')
+@bottle.route('/index.html')
 @bottle.view('vis')
 def vis():
     if aaa.user_is_anonymous:
         username = None
     else:
-        username = aaa.current_user
+        username = aaa.current_user.username
     
     public_entities = Entity.objects(public=True).only("name")
 
@@ -52,7 +52,7 @@ def vis():
               'public_entities': public_entities,
               'user_entities': user_entities
               }
-    print(result)
+    #print(result)
     return result
 
 # Static files

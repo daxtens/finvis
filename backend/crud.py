@@ -1,16 +1,19 @@
-from bottle import route, run, debug, template, post, request, response
+from bottle import route, run, debug, template, post, request, response, view
 from mongo import *
 import bson
 import mongoengine
 import pymongo
 import mongo
 import excel
-
+import finvis
 
 @route('/entities')
+@view('entity_list')
 def entity_list():
-    return template('views/entity_list',
-                    entities=Entity.objects().only("name"))
+    finvis.aaa.require(fail_redirect='/login')
+    public_entities = Entity.objects(public=True).only("name")
+    user_entities = Entity.objects(username=finvis.aaa.current_user.username, public=False).only("name")
+    return {'public_entities': public_entities, 'user_entities': user_entities}
 
 
 @route('/entities.json')

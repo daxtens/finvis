@@ -1,9 +1,6 @@
 import bottle
-from cork import Cork
-from cork.backends import MongoDBBackend
-import logging
 import os
-from server import aaa
+from finvis import aaa
 
 
 # #  Bottle methods  # #
@@ -32,14 +29,31 @@ def user_is_anonymous():
 
 @bottle.route('/logout')
 def logout():
-    aaa.logout(success_redirect='/login')
+    aaa.logout(success_redirect='/')
 
 
+@bottle.get('/register')
 @bottle.post('/register')
 def register():
-    """Send out registration email"""
-    aaa.register(post_get('username'), post_get('password'), post_get('email_address'))
-    return 'Please check your mailbox.'
+    """Registration Form and Email"""
+
+    # if the registration fails, return the registration form with the error and existing values
+    username = ''
+    email_address = ''
+    error = None
+    if bottle.request.method == "POST":
+        try:
+            aaa.register(post_get('username'), post_get('password'), post_get('email_address'))
+            return bottle.template('views/registration_email_sent')
+        except Exception as e:
+            # store the form input
+            error = e.message
+            username = post_get('username')
+            email_address = post_get('email_address')
+
+    return bottle.template('registration_form.tpl', {'username': username,
+                                                       'email_address': email_address,
+                                                       'error': error})
 
 
 @bottle.route('/validate_registration/:registration_code')

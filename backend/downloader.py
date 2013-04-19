@@ -1,10 +1,7 @@
-from bottle import route, run, debug, template, static_file, redirect, \
-    post, CherryPyServer, request, response
+from bottle import route, post, request, response
 import export
 import os
 import urllib
-import crud
-
 
 # Download the current view as SVG or PNG
 @post('/download')
@@ -28,7 +25,3 @@ def download():
         png = export.svg_document_to_png(svg)
         return png
 
-if __name__ == "__main__":
-    #debug(True)  # useless on cherrypy
-    run(server=CherryPyServer, reloader=True)
-    run(reloader=True)
