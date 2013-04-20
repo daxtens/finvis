@@ -53,6 +53,10 @@ window.onresize = function() {
   }, 50);
 };
 
+/** Stop mobile browsers scrolling the page. */
+document.ontouchmove = function(event){
+    event.preventDefault();
+}
 
 /** Initalise the document when we start.
  */
