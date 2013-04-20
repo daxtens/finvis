@@ -128,25 +128,28 @@ function ViewObj(data, parent, position, category) {
       })
 
 
-  /*this.ontouchstartMaker = function(e)
-      .on("touchstart",function(e){
-        var t2 = e.timeStamp,
-        t1 = jQuery(this).data('lastTouch') || t2,
-        dt = t2 - t1,
-        fingers = e.originalEvent.touches.length;
-        jQuery(this).data('lastTouch', t2);
-        if (!dt || dt > 500 || fingers > 1) return; // not double-tap
-        
-        e.preventDefault(); // double tap - prevent the zoom
-        jQuery(this).trigger('dblclick');
-      });*/
-
-
-
   // context menu is set up in render.
 
+  // double tap
+  this.ontouchstartMaker = function() {
+    return function(d){
+      console.log(d, d3.event);
+      var t2 = d3.event.timeStamp;
+      var t1 = that.mouseData.lastTouch || t2,
+      dt = t2 - t1,
+      fingers = d3.event.touches.length;
+      that.mouseData.lastTouch = t2;
+      if (!dt || dt > 500 || fingers > 1) return; // not double-tap
+      
+      d3.event.preventDefault(); // double tap - prevent the zoom
+      // orrible ack 
+      that.ondblclickMaker()(d);
+    }
+  };
+
+
+  // double click
   this.ondblclickMaker = function(e) {
-    var that = this;
     return function(d) {
       d3.event.stopPropagation();
       if ('aggregates' in that.data()) {
@@ -1060,7 +1063,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .classed('invalidPeriod', viewObj.isInvalidPeriod)
         .attr('d', arc)
         .call(viewObj.dragHandler)
-        .on('dblclick', viewObj.ondblclickMaker());
+        .on('dblclick', viewObj.ondblclickMaker())
+        .on('touchstart', viewObj.ontouchstartMaker());
 
   // d3 does not seem to provide a nice way to set dynamic styles...
   for (var style in cssStyles) {
@@ -1593,6 +1597,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
         .classed('invalidPeriod', viewObj.isInvalidPeriod)
         .call(viewObj.dragHandler)
         .on('dblclick', viewObj.ondblclickMaker())
+        .on('touchstart', viewObj.ontouchstartMaker())
         .classed('link', isLinked)
         .classed('cannotPopOut', function() {return !viewObj.canPopOut();});
 
