@@ -37,6 +37,14 @@ function ViewState(svg) {
     }
   });
 
+  // ideally replace this with a tap event.
+  this._svg.on('touchstart', function() {
+    if (that.mouseData.inDropState &&
+       d3.event.touches.length == 1) {
+      that.finishAddingView(d3.touches(this)[0]);
+    }
+  });
+
   // cannot for the life of me work out what the translate vector represents.
   var oldScale = 1;
   var zoomHandler = d3.behavior.zoom();
