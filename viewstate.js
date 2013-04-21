@@ -19,11 +19,15 @@ function ViewState(svg) {
   // this works fine, contra viewobj.js
   var that = this;
   var dragHandler = d3.behavior.drag()
-        .origin(function(d) {
-            return {x: -that.position[0], y: -that.position[1]};
+      .origin(function(d) {
+        return {x: -that.position[0], y: -that.position[1]};
       })
-        .on('drag', function(d) {
-            that.moveTo([-d3.event.x, -d3.event.y]);
+      .on('drag', function(d) {
+        if (d3.event.sourceEvent.touches &&
+            d3.event.sourceEvent.touches.length > 1) {
+          return;
+        }
+        that.moveTo([-d3.event.x, -d3.event.y]);
       });
   this._svg.call(dragHandler);
 
