@@ -48,8 +48,7 @@ window.onresize = function() {
   } catch (err) {}
 
   onResizeTimer = window.setTimeout(function() {
-    viewstate.calculateSize(tril);
-    viewstate.children().map(function(child) { child.render() });
+    viewstate.resizeToWindow();
   }, 50);
 };
 

@@ -96,9 +96,20 @@ function ViewState(svg) {
  */
 ViewState.prototype.calculateSize = function(scaleMax) {
 
+  this.resizeToWindow();
+
+  var maxOuterRadius = Math.min(this.width, this.height) / 2;
+  this.scaleMax = scaleMax;
+  this.scaler = d3.scale.sqrt()
+        .domain([0, this.scaleMax]).range([0, maxOuterRadius]);
+};
+
+/**
+ * Resize the SVG and event grabbing rectangle to the window size.
+ */
+ViewState.prototype.resizeToWindow = function() {
   this.width = window.innerWidth * 0.99;
   this.height = (window.innerHeight - 30);
-  var maxOuterRadius = Math.min(this.width, this.height) / 2;
 
   this._svg.attr('style',
       'width: ' + this.width + 'px; ' +
@@ -108,12 +119,7 @@ ViewState.prototype.calculateSize = function(scaleMax) {
       .attr('width', this.width)
       .attr('height', this.height);
 
-  this.scaleMax = scaleMax;
-
-  this.scaler = d3.scale.sqrt()
-        .domain([0, this.scaleMax]).range([0, maxOuterRadius]);
-};
-
+}
 
 /**
  * Move the ViewState object to the centre of the display
