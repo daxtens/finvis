@@ -132,20 +132,21 @@ function ViewObj(data, parent, position, category) {
         // on touch devices, a drag should prevent the context menu (taphold)
         try {
           window.clearTimeout(that.mouseData.tapholdTimer);
-        } catch (e) {};
-      })
+        } catch (e) {}
+      });
 
 
   // context menu is set up in render.
 
   // double tap & long-touch context menu
-  /** Return the handler for a touchstart event. */
+  /** Return the handler for a touchstart event.
+      @return {function} touchstart event handler. */
   this.ontouchstartMaker = function() {
-    return function(d){
+    return function(d) {
       var t2 = d3.event.timeStamp;
-      var t1 = that.mouseData.lastTouch || t2,
-      dt = t2 - t1,
-      fingers = d3.event.touches.length;
+      var t1 = that.mouseData.lastTouch || t2;
+      var dt = t2 - t1;
+      var fingers = d3.event.touches.length;
       that.mouseData.lastTouch = t2;
 
       if (!dt || dt > 500 || fingers > 1) {
@@ -153,43 +154,53 @@ function ViewObj(data, parent, position, category) {
         // set up timer for long tap
         if (fingers == 1) {
           that.mouseData.event = d3.event;
-          that.mouseData.tapholdTimer = window.setTimeout(
-            function () {
-              that.taphold(d);
-            }, 750);
+          that.mouseData.tapholdTimer = window.setTimeout(function() {
+            that.taphold(d);
+          }, 600);
+        } else {
+          // another touch has started such that we no longer have two fingers
+          // abort the timer.
+          try {
+            window.clearTimeout(that.mouseData.tapholdTimer);
+          } catch (e) {}
         }
-        return; 
+        return;
       }
-      
+
       d3.event.preventDefault(); // double tap - prevent the zoom
-      // FIXME horrible hack 
+      // FIXME horrible hack
       that.ondblclickMaker()(d);
     }
     return undefined;
   };
 
-  /** Return the handler for a touchend event */
+  /** Return the handler for a touchend event
+   @return {function} a touchend handler. */
   this.ontouchendMaker = function() {
-    return function (d) {
+    return function(d) {
       try {
         window.clearTimeout(that.mouseData.tapholdTimer);
-      } catch (e) {};
+      } catch (e) {}
     };
   };
 
-  /** Event 'handler' for a taphold: a tap held for more than 750 ms.
-      750ms is a magic constant in ontouchstartMaker.
-      This is truly shameful code */
-  this.taphold = function(d) {
+  /** Event 'handler' for a taphold: a tap held for more than 600 ms.
+      600 is a magic constant in ontouchstartMaker.
+      This is truly shameful code. */
+  this.taphold = function() {
     var e = that.mouseData.event;
-    var e2 = {type: "contextmenu",
-              pageX: e.pageX,
-              pageY: e.pageY};
+    var e2 = {
+      type: 'contextmenu',
+      pageX: e.pageX,
+      pageY: e.page
+    };
     jQuery(e.target).trigger(e2);
-  }
+  };
 
-  /** Return the handler for a double click event */
-  this.ondblclickMaker = function(e) {
+  /** Return the handler for a double click event
+      @return {function} Double-click handler.
+  */
+  this.ondblclickMaker = function() {
     return function(d) {
       d3.event.stopPropagation();
       if ('aggregates' in that.data()) {
