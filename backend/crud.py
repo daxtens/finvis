@@ -71,3 +71,20 @@ def excel_upload():
     obj.save()
 
     redirect('/entities')
+
+
+@route('/delete/:entity_id')
+def delete(entity_id):
+    finvis.aaa.require(fail_redirect='/sorry_page')
+
+    obj = Entity.objects(id=entity_id)[0]
+
+    # you can only delete your own documents, unless you're admin
+    if (obj.username == finvis.aaa.current_user.username or
+            finvis.aaa.current_user.role == 'admin'):
+        obj.delete()
+    else:
+        return 'Error: you may not delete that document.'
+
+    target = request.headers.get('Referer', '/').strip()
+    redirect(target)
