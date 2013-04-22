@@ -14,7 +14,7 @@ function ViewState(svg) {
   this._svg = svg;
   // get something to grab all the clicks
   this.eventGrabber = this._svg.append('rect')
-      .attr('opacity',0)
+      .attr('opacity', 0)
       .attr('x', 0)
       .attr('y', 0);
   // publish a viewport that we can shift around.
@@ -45,7 +45,7 @@ function ViewState(svg) {
   // ideally replace this with a tap event.
   this.eventGrabber.on('touchstart', function() {
     if (that.mouseData.inDropState &&
-       d3.event.touches.length == 1) {
+        d3.event.touches.length == 1) {
       that.finishAddingView(d3.touches(this)[0]);
     }
   });
@@ -54,6 +54,7 @@ function ViewState(svg) {
   var oldScale = 1;
   var zoomHandler = d3.behavior.zoom();
   zoomHandler.on('zoom', function(d) {
+
     // after a drag, this gets invoked at even mouse move, with unchanged
     // scale. we don't want this; it causes wobble. (bug #14)
     // I also have no idea why it gets invoked or how to stop it.
@@ -76,7 +77,19 @@ function ViewState(svg) {
   // ^ doesn't work, despite being what is suggested in
   // http://stackoverflow.com/a/11788800/463510
   // by mbostock himself.
-  this.eventGrabber.call(zoomHandler);
+
+  // Attach the hander to the SVG tag because in this case we do want it
+  // to eat all the zoom events.
+  this._svg.call(zoomHandler);
+
+  // The downside of the zoom handler is that it eats all the touch
+  // events, including the ones contextMenu needs. Massive hack around it.
+  this._svg.on('touchstart', function() {
+    // FIXME: massive hack
+    if (!!window.contextMenuHideEvent) {
+      window.contextMenuHideEvent(d3.event);
+    }
+  });
 
   this.centreView();
 
@@ -104,6 +117,7 @@ ViewState.prototype.calculateSize = function(scaleMax) {
         .domain([0, this.scaleMax]).range([0, maxOuterRadius]);
 };
 
+
 /**
  * Resize the SVG and event grabbing rectangle to the window size.
  */
@@ -119,7 +133,8 @@ ViewState.prototype.resizeToWindow = function() {
       .attr('width', this.width)
       .attr('height', this.height);
 
-}
+};
+
 
 /**
  * Move the ViewState object to the centre of the display

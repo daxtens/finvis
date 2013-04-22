@@ -126,15 +126,16 @@
     if (cur.shadow) shadow.css({width: menu.width(), height: menu.height(),
         left: e.pageX + 2, top: e.pageY + 2}).show();
     $(document).one('click', hide);
-    // simulate a click on touch devices
-    $(document).one('touchstart', function() {
-      $(document).one('touchend', function (e) {
-        // pass the click on to whatever we clicked on
-        // otherwise you can't actually click on a context menu item!
+    // FIXME: absolutely massive hack
+    // d3 is eating touch events whenever a zoom handler is attached.
+    // I need the zoom handler. So provide a global hook. eww
+    window.contextMenuHideEvent = function(e) {
+      hide();
+      if (e.type.indexOf('touch') != -1) {
         $(e.target).trigger('click');
-        hide();
-      });
-    });
+      }
+      delete window['contextMenuHideEvent'];
+    }
   }
 
   function hide() {
