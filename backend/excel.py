@@ -7,7 +7,7 @@ from bson import json_util
 valid_categories = ['expenses', 'revenue', 'assets', 'liabilities']
 
 
-def import_excel(data):
+def import_excel(data, username):
     """Import an excel spreadsheet in the formats specified in the templates.
     It's pretty brittle.
     Returns the relevant MongoEngine object."""
@@ -74,11 +74,11 @@ def import_excel(data):
 
     # Prepare the object:
     if ent_type == "Item":
-        result = ItemEntity(name=name, username="System", public=True,
+        result = ItemEntity(name=name, username=username, public=False,
                             units=units, category=sheets[0][1],
                             item=sheets[0][0], metadata=metadata)
     else:
-        result = AggregateEntity(name=name, username="System", public=True,
+        result = AggregateEntity(name=name, username=username, public=False,
                                  units=units, aggregates=sheets,
                                  metadata=metadata)
 
