@@ -14,6 +14,8 @@
  *
  * For documentation visit http://www.trendskitchens.co.nz/jquery/contextmenu/
  *
+ * There are some local modifications: for example touchstart/touchend
+ * simulation of click.
  */
 
 (function($) {
@@ -124,6 +126,16 @@
     if (cur.shadow) shadow.css({width: menu.width(), height: menu.height(),
         left: e.pageX + 2, top: e.pageY + 2}).show();
     $(document).one('click', hide);
+    // FIXME: absolutely massive hack
+    // d3 is eating touch events whenever a zoom handler is attached.
+    // I need the zoom handler. So provide a global hook. eww
+    window.contextMenuHideEvent = function(e) {
+      hide();
+      if (e.type.indexOf('touch') != -1) {
+        $(e.target).trigger('click');
+      }
+      delete window['contextMenuHideEvent'];
+    }
   }
 
   function hide() {

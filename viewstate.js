@@ -12,6 +12,11 @@ function ViewState(svg) {
 
   // keep the 'real' svg private
   this._svg = svg;
+  // get something to grab all the clicks
+  this.eventGrabber = this._svg.append('rect')
+      .attr('opacity', 0)
+      .attr('x', 0)
+      .attr('y', 0);
   // publish a viewport that we can shift around.
   this.svg = this._svg.append('g');
 
@@ -19,17 +24,29 @@ function ViewState(svg) {
   // this works fine, contra viewobj.js
   var that = this;
   var dragHandler = d3.behavior.drag()
-        .origin(function(d) {
-            return {x: -that.position[0], y: -that.position[1]};
+      .origin(function(d) {
+        return {x: -that.position[0], y: -that.position[1]};
       })
-        .on('drag', function(d) {
-            that.moveTo([-d3.event.x, -d3.event.y]);
+      .on('drag', function(d) {
+        if (d3.event.sourceEvent.touches &&
+            d3.event.sourceEvent.touches.length > 1) {
+          return;
+        }
+        that.moveTo([-d3.event.x, -d3.event.y]);
       });
-  this._svg.call(dragHandler);
+  this.eventGrabber.call(dragHandler);
 
-  this._svg.on('click', function() {
+  this.eventGrabber.on('click', function() {
     if (that.mouseData.inDropState) {
       that.finishAddingView(d3.mouse(this));
+    }
+  });
+
+  // ideally replace this with a tap event.
+  this.eventGrabber.on('touchstart', function() {
+    if (that.mouseData.inDropState &&
+        d3.event.touches.length == 1) {
+      that.finishAddingView(d3.touches(this)[0]);
     }
   });
 
@@ -37,6 +54,7 @@ function ViewState(svg) {
   var oldScale = 1;
   var zoomHandler = d3.behavior.zoom();
   zoomHandler.on('zoom', function(d) {
+
     // after a drag, this gets invoked at even mouse move, with unchanged
     // scale. we don't want this; it causes wobble. (bug #14)
     // I also have no idea why it gets invoked or how to stop it.
@@ -59,7 +77,19 @@ function ViewState(svg) {
   // ^ doesn't work, despite being what is suggested in
   // http://stackoverflow.com/a/11788800/463510
   // by mbostock himself.
+
+  // Attach the hander to the SVG tag because in this case we do want it
+  // to eat all the zoom events.
   this._svg.call(zoomHandler);
+
+  // The downside of the zoom handler is that it eats all the touch
+  // events, including the ones contextMenu needs. Massive hack around it.
+  this._svg.on('touchstart', function() {
+    // FIXME: massive hack
+    if (!!window.contextMenuHideEvent) {
+      window.contextMenuHideEvent(d3.event);
+    }
+  });
 
   this.centreView();
 
@@ -79,18 +109,30 @@ function ViewState(svg) {
  */
 ViewState.prototype.calculateSize = function(scaleMax) {
 
+  this.resizeToWindow();
+
+  var maxOuterRadius = Math.min(this.width, this.height) / 2;
+  this.scaleMax = scaleMax;
+  this.scaler = d3.scale.sqrt()
+        .domain([0, this.scaleMax]).range([0, maxOuterRadius]);
+};
+
+
+/**
+ * Resize the SVG and event grabbing rectangle to the window size.
+ */
+ViewState.prototype.resizeToWindow = function() {
   this.width = window.innerWidth * 0.99;
   this.height = (window.innerHeight - 30);
-  var maxOuterRadius = Math.min(this.width, this.height) / 2;
 
   this._svg.attr('style',
       'width: ' + this.width + 'px; ' +
       'height: ' + this.height + 'px;');
 
-  this.scaleMax = scaleMax;
+  this.eventGrabber
+      .attr('width', this.width)
+      .attr('height', this.height);
 
-  this.scaler = d3.scale.sqrt()
-        .domain([0, this.scaleMax]).range([0, maxOuterRadius]);
 };
 
 
