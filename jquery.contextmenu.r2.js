@@ -128,7 +128,12 @@
     $(document).one('click', hide);
     // simulate a click on touch devices
     $(document).one('touchstart', function() {
-      $(document).one('touchend', hide);
+      $(document).one('touchend', function (e) {
+        // pass the click on to whatever we clicked on
+        // otherwise you can't actually click on a context menu item!
+        $(e.target).trigger('click');
+        hide();
+      });
     });
   }
 
