@@ -12,6 +12,11 @@ function ViewState(svg) {
 
   // keep the 'real' svg private
   this._svg = svg;
+  // get something to grab all the clicks
+  this.eventGrabber = this._svg.append('rect')
+      .attr('opacity',0)
+      .attr('x', 0)
+      .attr('y', 0);
   // publish a viewport that we can shift around.
   this.svg = this._svg.append('g');
 
@@ -29,16 +34,16 @@ function ViewState(svg) {
         }
         that.moveTo([-d3.event.x, -d3.event.y]);
       });
-  this._svg.call(dragHandler);
+  this.eventGrabber.call(dragHandler);
 
-  this._svg.on('click', function() {
+  this.eventGrabber.on('click', function() {
     if (that.mouseData.inDropState) {
       that.finishAddingView(d3.mouse(this));
     }
   });
 
   // ideally replace this with a tap event.
-  this._svg.on('touchstart', function() {
+  this.eventGrabber.on('touchstart', function() {
     if (that.mouseData.inDropState &&
        d3.event.touches.length == 1) {
       that.finishAddingView(d3.touches(this)[0]);
@@ -71,7 +76,7 @@ function ViewState(svg) {
   // ^ doesn't work, despite being what is suggested in
   // http://stackoverflow.com/a/11788800/463510
   // by mbostock himself.
-  this._svg.call(zoomHandler);
+  this.eventGrabber.call(zoomHandler);
 
   this.centreView();
 
@@ -98,6 +103,10 @@ ViewState.prototype.calculateSize = function(scaleMax) {
   this._svg.attr('style',
       'width: ' + this.width + 'px; ' +
       'height: ' + this.height + 'px;');
+
+  this.eventGrabber
+      .attr('width', this.width)
+      .attr('height', this.height);
 
   this.scaleMax = scaleMax;
 
