@@ -18,6 +18,7 @@
 </table>
 
 <h2>My Entitites</h2>
+%if len(users_entities[me]):
 <table>
   <thead>
     <tr><th>Name</th><th>View</th><th>Download</th><th>Visibility</th><th>Delete</th></tr>
@@ -37,23 +38,27 @@
     %end
   </tbody>
 </table>
+%else:
+<p><i>Currently none.</i></p>
+%end
 
 
 <h2>User Entities</h2>
-Once an entity is made public, users who are not admins lose the ability to modify or delete them.
+<p>Once an entity is made public, users who are not admins lose the ability to modify or delete it.</p>
+%printed = 0
 %for user in users_entities:
 %if len(users_entities[user]) and user != me:
+%printed = 1
 <h3>{{user}}</h3>
 <table>
   <thead>
-    <tr><th>Name</th><th>View</th><th>Download</th><th>Make a copy</th><th>Visibility</th><th>Delete</th></tr>
+    <tr><th>Name</th><th>View</th><th>Download</th><th>Visibility</th><th>Delete</th></tr>
   </thead><tbody>
     %for entity in users_entities[user]:
     <tr>
       <td>{{entity.name}}</td>
       <td><a href="/index.html/{{entity.id}}">View</a></td>
       <td><a href="/download/{{entity.id}}">Download</a></td>
-      <td><a href="/make_copy/{{entity.id}}">Make a copy</a></td>
       %if entity.public: 
       <td><a href="/set_public/{{entity.id}}/0">Make Private</a></td>
       %else:
@@ -66,3 +71,14 @@ Once an entity is made public, users who are not admins lose the ability to modi
 </table>
 %end
 %end
+%if not printed:
+   <p><i>Currently no other users have data.</i></p>
+%end
+<h2>Upload a new entity</h2>
+<p><a href="http://daxtens.github.io/finvis/spreadsheet.html">Instructions</a></p>
+<form action="/upload" method="POST" enctype="multipart/form-data">
+<input id="uploadFile" type="file" name="excelfile"></input><br>
+<input id="uploadBtn" type="submit" value="Upload"></input>
+</form>
+<hr>
+<a href="/">Return to the Open Economy.</a>

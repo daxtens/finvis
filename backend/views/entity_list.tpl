@@ -1,7 +1,8 @@
 <h1>Public Entities</h1>
 <ul>
 %for entity in public_entities:
-     <li>{{entity.name}} - <a href="/download/{{entity.id}}">Download</a></li>
+     <li>{{entity.name}} - <a href="/index.html/{{entity.id}}">View</a> 
+                         - <a href="/download/{{entity.id}}">Download</a></li>
 %end
 </ul>
 <h1>My Entities</h1>
@@ -10,9 +11,9 @@
   <li><i>Currently none.</i></li>
 % end
 % for entity in user_entities:
-    <li>{{entity.name}} - <a href="/download/{{entity.id}}">Download</a> 
-                       - <a href="/replace/{{entity.id}}">Upload new data</a>
-                       - <a href="/delete/{{entity.id}}">Delete</a>
+    <li>{{entity.name}} - <a href="/index.html/{{entity.id}}">View</a>
+                        - <a href="/download/{{entity.id}}">Download</a> 
+                        - <a href="/delete/{{entity.id}}">Delete</a>
     </li>
 % end
 </ul>
@@ -22,3 +23,5 @@
 <input id="uploadFile" type="file" name="excelfile"></input><br>
 <input id="uploadBtn" type="submit" value="Upload"></input>
 </form>
+<hr>
+<a href="/">Return to the Open Economy.</a>
