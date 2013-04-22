@@ -14,7 +14,7 @@ function ViewState(svg) {
   this._svg = svg;
   // get something to grab all the clicks
   this.eventGrabber = this._svg.append('rect')
-      .attr('opacity', 0)
+      .classed('eventGrabber', true)
       .attr('x', 0)
       .attr('y', 0);
   // publish a viewport that we can shift around.

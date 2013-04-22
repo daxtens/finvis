@@ -113,6 +113,7 @@ jQuery('document').ready(function() {
         var vo = new ViewObj(d, viewstate, [0, 0]);
         updatePeriodSelector();
         vo.period(jQuery('#periodSel option')[0].value);
+        jQuery('#period').text(jQuery('#periodSel option')[0].value);
         vo.render();
       }
     },
@@ -137,6 +138,7 @@ window['periodChange'] = function(sel) {
     obj.reposition(true);
     obj.render(true);
   });
+  jQuery('#period').text(chosenoption.value);
   return false;
 };
 
@@ -242,6 +244,7 @@ function fitToScreen() {
  * @return {Boolean} false.
  */
 function initAddEntity() {
+  cancelSaveToDisk();
   jQuery('#addEntityContainer').removeClass('hidden');
   return false;
 }
@@ -315,6 +318,7 @@ function hasPlacedEntity() {
 /** Prepare to save the view as an SVG/PNG.
  */
 function initSaveToDisk() {
+  cancelAddEntity();
   jQuery('#saveToDiskForm').removeClass('hidden');
 }
 
@@ -440,7 +444,7 @@ function recalcPackingEfficiency() {
 
 
 /** default enclosing circles choice */
-window.enclosingCircles = true;
+window.enclosingCircles = false;
 
 
 /** Handle change in enclosed circles checkbox

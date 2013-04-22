@@ -36,6 +36,16 @@ img.btnimg {
     width: 32px;
 }
 
+img.smlbtnimg {
+    height: 24px;
+    width: 24px;
+}
+
 .hidden {
     display: none;
+}
+
+rect.eventGrabber {
+    opacity: 0;
+    fill-opacity: 0
 }
