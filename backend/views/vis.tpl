@@ -11,7 +11,6 @@
     </script>
     <script type="text/javascript" src="js/circles.js"></script>
     <script type="text/javascript" src="js/data.js"></script>
-    <script type="text/javascript" src="js/theopenbudget.js"></script>
     <script type="text/javascript" src="js/parenting.js"></script>
     <script type="text/javascript" src="js/viewstate.js"></script>
     <script type="text/javascript" src="js/viewobj.js"></script>
@@ -63,7 +62,14 @@
         <a href="#" id="initAddEntity"><img src="images/icons/list-add.png" class="btnimg" alt="Add an entity"/></a><br/>
         <div id="addEntityContainer" class="hidden">
           Choose an existing entity:<br/>
-          <select id="entitySel" style="width:190px;"></select><br/>
+          <select id="entitySel" style="width:190px;">
+            %for entity in public_entities:
+            <option value="{{entity.id}}">{{entity.name}}</option>
+            %end
+            %for entity in user_entities:
+            <option value="{{entity.id}}">{{entity.name}}</option>
+            %end
+          </select><br/>
           or upload one from Excel:
           <form id="ephemeralUploadForm" action="/excel_to_json.json"
                 enctype="multipart/form-data" method="POST">
