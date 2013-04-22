@@ -246,7 +246,6 @@ def export_excel(data):
         write_sheet(sh, data.category, data.item, data.units)
     else:
         for a in data.aggregates:
-            print a
             sh = wb.add_sheet(a.category)
             write_sheet(sh, a.category, a, data.units)
 
@@ -295,7 +294,6 @@ def write_sheet(sh, category, data, units):
             sh.write(row, col, m)
             col = col + 1
 
-    print(headings)
     # now for the data
     row = row + 1
 
