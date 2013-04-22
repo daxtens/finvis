@@ -5,18 +5,19 @@
     <meta charset="utf-8">
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-    <script type="text/javascript" src="js/jquery.contextmenu.r2.js"></script>
-    <script type="text/javascript" src="js/jquery.form.js"></script>
+    <script type="text/javascript" src="/js/jquery.contextmenu.r2.js"></script>
+    <script type="text/javascript" src="/js/jquery.form.js"></script>
     <script type="text/javascript">jQuery.noConflict();
     </script>
-    <script type="text/javascript" src="js/circles.js"></script>
-    <script type="text/javascript" src="js/data.js"></script>
-    <script type="text/javascript" src="js/parenting.js"></script>
-    <script type="text/javascript" src="js/viewstate.js"></script>
-    <script type="text/javascript" src="js/viewobj.js"></script>
-    <script type="text/javascript" src="js/events.js"></script>
-    <link rel="stylesheet" href="css/vis.css" />
-    <link rel="stylesheet" href="css/web.css" />
+    <script type="text/javascript" src="/js/circles.js"></script>
+    <script type="text/javascript" src="/js/data.js"></script>
+    <script type="text/javascript" src="/js/parenting.js"></script>
+    <script type="text/javascript" src="/js/viewstate.js"></script>
+    <script type="text/javascript" src="/js/viewobj.js"></script>
+    <script type="text/javascript">window.initial_id="{{initial_id}}";</script>
+    <script type="text/javascript" src="/js/events.js"></script>
+    <link rel="stylesheet" href="/css/vis.css" />
+    <link rel="stylesheet" href="/css/web.css" />
   </head>
   <body>
     <!--[if lt IE 9]>
@@ -39,13 +40,13 @@
       <div id="rightToolBox" style="position:fixed; right:5px"
            onmousedown="javascript:event.stopPropagation();"
            onmouseup="javascript:event.stopPropagation();">
-        <a href="#" title="Zoom in" onClick="javascript:viewstate.zoom(4/3,[viewstate.width/2,viewstate.height/2]); return false;"><img class="btnimg" src="images/icons/zoom-in.png" alt="Zoom in"/></a><br/>
-        <a href="#" title="Zoom out" onClick="javascript:viewstate.zoom(3/4,[viewstate.width/2,viewstate.height/2]); return false;"><img class="btnimg" src="images/icons/zoom-out.png" alt="Zoom out"/></a><br/>
-        <!--<a href="#" onClick="javascript:return false;"><img src="images/icons/zoom-box.png" class="btnimg" alt="Zoom in on a region"/></a><br/>-->
-        <a href="#" title="Fit to screen" id="fitToScreen"><img src="images/icons/zoom-original.png" class="btnimg" alt="Fit to screen"/></a><br/>
+        <a href="#" title="Zoom in" onClick="javascript:viewstate.zoom(4/3,[viewstate.width/2,viewstate.height/2]); return false;"><img class="btnimg" src="/images/icons/zoom-in.png" alt="Zoom in"/></a><br/>
+        <a href="#" title="Zoom out" onClick="javascript:viewstate.zoom(3/4,[viewstate.width/2,viewstate.height/2]); return false;"><img class="btnimg" src="/images/icons/zoom-out.png" alt="Zoom out"/></a><br/>
+        <!--<a href="#" onClick="javascript:return false;"><img src="/images/icons/zoom-box.png" class="btnimg" alt="Zoom in on a region"/></a><br/>-->
+        <a href="#" title="Fit to screen" id="fitToScreen"><img src="/images/icons/zoom-original.png" class="btnimg" alt="Fit to screen"/></a><br/>
         <hr style="width: 32px; float:right;"/>
         <br style="clear:both; height:0px;"/>
-        <a href="#" title="Save to disk" id="initSaveToDisk"><img src="images/icons/document-export.png" class="btnimg" alt="Save to disk"/></a><br/>
+        <a href="#" title="Save to disk" id="initSaveToDisk"><img src="/images/icons/document-export.png" class="btnimg" alt="Save to disk"/></a><br/>
         <form id="saveToDiskForm" name="saveToDiskForm" class="hidden" action="/export" method="POST">
           <select name="format">
             <option value="svg">SVG</option>
@@ -53,13 +54,13 @@
           </select>
           <input name="data" type="hidden"></input>
           <br/>
-          <a href="#" id="saveToDisk"><img src="images/icons/dialog-apply.png" class="btnimg" alt="Save to disk"/></a>
-          <a href="#" id="cancelSaveToDisk"><img src="images/icons/dialog-cancel.png" class="btnimg" alt="Cancel"/></a>
+          <a href="#" id="saveToDisk"><img src="/images/icons/dialog-apply.png" class="btnimg" alt="Save to disk"/></a>
+          <a href="#" id="cancelSaveToDisk"><img src="/images/icons/dialog-cancel.png" class="btnimg" alt="Cancel"/></a>
         </form>
 
         <hr style="width: 32px; float:right;"/>
         <br style="clear:both; height:0px;"/>
-        <a href="#" id="initAddEntity"><img src="images/icons/list-add.png" class="btnimg" alt="Add an entity"/></a><br/>
+        <a href="#" id="initAddEntity"><img src="/images/icons/list-add.png" class="btnimg" alt="Add an entity"/></a><br/>
         <div id="addEntityContainer" class="hidden">
           Choose an existing entity:<br/>
           <select id="entitySel" style="width:190px;">
@@ -77,22 +78,20 @@
             <input id="ephemeralUploadBtn" type="submit" value="Upload"></input>
           </form>
           <div id="ephemeralOutput" class="hidden"></div>
-          <a href="#" id="addEntity"><img src="images/icons/dialog-apply.png" class="btnimg" alt="Add this entity"/></a>
-          <a href="#" id="cancelAddEntity"><img src="images/icons/dialog-cancel.png" class="btnimg" alt="Cancel"/></a>
+          <a href="#" id="addEntity"><img src="/images/icons/dialog-apply.png" class="btnimg" alt="Add this entity"/></a>
+          <a href="#" id="cancelAddEntity"><img src="/images/icons/dialog-cancel.png" class="btnimg" alt="Cancel"/></a>
           <p id="clickToPlaceTxt" class="hidden">Click to place</p>
         </div>
         <hr style="width: 32px; float:right;"/>
         <br style="clear:both; height:0px;"/>
         <select onChange="javascript:periodChange(this);" id="periodSel">
-	  <option value="2011-12" selected="selected">2011-12</option>
-          <option value="2012-13">2012-13</option>
         </select>
         <br>
-        <a href="#" id="prevPeriodBtn"><img class="btnimg" alt="Prevous period" src="images/icons/seek-backward.png" /></a>
-        <a href="#" id="nextPeriodBtn"><img class="btnimg" alt="Next period" src="images/icons/seek-forward.png" /></a>
+        <a href="#" id="prevPeriodBtn"><img class="btnimg" alt="Prevous period" src="/images/icons/seek-backward.png" /></a>
+        <a href="#" id="nextPeriodBtn"><img class="btnimg" alt="Next period" src="/images/icons/seek-forward.png" /></a>
         <br/>
-        <a href="#" id="playBtn"><img alt="Play" class="btnimg" src="images/icons/playback-start.png" /></a>
-        <a href="#" id="stopBtn"><img alt="Stop" class="btnimg" src="images/icons/playback-stop.png" /></a>
+        <a href="#" id="playBtn"><img alt="Play" class="btnimg" src="/images/icons/playback-start.png" /></a>
+        <a href="#" id="stopBtn"><img alt="Stop" class="btnimg" src="/images/icons/playback-stop.png" /></a>
         <br/>
         <hr style="width:32px; float:right"/>
         <br/>

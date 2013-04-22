@@ -102,9 +102,21 @@ jQuery('document').ready(function() {
 
   // set up the viewstate and initial view object
   window.viewstate = new ViewState(d3.select('body').append('svg'));
-  //var vo = new ViewObj(openbudget, viewstate, [0, 0]);
-  //vo.period('2011-12');
-  //vo.render();
+  jQuery.ajax('/entity.json/' + window['initial_id'], {
+    success: function(d) {
+      if ('error' in d) {
+        alert('Error:' + d['error']);
+      } else {
+        var vo = new ViewObj(d, viewstate, [0, 0]);
+        updatePeriodSelector();
+        vo.period(jQuery('#periodSel option')[0].value);
+        vo.render();
+      }
+    },
+    error: function(d) {
+      alert('An unknown error occured.');
+    }
+  });
 });
 
 
@@ -206,7 +218,7 @@ function updatePeriodSelector() {
 
     if (periods[x] == oldOpt) found = true;
   }
-  if (!found) {
+  if (!found && !!oldOpt) {
     newOpt = jQuery('<option value="' + oldOpt + '" disabled="disabled"' +
                         ' selected="selected">' + oldOpt + '</option>');
     sel.append(newOpt);
