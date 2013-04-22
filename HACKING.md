@@ -22,7 +22,7 @@ GETTING STARTED
 * Check out the git repository by following the instructions on github
 
 * Start a local webserver (do this in another terminal tab):
-  `cd backend; python downloader.py`
+  `cd backend; python finvis.py`
 
 * Hack, watching your changes at localhost:8080
 

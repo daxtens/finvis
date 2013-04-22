@@ -11,8 +11,10 @@ def setup(dev="False"):
         # web framework
         local("pip install bottle")
         local("pip install CherryPy")  # (accelerated server)
+        # auth
+        local("pip install bottle-cork")
         # excel
-        local("pip install xlrd")
+        local("pip install xlrd xlwt")
         # database
         local("pip install pymongo mongoengine")
         # PNG export: verify inkscape is installed

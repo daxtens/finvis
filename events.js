@@ -76,14 +76,6 @@ jQuery('document').ready(function() {
   jQuery('#playBtn').on('click', playBtn);
   jQuery('#stopBtn').on('click', stopBtn);
 
-  // populate the entity list
-  var entitySel = jQuery('#entitySel');
-  jQuery.each(entities, function(index) {
-    entitySel.append(
-        jQuery('<option />').val(index).text(entities[index].name)
-    );
-  });
-
   // ephemeral upload
   jQuery('#ephemeralUploadForm').on('submit', function(e) {
     e.preventDefault();
@@ -113,9 +105,21 @@ jQuery('document').ready(function() {
 
   // set up the viewstate and initial view object
   window.viewstate = new ViewState(d3.select('body').append('svg'));
-  var vo = new ViewObj(openbudget, viewstate, [0, 0]);
-  vo.period('2011-12');
-  vo.render();
+  jQuery.ajax('/entity.json/' + window['initial_id'], {
+    success: function(d) {
+      if ('error' in d) {
+        alert('Error:' + d['error']);
+      } else {
+        var vo = new ViewObj(d, viewstate, [0, 0]);
+        updatePeriodSelector();
+        vo.period(jQuery('#periodSel option')[0].value);
+        vo.render();
+      }
+    },
+    error: function(d) {
+      alert('An unknown error occured.');
+    }
+  });
 });
 
 
@@ -217,7 +221,7 @@ function updatePeriodSelector() {
 
     if (periods[x] == oldOpt) found = true;
   }
-  if (!found) {
+  if (!found && !!oldOpt) {
     newOpt = jQuery('<option value="' + oldOpt + '" disabled="disabled"' +
                         ' selected="selected">' + oldOpt + '</option>');
     sel.append(newOpt);
@@ -260,9 +264,27 @@ function addEntityUI() {
 function addEntityBtn() {
   addEntityUI();
   var entitySel = jQuery('#entitySel')[0];
-  var sel = jQuery('#periodSel')[0];
-  viewstate.beginAddingView(entities[entitySel.selectedIndex],
-      sel.options[sel.selectedIndex].value);
+  var id = entitySel.options[entitySel.selectedIndex].value;
+  jQuery.ajax('/entity.json/' + id, {
+    success: function(d) {
+      if ('error' in d) {
+        alert('Error:' + d['error']);
+        cancelAddEntity();
+      } else {
+        //console.log(d);
+        var sel = jQuery('#periodSel')[0];
+        viewstate.beginAddingView(d, sel.options[
+            sel.selectedIndex].value);
+      }
+    },
+    error: function(d) {
+      alert('An unknown error occured.');
+      cancelAddEntity();
+    },
+    complete: function() {
+      jQuery('#clickToPlaceTxt').text('Click to place');
+    }
+  });
   return false;
 }
 

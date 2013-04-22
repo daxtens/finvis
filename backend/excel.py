@@ -1,13 +1,14 @@
 import xlrd
+import xlwt
 from mongo import *
 import re
 from bson import json_util
-
+from StringIO import StringIO
 
 valid_categories = ['expenses', 'revenue', 'assets', 'liabilities']
 
 
-def import_excel(data):
+def import_excel(data, username):
     """Import an excel spreadsheet in the formats specified in the templates.
     It's pretty brittle.
     Returns the relevant MongoEngine object."""
@@ -74,11 +75,11 @@ def import_excel(data):
 
     # Prepare the object:
     if ent_type == "Item":
-        result = ItemEntity(name=name, username="System", public=True,
+        result = ItemEntity(name=name, username=username, public=False,
                             units=units, category=sheets[0][1],
                             item=sheets[0][0], metadata=metadata)
     else:
-        result = AggregateEntity(name=name, username="System", public=True,
+        result = AggregateEntity(name=name, username=username, public=False,
                                  units=units, aggregates=sheets,
                                  metadata=metadata)
 
@@ -119,7 +120,7 @@ def read_sheet(sh, isItem, units):
     row = 1
     while (sh.cell_value(rowx=row, colx=0)):
         key = sh.cell_value(rowx=row, colx=0)
-        value = sh.cell_value(rowx=row, colx=0)
+        value = sh.cell_value(rowx=row, colx=1)
         metadata[key] = value
         row = row + 1
 
@@ -219,7 +220,120 @@ def fin_year_metadata(cell):
 
 
 def export_excel(data):
-    raise NotImplementedError()
+    wb = xlwt.Workbook()
+
+    summary_sheet = wb.add_sheet('Summary')
+
+    summary_sheet.write(0, 0, "Name")
+    summary_sheet.write(0, 1, data.name)
+    summary_sheet.write(1, 0, "Type")
+    if type(data) is ItemEntity:
+        summary_sheet.write(1, 1, "Item")
+    else:
+        summary_sheet.write(1, 1, "Aggregates")
+    summary_sheet.write(2, 0, "Units")
+    summary_sheet.write(2, 1, data.units)
+    summary_sheet.write(2, 2, "s")
+
+    row = 3
+    for key in data.metadata:
+        summary_sheet.write(row, 0, key)
+        summary_sheet.write(row, 1, data.metadata[key])
+        row = row + 1
+
+    if type(data) is ItemEntity:
+        sh = wb.add_sheet('Item')
+        write_sheet(sh, data.category, data.item, data.units)
+    else:
+        for a in data.aggregates:
+            sh = wb.add_sheet(a.category)
+            write_sheet(sh, a.category, a, data.units)
+
+    result = StringIO()
+    wb.save(result)
+    return result.getvalue()
+
+
+def write_sheet(sh, category, data, units):
+    sh.write(0, 0, "Category")
+    sh.write(0, 1, category)
+    row = 1
+    for key in data.metadata:
+        sh.write(row, 0, key)
+        sh.write(row, 1, data.metadata[key])
+        row = row + 1
+
+    # blank line
+    row = row + 1
+
+    # what is the max depth?
+    col = max_depth(data)
+    headings_start = col
+    headings = [''] * col
+    # period and period metadata then generic metadata
+    periods = data.periods.keys()
+    periods.sort()
+    for p in periods:
+        headings.append({'kind': 'period', 'period': p})
+        sh.write(row, col, p)
+        col = col + 1
+        # do we have period metadata?
+        for pm in data.periods[p].metadata:
+            headings.append({'kind': 'periodmeta', 'period': p, 'value': pm})
+            sh.write(row, col, p + ' ' + pm)
+            col = col + 1
+
+    # now the general metadata
+    # we don't read this from the top level item
+    # to avoid the metadata we put at the top of the sheet
+    # we do have to check literally every other one though
+    if len(data.items):
+        keys = metadata_keys(data).difference(set(data.metadata.keys()))
+        for m in keys:
+            headings.append({'kind': 'metadata', 'value': m})
+            sh.write(row, col, m)
+            col = col + 1
+
+    # now for the data
+    row = row + 1
+
+    stack = [(data, 0)]
+    while len(stack):
+        item, depth = stack.pop()
+        for child in item.items:
+            stack.append((child, depth + 1))
+
+        sh.write(row, depth, item.name)
+        # write out the values
+        for col in xrange(headings_start, len(headings)):
+            kind = headings[col]['kind']
+            if kind == 'period':
+                period = headings[col]['period']
+                sh.write(row, col, item.periods[period].value / units)
+            elif kind == 'periodmeta':
+                val = headings[col]['value']
+                period = headings[col]['period']
+                if val in items.periods[period].metadata:
+                    sh.write(row, col, item.periods[period].metadata[val])
+            else:  # assume metadata
+                val = headings[col]['value']
+                if val in item.metadata:
+                    sh.write(row, col, item.metadata[val])
+
+        row = row + 1
+
+
+def max_depth(item):
+    if len(item.items):
+        return max([max_depth(x) for x in item.items]) + 1
+    return 1
+
+
+def metadata_keys(item):
+    result = set(item.metadata.keys())
+    for child in item.items:
+        result = result.union(metadata_keys(child))
+    return result
 
 
 class ExcelError(Exception):
