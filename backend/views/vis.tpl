@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Pie Chart</title>
+    <title>The Open Economy</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1"> 
     <script src="http://d3js.org/d3.v3.min.js"></script>

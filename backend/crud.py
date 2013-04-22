@@ -74,7 +74,8 @@ def excel_upload():
 
     obj.save()
 
-    redirect('/entities')
+    target = request.headers.get('Referer', '/').strip()
+    redirect(target)
 
 
 @route('/download/:entity_id')
