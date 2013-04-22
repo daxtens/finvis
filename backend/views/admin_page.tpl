@@ -3,7 +3,7 @@
 <head>
 <meta content="text/html; charset=utf-8" http-equiv="content-type">
 <div id='main'>
-    <h2>Open Economy - User Administration page</h2>
+    <h1>Open Economy - User Administration page</h1>
     <h3><i>Users</i> | <a href="/data_admin">Data</a></h3>
     <p>Welcome {{current_user.username}}</p>
     <div id='commands'>

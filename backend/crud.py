@@ -19,6 +19,21 @@ def entity_list():
     return {'public_entities': public_entities, 'user_entities': user_entities}
 
 
+@route('/data_admin')
+@view('data_admin')
+def data_admin():
+    finvis.aaa.require(role='admin', fail_redirect='/sorry_page')
+    public_entities = Entity.objects(public=True).only('name', 'username')
+
+    users = finvis.aaa.list_users()
+    entities = {}
+    for user in users:
+        entities[user[0]] = Entity.objects(username=user[0])\
+            .only('name', 'public')
+    return {'public_entities': public_entities, 'users_entities': entities,
+            'me': finvis.aaa.current_user.username}
+
+
 @route('/entities.json')
 def entity_list_json():
     entities = Entity.objects().only("name")
@@ -85,6 +100,23 @@ def delete(entity_id):
         obj.delete()
     else:
         return 'Error: you may not delete that document.'
+
+    target = request.headers.get('Referer', '/').strip()
+    redirect(target)
+
+
+@route('/set_public/:entity_id/:public')
+def set_public(entity_id, public):
+    finvis.aaa.require(role='admin', fail_redirect='/sorry_page')
+
+    obj = Entity.objects(id=entity_id)[0]
+
+    if public == '1':
+        obj.public = True
+    else:
+        obj.public = False
+
+    obj.save()
 
     target = request.headers.get('Referer', '/').strip()
     redirect(target)
