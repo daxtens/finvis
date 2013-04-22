@@ -109,6 +109,10 @@
 
         %if username:
         <p>{{ username }}</p>
+        <p><a href="/entities">Manage data</a></p>
+        %if admin:
+        <p>Admin: <a href="/data_admin">Data</a> | <a href="/admin">Users</a></p>
+        %end
         <p><a href="/logout">Log out</a></p>
         %else:
         <p><a href="/login">Log in</a></p>

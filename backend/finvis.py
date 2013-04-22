@@ -40,8 +40,10 @@ def redir():
 def vis(entity_id=None):
     if aaa.user_is_anonymous:
         username = None
+        admin = False
     else:
         username = aaa.current_user.username
+        admin = (aaa.current_user.role == 'admin')
 
     public_entities = Entity.objects(public=True).only("name")
 
@@ -55,6 +57,7 @@ def vis(entity_id=None):
         entity_id = settings.default_initial_id
 
     result = {'username': username,
+              'admin': admin,
               'public_entities': public_entities,
               'user_entities': user_entities,
               'initial_id': entity_id
