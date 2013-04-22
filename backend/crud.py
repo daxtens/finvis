@@ -98,9 +98,11 @@ def delete(entity_id):
 
     obj = Entity.objects(id=entity_id)[0]
 
-    # you can only delete your own documents, unless you're admin
-    if (obj.username == finvis.aaa.current_user.username or
-            finvis.aaa.current_user.role == 'admin'):
+    # you can only delete your own private documents, unless you're admin
+    # public docs are protected
+    if (obj.username == finvis.aaa.current_user.username and
+        obj.public == False) or \
+            finvis.aaa.current_user.role == 'admin':
         obj.delete()
     else:
         return 'Error: you may not delete that document.'

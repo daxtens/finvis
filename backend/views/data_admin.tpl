@@ -40,10 +40,7 @@
 
 
 <h2>User Entities</h2>
-Consider making a copy of a user's data and making the copy public, rather than
-publicising their data directly. This prevents a user from overwriting or deleting
-useful public data.
-
+Once an entity is made public, users who are not admins lose the ability to modify or delete them.
 %for user in users_entities:
 %if len(users_entities[user]) and user != me:
 <h3>{{user}}</h3>
