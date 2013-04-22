@@ -14,6 +14,8 @@
  *
  * For documentation visit http://www.trendskitchens.co.nz/jquery/contextmenu/
  *
+ * There are some local modifications: for example touchstart/touchend
+ * simulation of click.
  */
 
 (function($) {
@@ -124,6 +126,10 @@
     if (cur.shadow) shadow.css({width: menu.width(), height: menu.height(),
         left: e.pageX + 2, top: e.pageY + 2}).show();
     $(document).one('click', hide);
+    // simulate a click on touch devices
+    $(document).one('touchstart', function() {
+      $(document).one('touchend', hide);
+    });
   }
 
   function hide() {

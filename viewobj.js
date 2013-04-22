@@ -120,35 +120,75 @@ function ViewObj(data, parent, position, category) {
         return {x: 0, y: 0};
       })
       .on('drag', function(d) {
+        if (d3.event.sourceEvent.touches &&
+            d3.event.sourceEvent.touches.length > 1) {
+          return;
+        }
         that.position = that.position.map(viewstate.scaler);
         that.position[0] += d3.event.x;
         that.position[1] += d3.event.y;
         that.position = that.position.map(viewstate.scaler.invert);
         that.moveTo(that.position);
+        // on touch devices, a drag should prevent the context menu (taphold)
+        try {
+          window.clearTimeout(that.mouseData.tapholdTimer);
+        } catch (e) {};
       })
 
 
   // context menu is set up in render.
 
-  // double tap
+  // double tap & long-touch context menu
+  /** Return the handler for a touchstart event. */
   this.ontouchstartMaker = function() {
     return function(d){
-      console.log(d, d3.event);
       var t2 = d3.event.timeStamp;
       var t1 = that.mouseData.lastTouch || t2,
       dt = t2 - t1,
       fingers = d3.event.touches.length;
       that.mouseData.lastTouch = t2;
-      if (!dt || dt > 500 || fingers > 1) return; // not double-tap
+
+      if (!dt || dt > 500 || fingers > 1) {
+        // not double-tap
+        // set up timer for long tap
+        if (fingers == 1) {
+          that.mouseData.event = d3.event;
+          that.mouseData.tapholdTimer = window.setTimeout(
+            function () {
+              that.taphold(d);
+            }, 750);
+        }
+        return; 
+      }
       
       d3.event.preventDefault(); // double tap - prevent the zoom
-      // orrible ack 
+      // FIXME horrible hack 
       that.ondblclickMaker()(d);
     }
+    return undefined;
   };
 
+  /** Return the handler for a touchend event */
+  this.ontouchendMaker = function() {
+    return function (d) {
+      try {
+        window.clearTimeout(that.mouseData.tapholdTimer);
+      } catch (e) {};
+    };
+  };
 
-  // double click
+  /** Event 'handler' for a taphold: a tap held for more than 750 ms.
+      750ms is a magic constant in ontouchstartMaker.
+      This is truly shameful code */
+  this.taphold = function(d) {
+    var e = that.mouseData.event;
+    var e2 = {type: "contextmenu",
+              pageX: e.pageX,
+              pageY: e.pageY};
+    jQuery(e.target).trigger(e2);
+  }
+
+  /** Return the handler for a double click event */
   this.ondblclickMaker = function(e) {
     return function(d) {
       d3.event.stopPropagation();
@@ -857,10 +897,11 @@ ViewObj.prototype.render = function(animate) {
             .contextMenu('wedge2Menu', bindings);
   } else {
     jQuery(this.svg[0][0]).find('.wedge')
-            .contextMenu('wedgeMenu', bindings);
+        .contextMenu('wedgeMenu', bindings);
   }
   jQuery(this.svg[0][0]).find('.tinyHalo').contextMenu('wedgeMenu', bindings);
 
+  
 
   // render all children
   this.children().map(function(child) { child.render(animate); });
@@ -1058,13 +1099,14 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .data(donut(data['aggregates']));
 
   var enterer = paths.enter().append('path')
-        .classed('wedge', true)
-        .classed('poppedOut', viewObj.poppedOut)
-        .classed('invalidPeriod', viewObj.isInvalidPeriod)
-        .attr('d', arc)
-        .call(viewObj.dragHandler)
-        .on('dblclick', viewObj.ondblclickMaker())
-        .on('touchstart', viewObj.ontouchstartMaker());
+      .classed('wedge', true)
+      .classed('poppedOut', viewObj.poppedOut)
+      .classed('invalidPeriod', viewObj.isInvalidPeriod)
+      .attr('d', arc)
+      .call(viewObj.dragHandler)
+      .on('dblclick', viewObj.ondblclickMaker())
+      .on('touchstart', viewObj.ontouchstartMaker())
+      .on('touchend', viewObj.ontouchendMaker());
 
   // d3 does not seem to provide a nice way to set dynamic styles...
   for (var style in cssStyles) {
@@ -1588,18 +1630,19 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
         .data([data], function(d) {return d['name'];});
 
   circle.enter().append('circle')
-        .attr('r', function(d) {
+      .attr('r', function(d) {
         return viewstate.scaler(d['periods'][p]['value']);
       })
-        .classed(category, true)
-        .classed('wedge', true)
-        .classed('poppedOut', function() {return viewObj.poppedOut;})
-        .classed('invalidPeriod', viewObj.isInvalidPeriod)
-        .call(viewObj.dragHandler)
-        .on('dblclick', viewObj.ondblclickMaker())
-        .on('touchstart', viewObj.ontouchstartMaker())
-        .classed('link', isLinked)
-        .classed('cannotPopOut', function() {return !viewObj.canPopOut();});
+      .classed(category, true)
+      .classed('wedge', true)
+      .classed('poppedOut', function() {return viewObj.poppedOut;})
+      .classed('invalidPeriod', viewObj.isInvalidPeriod)
+      .call(viewObj.dragHandler)
+      .on('dblclick', viewObj.ondblclickMaker())
+      .on('touchstart', viewObj.ontouchstartMaker())
+      .on('touchend', viewObj.ontouchendMaker())  
+      .classed('link', isLinked)
+      .classed('cannotPopOut', function() {return !viewObj.canPopOut();});
 
   circle.exit().remove();
 
