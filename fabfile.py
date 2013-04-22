@@ -14,7 +14,7 @@ def setup(dev="False"):
         # auth
         local("pip install bottle-cork")
         # excel
-        local("pip install xlrd")
+        local("pip install xlrd xlwt")
         # database
         local("pip install pymongo mongoengine")
         # PNG export: verify inkscape is installed

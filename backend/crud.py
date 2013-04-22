@@ -77,6 +77,21 @@ def excel_upload():
     redirect('/entities')
 
 
+@route('/download/:entity_id')
+def excel_download(entity_id):
+    """Download the file as Excel."""
+
+    finvis.aaa.require(fail_redirect="/login")
+
+    entity = Entity.objects(id=entity_id)[0]
+
+    response.content_type = 'application/vnd.ms-excel'
+    response.add_header('Content-Disposition',
+                        'attachment; filename="' + entity.name + '.xls"')
+
+    return excel.export_excel(entity)
+
+
 @route('/delete/:entity_id')
 def delete(entity_id):
     finvis.aaa.require(fail_redirect='/sorry_page')

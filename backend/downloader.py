@@ -4,8 +4,8 @@ import os
 import urllib
 
 # Download the current view as SVG or PNG
-@post('/download')
-def download():
+@post('/export')
+def export_function():
     #print request.body.read()
     # the fragment often overflows bottle's MEMFILE_MAX
     # hack around.

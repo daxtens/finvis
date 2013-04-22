@@ -46,7 +46,7 @@
         <hr style="width: 32px; float:right;"/>
         <br style="clear:both; height:0px;"/>
         <a href="#" title="Save to disk" id="initSaveToDisk"><img src="images/icons/document-export.png" class="btnimg" alt="Save to disk"/></a><br/>
-        <form id="saveToDiskForm" name="saveToDiskForm" class="hidden" action="/download" method="POST">
+        <form id="saveToDiskForm" name="saveToDiskForm" class="hidden" action="/export" method="POST">
           <select name="format">
             <option value="svg">SVG</option>
             <option value="png">PNG</option>
