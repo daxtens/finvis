@@ -192,7 +192,7 @@ function ViewObj(data, parent, position, category) {
     var e2 = {
       type: 'contextmenu',
       pageX: e.pageX,
-      pageY: e.page
+      pageY: e.pageY
     };
     jQuery(e.target).trigger(e2);
   };
