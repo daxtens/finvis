@@ -3,21 +3,21 @@
   <head>
     <title>Pie Chart</title>
     <meta charset="utf-8">
-    <script src="http://d3js.org/d3.v3.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-    <script type="text/javascript" src="jquery.contextmenu.r2.js"></script>
-    <script type="text/javascript" src="jquery.form.js"></script>
+    <script type="text/javascript" src="js/jquery.contextmenu.r2.js"></script>
+    <script type="text/javascript" src="js/jquery.form.js"></script>
     <script type="text/javascript">jQuery.noConflict();
     </script>
-    <script type="text/javascript" src="circles.js"></script>
-    <script type="text/javascript" src="data.js"></script>
-    <script type="text/javascript" src="theopenbudget.js"></script>
-    <script type="text/javascript" src="parenting.js"></script>
-    <script type="text/javascript" src="viewstate.js"></script>
-    <script type="text/javascript" src="viewobj.js"></script>
-    <script type="text/javascript" src="events.js"></script>
-    <link rel="stylesheet" href="vis.css" />
-    <link rel="stylesheet" href="web.css" />
+    <script type="text/javascript" src="js/circles.js"></script>
+    <script type="text/javascript" src="js/data.js"></script>
+    <script type="text/javascript" src="js/theopenbudget.js"></script>
+    <script type="text/javascript" src="js/parenting.js"></script>
+    <script type="text/javascript" src="js/viewstate.js"></script>
+    <script type="text/javascript" src="js/viewobj.js"></script>
+    <script type="text/javascript" src="js/events.js"></script>
+    <link rel="stylesheet" href="css/vis.css" />
+    <link rel="stylesheet" href="css/web.css" />
   </head>
   <body>
     <!--[if lt IE 9]>

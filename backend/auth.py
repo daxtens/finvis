@@ -20,12 +20,13 @@ def login():
     password = post_get('password')
     aaa.login(username, password, success_redirect='/', fail_redirect='/login')
 
+
 @bottle.route('/user_is_anonymous')
 def user_is_anonymous():
     if aaa.user_is_anonymous:
         return 'True'
-
     return 'False'
+
 
 @bottle.route('/logout')
 def logout():
@@ -37,13 +38,16 @@ def logout():
 def register():
     """Registration Form and Email"""
 
-    # if the registration fails, return the registration form with the error and existing values
+    # if the registration fails, return the registration form with the
+    # error and existing values
     username = ''
     email_address = ''
     error = None
     if bottle.request.method == "POST":
         try:
-            aaa.register(post_get('username'), post_get('password'), post_get('email_address'))
+            aaa.register(post_get('username'),
+                         post_get('password'),
+                         post_get('email_address'))
             return bottle.template('views/registration_email_sent')
         except Exception as e:
             # store the form input
@@ -51,9 +55,10 @@ def register():
             username = post_get('username')
             email_address = post_get('email_address')
 
-    return bottle.template('registration_form.tpl', {'username': username,
-                                                       'email_address': email_address,
-                                                       'error': error})
+    return bottle.template('registration_form.tpl',
+                           {'username': username,
+                            'email_address': email_address,
+                            'error': error})
 
 
 @bottle.route('/validate_registration/:registration_code')
@@ -63,14 +68,23 @@ def validate_registration(registration_code):
     return 'Thanks. <a href="/login">Go to login</a>'
 
 
+@bottle.get('/reset_password')
 @bottle.post('/reset_password')
-def send_password_reset_email():
-    """Send out password reset email"""
-    aaa.send_password_reset_email(
-        username=post_get('username'),
-        email_addr=post_get('email_address')
-    )
-    return 'Please check your mailbox.'
+def password_reset():
+    """Password reset form and email"""
+
+    error = ''
+
+    if bottle.request.method == "POST":
+        try:
+            aaa.send_password_reset_email(
+                username=post_get('username'),
+                email_addr=post_get('email_address'))
+            return bottle.template('views/password_reset_email_sent')
+        except Exception as e:
+            error = e.message
+
+    return bottle.template('views/password_reset_form', {'error': error})
 
 
 @bottle.route('/change_password/:reset_code')
@@ -85,13 +99,6 @@ def change_password():
     """Change password"""
     aaa.reset_password(post_get('reset_code'), post_get('password'))
     return 'Thanks. <a href="/login">Go to login</a>'
-
-
-#@bottle.route('/')
-#def index():
-#    """Only authenticated users can see this"""
-#    aaa.require(fail_redirect='/login')
-#    return 'Welcome! <a href="/admin">Admin page</a> <a href="/logout">Logout</a>'
 
 
 @bottle.route('/my_role')
@@ -167,4 +174,3 @@ def login_form():
 def sorry_page():
     """Serve sorry page"""
     return '<p>Sorry, you are not authorized to perform this action</p>'
-

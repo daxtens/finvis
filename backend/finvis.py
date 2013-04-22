@@ -33,6 +33,7 @@ app = SessionMiddleware(app, session_opts)
 def redir():
     bottle.redirect('index.html')
 
+
 @bottle.route('/index.html')
 @bottle.view('vis')
 def vis():
@@ -40,11 +41,12 @@ def vis():
         username = None
     else:
         username = aaa.current_user.username
-    
+
     public_entities = Entity.objects(public=True).only("name")
 
     if username:
-        user_entities = Entity.objects(username=username, public=False).only('name')
+        user_entities = Entity.objects(username=username,
+                                       public=False).only('name')
     else:
         user_entities = []
 
@@ -55,12 +57,19 @@ def vis():
     #print(result)
     return result
 
+
 # Static files
-@bottle.route('/<filename:path>')
+@bottle.route('/js/<filename:path>')
+@bottle.route('/css/<filename:path>')
 def static(filename):
     # todo move static assets to static.finvis or somesuch
     # served directly out of nginx for speed
     return bottle.static_file(filename, root=rootdir)
+
+
+@bottle.route('/images/<filename:path>')
+def images(filename):
+    return bottle.static_file(filename, root=os.path.join(rootdir, 'images'))
 
 
 # #  Web application main  # #
