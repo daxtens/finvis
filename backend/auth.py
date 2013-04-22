@@ -14,11 +14,13 @@ def post_get(name, default=''):
 
 
 @bottle.post('/login')
+@bottle.view('login_form')
 def login():
     """Authenticate users"""
     username = post_get('username')
     password = post_get('password')
-    aaa.login(username, password, success_redirect='/', fail_redirect='/login')
+    aaa.login(username, password, success_redirect='/index.html')
+    return {'error': 'Authentication failed.'}
 
 
 @bottle.route('/user_is_anonymous')
@@ -197,7 +199,7 @@ def toggle_role(username):
 @bottle.view('login_form')
 def login_form():
     """Serve login form"""
-    return {}
+    return {'error': ''}
 
 
 @bottle.route('/sorry_page')

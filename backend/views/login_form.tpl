@@ -1,4 +1,5 @@
 <h2>Login</h2>
+<p>{{error}}</p>
 <p>Please insert your credentials:</p>
 <form action="login" method="post" name="login">
 <label for="username">User name:</label>
