@@ -82,9 +82,9 @@
         </div>
         <hr style="width: 96px; float:right;"/>
         <br style="clear:both; height:0px;"/>
-        <p id="period" style="width:144px; font-size: 300%; text-align:right; margin:0"></p>
+        <p id="period" style="width:155px; font-size: 400%; text-align:right; margin:0; float:right"></p>
         <br>
-        <table>
+        <table style="float:right;">
           <tr><td><a href="#" id="prevPeriodBtn"><img class="smlbtnimg" alt="Prevous period" src="/images/icons/seek-backward.png" /></a></td>
         <td style="text-align:center; width: 96px;">FINANCIAL YEAR</td>
         <td><a href="#" id="nextPeriodBtn"><img class="smlbtnimg" alt="Next period" src="/images/icons/seek-forward.png" /></a></td></tr>
@@ -94,7 +94,7 @@
         </select></td>
         <td><a href="#" id="stopBtn"><img alt="Stop" class="smlbtnimg" src="/images/icons/playback-stop.png" /></a></td></tr>
         </table>
-        <br/>
+        <br style="clear:both;" />
         <hr style="width:96px; float:right"/>
         <br/>
         <p>Packing model:</p>
@@ -102,13 +102,14 @@
           <option value="default">Old-style</option>
           <option value="dendritic" selected="selected">Dendritic</option>
         </select>
+        <br />
         <div style="display:none;">
           <input type="checkbox" id="enclosingCircles" checked=""/>Enclosing Circles?
-        </div>
         <br/>
         <hr style="width:96px; float:right"/>
         <br/>
         <div id="infobox" style="width: 120px; height:200px;"></div>
+        </div>
         <hr style="width:96px; float:right"/>
         <br/>
 
