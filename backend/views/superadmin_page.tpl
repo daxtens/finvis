@@ -3,35 +3,32 @@
 <head>
 <meta content="text/html; charset=utf-8" http-equiv="content-type">
 <div id='main'>
-    <h2>Open Economy - User Administration page</h2>
-    <h3><i>Users</i> | <a href="/data_admin">Data</a></h3>
+    <h2>Open Economy - Super Administration page</h2>
     <p>Welcome {{current_user.username}}</p>
     <div id='commands'>
-      <p>Create new user:</p>
-      <form action="create_user" method="post">
-          <p><label>Username</label> <input type="text" name="username" /></p>
-          <p><label>Password</label> <input type="password" name="password" /></p>
-          <p><label>Email</label> <input type="email" name="email" /></p>
+      <p>Create new role:</p>
+      <form action="create_role" method="post">
+          <p><label>Role</label> <input type="text" name="role" /></p>
+          <p><label>Level</label> <input type="text" name="level" /></p>
           <button type="submit" > OK </button>
           <button type="button" class="close"> Cancel </button>
       </form>
       <br />
+      <p>Delete role:</p>
+      <form action="delete_role" method="post">
+          <p><label>Role</label> <input type="text" name="role" /></p>
+          <button type="submit" > OK </button>
+          <button type="button" class="close"> Cancel </button>
+      </form>
     </div>
     <div id="users">
         <table>
-            <tr><th>Username</th><th>Role</th><th>Email</th><th>Delete</th><th>Promote/Demote</th></tr>
-            %for u in users:
-            <tr><td>{{u[0]}}</td><td>{{u[1]}}</td><td>{{u[2]}}</td>
-              <td>
-                %if u[1] == 'user':
-                <a href="/delete_user/{{u[0]}}">Delete</a>
-                %end
-              </td><td>
-                <a href="/toggle_role/{{u[0]}}">{{ 'Promote' if u[1] == 'user' else 'Demote' }}</a>
-              </td>
-            </tr>
+            <tr><th>Role</th><th>Level</th></tr>
+            %for r in roles:
+            <tr><td>{{r[0]}}</td><td>{{r[1]}}</td></tr>
             %end
         </table>
+        <p>(Reload page to refresh)</p>
     </div>
 
     <div class="clear"></div>

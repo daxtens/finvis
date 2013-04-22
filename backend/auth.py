@@ -112,10 +112,23 @@ def show_current_user_role():
 
 # Admin-only pages
 
+@bottle.route('/superadmin')
+@bottle.view('superadmin_page')
+def admin():
+    """Super-admin page; allows roles to be changed. Don't advertise.
+    Misuse will totally break everything."""
+    aaa.require(role='admin', fail_redirect='/sorry_page')
+    return dict(
+        current_user=aaa.current_user,
+        users=aaa.list_users(),
+        roles=aaa.list_roles()
+    )
+
+
 @bottle.route('/admin')
 @bottle.view('admin_page')
 def admin():
-    """Only admin users can see this"""
+    """Regular, more user-friendly admin."""
     aaa.require(role='admin', fail_redirect='/sorry_page')
     return dict(
         current_user=aaa.current_user,
@@ -127,20 +140,22 @@ def admin():
 @bottle.post('/create_user')
 def create_user():
     try:
-        aaa.create_user(postd().username, postd().role, postd().password)
+        aaa.create_user(postd().username, 'user',
+                        postd().password, postd().email)
         return dict(ok=True, msg='')
     except Exception, e:
         return dict(ok=False, msg=e.message)
 
 
-@bottle.post('/delete_user')
-def delete_user():
+@bottle.route('/delete_user/:username')
+def delete_user(username):
     try:
-        aaa.delete_user(post_get('username'))
-        return dict(ok=True, msg='')
-    except Exception, e:
+        aaa.delete_user(username)
+    except Exception as e:
         print repr(e)
         return dict(ok=False, msg=e.message)
+
+    bottle.redirect('/admin')
 
 
 @bottle.post('/create_role')
@@ -161,8 +176,23 @@ def delete_role():
         return dict(ok=False, msg=e.message)
 
 
-# Static pages
+@bottle.route('/toggle_role/:username')
+def toggle_role(username):
+    aaa.require(role='admin', fail_redirect='/sorry_page')
+    user = aaa.user(username)
+    role = user.role
+    try:
+        if role == 'user':
+            user.update(role='admin')
+        else:
+            user.update(role='user')
+    except Exception as e:
+        return e.message
 
+    bottle.redirect('/admin')
+
+
+# Static pages
 @bottle.route('/login')
 @bottle.view('login_form')
 def login_form():
