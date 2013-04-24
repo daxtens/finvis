@@ -37,7 +37,10 @@ def data_admin():
 @route('/entity.json/:entityid')
 def entity_json(entityid):
     response.content_type = 'text/json'
-    result = bson.json_util.dumps(Entity.objects(id=entityid)[0].to_mongo())
+    result = bson.json_util.dumps(Entity._get_collection().find_one(
+        {"_id": bson.objectid.ObjectId(entityid)}))
+    # obvious but slow:
+    # result = bson.json_util.dumps(Entity.objects(id=entityid)[0].to_mongo())
     #return entityid
     return result
 
@@ -102,7 +105,7 @@ def delete(entity_id):
     # you can only delete your own private documents, unless you're admin
     # public docs are protected
     if (obj.username == finvis.aaa.current_user.username and
-        obj.public == False) or \
+        obj.public is False) or \
             finvis.aaa.current_user.role == 'admin':
         obj.delete()
     else:
