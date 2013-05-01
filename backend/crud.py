@@ -73,6 +73,7 @@ def excel_upload():
         obj = excel.import_excel(excelfile.file.read(),
                                  finvis.aaa.current_user.username)
     except excel.ExcelError as e:
+        response.status = 422
         return 'Error: ' + e.message
 
     obj.save()

@@ -4,6 +4,7 @@ from mongo import *
 import re
 from bson import json_util
 from StringIO import StringIO
+import string
 
 valid_categories = ['expenses', 'revenue', 'assets', 'liabilities']
 
@@ -71,7 +72,13 @@ def import_excel(data, username):
     sheets = []
     for sheet in xrange(1, wb.nsheets):
         sh = wb.sheet_by_index(sheet)
-        sheets.append(read_sheet(sh, (ent_type == "Item"), units=units))
+        try:
+            sheets.append(read_sheet(sh, (ent_type == "Item"), units=units))
+        except ExcelError as e:
+            raise e
+        except Exception as e:
+            raise ExcelError('Something unexpected went wrong processing ' +
+                             'sheet "' + sh.name + '".')
 
     # Prepare the object:
     if ent_type == "Item":
@@ -163,6 +170,14 @@ def read_sheet(sh, isItem, units):
         while not sh.cell_value(row, depth):
             depth = depth + 1
 
+        # validate the depth to catch spurious data. (#34)
+        # it needs to be in the range of cols, and also needs to *not* point to
+        # a heading column.
+        if depth > len(cols) or cols[depth] is not None:
+            raise ExcelError('Spurious data in cell ' +
+                             column_number_to_code(depth) + str(row + 1) +
+                             ' in sheet "' + sh.name + '".')
+
         # pop the stack as required
         stack = stack[:depth]
 
@@ -217,6 +232,16 @@ def fin_year_metadata(cell):
         return None
     else:
         return result.groups()
+
+
+def column_number_to_code(column):
+    """Convert a zero-indexed column number into an Excel alpha column code."""
+    result = string.ascii_uppercase[column % 26]
+    column = column // 26
+    while column > 0:
+        result = string.ascii_uppercase[column % 26 - 1] + result
+        column = column // 26
+    return result
 
 
 def export_excel(data):
