@@ -70,16 +70,28 @@ def import_excel(data, username):
 
     # read the remaining sheets:
     sheets = []
+    time_periods = set()
     for sheet in xrange(1, wb.nsheets):
         sh = wb.sheet_by_index(sheet)
         try:
-            sheets.append(read_sheet(sh, (ent_type == "Item"), units=units))
+            sheet_obj = read_sheet(sh, (ent_type == "Item"), units=units)
         except ExcelError as e:
             raise e
         except Exception as e:
             raise ExcelError('Something unexpected went wrong processing ' +
                              'sheet "' + sh.name + '".')
 
+        # verify that this hasn't dropped or added a time period
+        # (initailise if need be)
+        if not len(time_periods):
+            time_periods = set(sheet_obj.periods.keys())
+
+        if len(time_periods.difference(set(sheet_obj.periods.keys()))):
+            raise ExcelError('Sheet "' + sh.name + '" has different time ' +
+                             'periods to previous sheets. Time periods must ' +
+                             'be consistent throughout an entity.')
+
+        sheets.append(sheet_obj)
     # Prepare the object:
     if ent_type == "Item":
         result = ItemEntity(name=name, username=username, public=False,
