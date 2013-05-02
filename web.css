@@ -5,6 +5,24 @@ body {
 	font: 10px sans-serif;
 }
 
+#headline {
+    position:fixed;
+    right: 5px;
+    z-index: -1;
+    font-size: 18pt;
+    color: rgb(66, 77, 100);
+    text-align: right;
+    width: 99%;
+}
+
+#headline img {
+    float: left;
+    /* This is an SVG, so we can guiltlessly scale it */
+    height: 60px;
+    width: 69px;
+    opacity: 0.25;
+}
+
 div {
     color: white;
 }

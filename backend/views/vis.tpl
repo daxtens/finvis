@@ -37,8 +37,9 @@
           }
         </style>
         <![endif]-->
+    <div id="headline"><img src="/images/greens-logo.svg" />THE AUSTRALIAN GREENS OPEN ECONOMY PROJECT</div>
     <div style="float:right; width:200px; text-align:right">
-      <div id="rightToolBox" style="position:fixed; right:5px"
+      <div id="rightToolBox" style="position:fixed; right:5px; top: 50px;"
            onmousedown="javascript:event.stopPropagation();"
            onmouseup="javascript:event.stopPropagation();">
         <a href="#" title="Zoom in" onClick="javascript:viewstate.zoom(4/3,[viewstate.width/2,viewstate.height/2]); return false;"><img class="btnimg" src="/images/icons/zoom-in.png" alt="Zoom in"/></a>
