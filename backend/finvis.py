@@ -67,6 +67,7 @@ def vis(entity_id=None):
 
 
 # Static files
+@bottle.route('/static/<filename:path>')
 @bottle.route('/js/<filename:path>')
 @bottle.route('/css/<filename:path>')
 def static(filename):
