@@ -858,7 +858,7 @@ ViewObj.prototype.info = function(callback_data) {
       text = text + '<a href="' + d['periods'][p]['metadata']['link'] + '" ';
       text = text + 'target="_blank">';
       text = text + 'More...</a>';
-    } else if ('metadata' in d && 'info' in d['metadata']) {
+    } else if ('metadata' in d && 'link' in d['metadata']) {
       text = text + '<a href="' + d['metadata']['link'] + '" target="_blank">';
       text = text + 'More...</a>';
     }
