@@ -79,7 +79,8 @@ def import_excel(data, username):
             raise e
         except Exception as e:
             raise ExcelError('Something unexpected went wrong processing ' +
-                             'sheet "' + sh.name + '".')
+                             'sheet "' + sh.name + '".<br>' +
+                             'The internal error was:<br>' + e.message)
 
         # verify that this hasn't dropped or added a time period
         # (initailise if need be)
@@ -158,7 +159,7 @@ def read_sheet(sh, isItem, units):
         elif is_fin_year(name):
             cols.append({'period': name, 'type': 'value'})
         elif fin_year_metadata(name) is not None:
-            (year, key) = fin_year_metadata(cell)
+            (year, key) = fin_year_metadata(name)
             cols.append({'period': year, 'type': 'metadata', 'key': key})
         else:
             cols.append({'type': 'metadata', 'key': name})
