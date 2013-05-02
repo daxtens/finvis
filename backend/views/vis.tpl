@@ -105,8 +105,9 @@
         <br />
         <hr style="width:96px; float:right"/>
         <br/>
-        <p style="margin-top:0;">[ <a href="#" id="toggleInfoBox">&mdash;</a> ]</p>
-        <div id="infobox" style="width: 150px; height:200px;" ontouchstart="javascript:return false;"></div>
+        <p style="margin-top:0; margin-bottom:0;">[ <a href="#" id="toggleInfoBox">&mdash;</a> ]</p>
+        <div id="infobox" style="width: 150px; min-height:150px; float:right;" ontouchstart="javascript:return false;"></div>
+        <br style="clear:both;"/>
         <hr style="width:96px; float:right"/>
         <br/>
 
