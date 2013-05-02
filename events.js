@@ -57,6 +57,7 @@ document.ontouchmove = function(event){
     event.preventDefault();
 }
 
+
 /** Initalise the document when we start.
  */
 jQuery('document').ready(function() {
@@ -70,7 +71,6 @@ jQuery('document').ready(function() {
   jQuery('#saveToDisk').on('click', saveToDisk);
   jQuery('#cancelSaveToDisk').on('click', cancelSaveToDisk);
   jQuery('#packingSel').on('change', changePacking);
-  jQuery('#enclosingCircles').on('change', enclosingCirclesChange);
   jQuery('#nextPeriodBtn').on('click', nextPeriodBtn);
   jQuery('#prevPeriodBtn').on('click', prevPeriodBtn);
   jQuery('#playBtn').on('click', playBtn);
@@ -442,18 +442,4 @@ function recalcPackingEfficiency() {
   }, 0);
   result = result / viewstate.children().length * 100;
   jQuery('#packingEfficiency').text(result.toFixed(2) + '%');
-}
-
-
-/** default enclosing circles choice */
-window.enclosingCircles = false;
-
-
-/** Handle change in enclosed circles checkbox
- */
-function enclosingCirclesChange() {
-  window.enclosingCircles = jQuery('#enclosingCircles').prop('checked');
-  viewstate.children().map(function(child) {
-    child.render();
-  });
 }

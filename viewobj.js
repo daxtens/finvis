@@ -1747,43 +1747,6 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
 
   valueLabel.exit().remove();
 
-  /* If I have children, draw a little circle around us all to indicate that
-       we go together */
-
-  var enclosingCircleData = [];
-
-  if (viewObj.children().length && window.enclosingCircles) {
-    //console.log(viewObj.boundingCircle);
-    enclosingCircleData.push(viewObj.boundingCircle);
-  }
-
-  var enclosingCircleGroup = viewObj.svg
-        .select('g.enclosingCircle');
-  if (enclosingCircleGroup.empty()) {
-    enclosingCircleGroup = viewObj.svg.append('g')
-            .classed('enclosingCircle', true);
-  }
-
-  var enclosingCircle = enclosingCircleGroup
-        .selectAll('circle.axis_circle')
-        .data(enclosingCircleData);
-
-  enclosingCircle.enter().append('circle')
-        .classed('axis_circle', true)
-        .attr('r', function(d) { return viewstate.scaler(d.radius); })
-        .attr('cx', function(d) { return viewstate.scaler(d.cx); })
-        .attr('cy', function(d) { return viewstate.scaler(d.cy); });
-
-
-  var updater = enclosingCircle;
-  if (animate) updater = enclosingCircle.transition().duration(1000);
-  updater
-        .attr('r', function(d) { return viewstate.scaler(d.radius); })
-        .attr('cx', function(d) { return viewstate.scaler(d.cx); })
-        .attr('cy', function(d) { return viewstate.scaler(d.cy); });
-
-  enclosingCircle.exit().remove();
-
 };
 
 

@@ -97,19 +97,16 @@
         <br style="clear:both;" />
         <hr style="width:96px; float:right"/>
         <br/>
-        <p>Packing model:</p>
+        <p style="margin-top:0">Packing model:</p>
         <select id="packingSel">
           <option value="default">Old-style</option>
           <option value="dendritic" selected="selected">Dendritic</option>
         </select>
         <br />
-        <div style="display:none;">
-          <input type="checkbox" id="enclosingCircles" checked=""/>Enclosing Circles?
-        <br/>
         <hr style="width:96px; float:right"/>
         <br/>
-        <div id="infobox" style="width: 120px; height:200px;"></div>
-        </div>
+        <p style="margin-top:0; float:right">[ <a href="#" id="collapseinfobox">X</a> ]</p>
+        <div id="infobox" style="width: 150px; height:200px;"></div>
         <hr style="width:96px; float:right"/>
         <br/>
 
