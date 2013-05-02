@@ -40,13 +40,24 @@ Rows go:
 * `blah` is metadata with the name 'blah'.
 * Year specific metadata overrides non-year-specific metadata. 
 
+Populating the Info Box
+-----------------------
+
+The info box on the right hand side of the page is populated from the `info` metadata tag. You may provide a generic info column, and if you want things to change for an individual year, you can create a `YYYY-YY info` column, which will take precedence over the general info.
+
+If you want a "More..." link at the bottom, add a `link` column. As with `info`, `YYYY-YY link` can be used to provide a year-specific link.
+
+The Open Budget [example spreadsheet](#examples) is an example of how to do this.
+
 Annotated Data Sheet
 ----------------------
 
 Click to see the full image.
 [![A data sheet with explanatory annotations.](images/data.jpg)](images/data.jpg)
 
+
 Examples
 --------
- * [transportandcoms.xls](http://vis.dja.id.au/example-data/transportandcoms.xls)
- * [cth-fbo.xls](http://vis.dja.id.au/example-data/cth-fbo.xls)
+ * [theopenbudget.org expense data.xls](http://vis.dja.id.au/static/example-data/theopenbudget.org%20expense%20data.xls)
+ * [transportandcoms.xls](http://vis.dja.id.au/static/example-data/transportandcoms.xls)
+ * [cth-fbo.xls](http://vis.dja.id.au/static/example-data/cth-fbo.xls)
