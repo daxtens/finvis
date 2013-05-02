@@ -3,7 +3,7 @@ layout: post
 title: Uploading spreadsheets
 ---
 
-Excel spreadsheets are the primary way to load data into the visual budget. The format is somewhat brittle. On the plus side, I'm guaranteeing backwards compatibility, so if you can successfully upload a spreadsheet to this version, it will continue to work.
+Excel spreadsheets are the primary way to load data into The Open Economy. The format is somewhat brittle. On the plus side, I'm guaranteeing backwards compatibility, so if you can successfully upload a spreadsheet to this version, it will continue to work.
 
 Getting started
 ---------------
