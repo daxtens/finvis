@@ -842,7 +842,7 @@ ViewObj.prototype.info = function(callback_data) {
 
   var text = '<h2>' + d['name'] + '</h2><h3>';
   if (this.isInvalidPeriod) {
-    text = text + '<p>No data for this period.</p>';
+    text = text + 'No data for this period.</h3>';
   } else {
     text = text + '$' + formatDollarValue(d['periods'][p]['value']);
     text = text + '</h3><p>';
