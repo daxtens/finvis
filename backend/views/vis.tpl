@@ -11,7 +11,7 @@
     <script type="text/javascript">jQuery.noConflict();
     </script>
     <script type="text/javascript" src="/js/circles.js"></script>
-    <script type="text/javascript" src="/js/data.js"></script>
+    <script type="text/javascript" src="/js/util.js"></script>
     <script type="text/javascript" src="/js/parenting.js"></script>
     <script type="text/javascript" src="/js/viewstate.js"></script>
     <script type="text/javascript" src="/js/viewobj.js"></script>
@@ -105,20 +105,20 @@
         <br />
         <hr style="width:96px; float:right"/>
         <br/>
-        <p style="margin-top:0; float:right">[ <a href="#" id="collapseinfobox">X</a> ]</p>
-        <div id="infobox" style="width: 150px; height:200px;"></div>
+        <p style="margin-top:0;">[ <a href="#" id="toggleInfoBox">&mdash;</a> ]</p>
+        <div id="infobox" style="width: 150px; height:200px;" ontouchstart="javascript:return false;"></div>
         <hr style="width:96px; float:right"/>
         <br/>
 
         %if username:
-        <p>{{ username }}</p>
+        <p style="margin-top:0">{{ username }}</p>
         <p><a href="/entities">Manage data</a></p>
         %if admin:
         <p>Admin: <a href="/data_admin">Data</a> | <a href="/admin">Users</a></p>
         %end
         <p><a href="/logout">Log out</a></p>
         %else:
-        <p><a href="/login">Log in</a></p>
+        <p style="margin-top:0"><a href="/login">Log in</a></p>
         <p><a href="/register">Register</a></p>
         %end
 

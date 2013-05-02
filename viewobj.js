@@ -149,6 +149,9 @@ function ViewObj(data, parent, position, category) {
       var fingers = d3.event.touches.length;
       that.mouseData.lastTouch = t2;
 
+      // set infobox
+      info(d, that.period());
+
       if (!dt || dt > 500 || fingers > 1) {
         // not double-tap
         // set up timer for long tap
@@ -170,8 +173,7 @@ function ViewObj(data, parent, position, category) {
       d3.event.preventDefault(); // double tap - prevent the zoom
       // FIXME horrible hack
       that.ondblclickMaker()(d);
-    }
-    return undefined;
+    };
   };
 
   /** Return the handler for a touchend event
@@ -912,7 +914,7 @@ ViewObj.prototype.render = function(animate) {
   }
   jQuery(this.svg[0][0]).find('.tinyHalo').contextMenu('wedgeMenu', bindings);
 
-  
+
 
   // render all children
   this.children().map(function(child) { child.render(animate); });
@@ -971,6 +973,38 @@ ViewObjRenderers.scaleFactor = function(minValue, naturalValue) {
 };
 
 
+/** Render the infobox.
+ *  @param {Object} d Data for the clicked item.
+ *  @param {string} p Name of the period.
+ */
+function info(d, p) {
+  // make this work for aggregates and items:
+  if ('data' in d) d = d['data'];
+
+  var text = '<h2>' + d['name'] + '</h2><h3>$';
+  text = text + formatDollarValue(d['periods'][p]['value']);
+  text = text + '</h3><p>';
+  if ('metadata' in d['periods'][p] &&
+      'info' in d['periods'][p]['metadata']) {
+    text = text + htmlEscape(d['periods'][p]['metadata']['info']);
+  } else if ('metadata' in d && 'info' in d['metadata']) {
+    text = text + htmlEscape(d['metadata']['info']);
+  }
+  text = text + '</p><p>';
+  if ('metadata' in d['periods'][p] &&
+      'link' in d['periods'][p]['metadata']) {
+    text = text + '<a href="' + d['periods'][p]['metadata']['link'] + '" ';
+    text = text + 'target="_blank">';
+    text = text + 'More...</a>';
+  } else if ('metadata' in d && 'info' in d['metadata']) {
+    text = text + '<a href="' + d['metadata']['link'] + '" target="_blank">';
+    text = text + 'More...</a>';
+  }
+  text = text + '</p>';
+  jQuery('#infobox').html(text);
+}
+
+
 /**
  * The default sector renderer.
  *
@@ -982,6 +1016,10 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
 
   var p = viewObj.period();
   var renderMode = viewObj.renderMode;
+
+  var _info = function(d) {
+    info(d, p);
+  };
 
   /***** Pre-process the data */
   var data = JSON.parse(JSON.stringify(viewObj.data()));
@@ -1117,7 +1155,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
       .call(viewObj.dragHandler)
       .on('dblclick', viewObj.ondblclickMaker())
       .on('touchstart', viewObj.ontouchstartMaker())
-      .on('touchend', viewObj.ontouchendMaker());
+      .on('touchend', viewObj.ontouchendMaker())
+      .on('click', _info);
 
   // d3 does not seem to provide a nice way to set dynamic styles...
   for (var style in cssStyles) {
@@ -1262,7 +1301,9 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .text(innerLabelsText)
         .attr('x', labelsX)
         .attr('y', innerLabelsY)
-        .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; });
+        .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; })
+        .on('click', _info)
+        .on('touchstart', _info);
 
   wedgeInnerLabels
         .text(innerLabelsText)
@@ -1283,7 +1324,9 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .text(outerLabelsText)
         .attr('x', labelsX)
         .attr('y', outerLabelsY)
-        .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; });
+        .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; })
+        .on('click', _info)
+        .on('touchstart', _info);
 
   wedgeOuterLabels
         .text(outerLabelsText)
@@ -1295,24 +1338,20 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
 
   // entity name
   var entitylabel = labelsGroup
-        .selectAll('text.entityLabel.name')
-        .data([viewObj.name]);
+      .selectAll('text.entityLabel.name');
 
-  entitylabel.enter()
-        .append('text')
+  if (entitylabel.empty()) {
+    entitylabel = labelsGroup.append('text')
         .classed('entityLabel', true).classed('name', true)
         .call(viewObj.dragHandler)
-        .text(viewObj.data().name)
-        .attr('x', function(d) { return -safeGetBBox(this)['width'] / 2; })
-        .attr('y', 20)
+        .text(viewObj.data()['name'])
         .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; });
+  }
 
   entitylabel
         .attr('x', function(d) { return -safeGetBBox(this)['width'] / 2; })
         .attr('y', 80)
         .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; });
-
-  entitylabel.exit().remove();
 
   // Halo if the whole thing is just too small to see.
 
@@ -1325,7 +1364,9 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .call(viewObj.dragHandler)
         .attr('r', tinyHaloThreshold)
         .attr('display',
-              function(d) { return d < tinyHaloThreshold ? null : 'none' });
+              function(d) { return d < tinyHaloThreshold ? null : 'none' })
+        .on('click', _info)
+        .on('touchstart', _info);
 
   tinyHalo.attr('display',
       function(d) { return d < tinyHaloThreshold ? null : 'none' });
@@ -1608,24 +1649,9 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
   var p = viewObj.period();
   var category = viewObj['category'];
 
-  function isLinked(d) {
-    return (('metadata' in d && 'link' in d['metadata']) ||
-                ('metadata' in d['periods'][p] &&
-                 'link' in d['periods'][p]['metadata']));
-  }
-
-  function link(d) {
-    var target = '_blank';
-    if ('metadata' in d['periods'][p] &&
-            'link' in d['periods'][p]['metadata']) {
-      if ('target' in d['periods'][p]['metadata'])
-        target = d['periods'][p]['metadata']['target'];
-      window.open(d['periods'][p]['metadata']['link'], target);
-    } else if ('metadata' in d && 'link' in d['metadata']) {
-      if ('target' in d['metadata']) target = d['metadata']['target'];
-      window.open(d['metadata']['link'], target);
-    }
-  }
+  var _info = function(d) {
+    info(d, p);
+  };
 
   // create the bubble
   var circleGroup = viewObj.svg.select('g.circle');
@@ -1651,8 +1677,8 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
       .call(viewObj.dragHandler)
       .on('dblclick', viewObj.ondblclickMaker())
       .on('touchstart', viewObj.ontouchstartMaker())
-      .on('touchend', viewObj.ontouchendMaker())  
-      .classed('link', isLinked)
+      .on('touchend', viewObj.ontouchendMaker())
+      .on('click', _info)
       .classed('cannotPopOut', function() {return !viewObj.canPopOut();});
 
   circle.exit().remove();
@@ -1712,16 +1738,13 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
         .call(viewObj.dragHandler)
         .attr('x', centredTextLabelX)
         .attr('y', -10)
-        .classed('link', isLinked)
-        .on('click', link);
+        .on('touchstart', _info)
+        .on('click', _info);
 
   var updater = nameLabel;
   if (animate) updater = updater.transition().duration(1000);
   updater
         .attr('x', centredTextLabelX);
-
-  nameLabel
-        .classed('link', isLinked);
 
   nameLabel.exit().remove();
 
@@ -1730,13 +1753,12 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
         .classed('wedgeLabel', true).classed('value', true)
         .attr('x', centredTextLabelX)
         .attr('y', valueLabelY)
-        .classed('link', isLinked)
         .call(viewObj.dragHandler)
-        .on('click', link);
+        .on('touchstart', _info)
+        .on('click', _info);
 
   valueLabel
-        .text(function(d) {return formatDollarValue(d['periods'][p]['value']);})
-        .classed('link', isLinked);
+      .text(function(d) {return formatDollarValue(d['periods'][p]['value']);});
 
   var updater = valueLabel;
   if (animate) updater = valueLabel.transition().duration(1000);

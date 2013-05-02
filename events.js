@@ -75,6 +75,7 @@ jQuery('document').ready(function() {
   jQuery('#prevPeriodBtn').on('click', prevPeriodBtn);
   jQuery('#playBtn').on('click', playBtn);
   jQuery('#stopBtn').on('click', stopBtn);
+  jQuery('#toggleInfoBox').on('click', toggleInfoBox);
 
   // ephemeral upload
   jQuery('#ephemeralUploadForm').on('submit', function(e) {
@@ -330,15 +331,6 @@ function initSaveToDisk() {
  */
 function saveToDisk() {
 
-  function htmlEscape(str) {
-    return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
-  }
-
   function serialise(a) {
     var str = '<' + a.tagName;
     for (var x = 0; x < a.attributes.length; x++) {
@@ -432,6 +424,15 @@ function changePacking() {
 
 /** default packing model */
 window.packing = 'dendritic';
+
+
+/** Toggle the display of the infobox.
+ */
+function toggleInfoBox() {
+  var displayed = (jQuery('#toggleInfoBox').text() != '+');
+  jQuery('#infobox').slideToggle();
+  jQuery('#toggleInfoBox').html(displayed ? '+' : '&mdash;');
+}
 
 
 /** Recalculate and display packing efficiency
