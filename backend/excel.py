@@ -227,7 +227,7 @@ def read_sheet(sh, isItem, units):
         result = Aggregate(name=stack[0]['name'], category=category,
                            items=stack[0]['items'],
                            periods=stack[0]['periods'],
-                           metadata=metadata)
+                           metadata=stack[0]['metadata'])
 
     return result
 
@@ -296,7 +296,18 @@ def write_sheet(sh, category, data, units):
     sh.write(0, 0, "Category")
     sh.write(0, 1, category)
     row = 1
-    for key in data.metadata:
+
+    # correctly writing out metadata is a bit tricky - I didn't
+    # standardise it very well. The only things that should be written
+    # out at the top level are metadata keys that belong to the top
+    # level item only, and are not found in *any* children. Anything
+    # found in a child should be a column header.
+    column_keys = set()
+    for child in data.items:
+        column_keys = column_keys.union(metadata_keys(child))
+    top_level_keys = set(data.metadata.keys()).difference(column_keys)
+
+    for key in top_level_keys:
         sh.write(row, 0, key)
         sh.write(row, 1, data.metadata[key])
         row = row + 1
@@ -321,16 +332,11 @@ def write_sheet(sh, category, data, units):
             sh.write(row, col, p + ' ' + pm)
             col = col + 1
 
-    # now the general metadata
-    # we don't read this from the top level item
-    # to avoid the metadata we put at the top of the sheet
-    # we do have to check literally every other one though
-    if len(data.items):
-        keys = metadata_keys(data).difference(set(data.metadata.keys()))
-        for m in keys:
-            headings.append({'kind': 'metadata', 'value': m})
-            sh.write(row, col, m)
-            col = col + 1
+    # generic metadata
+    for m in column_keys:
+        headings.append({'kind': 'metadata', 'value': m})
+        sh.write(row, col, m)
+        col = col + 1
 
     # now for the data
     row = row + 1
