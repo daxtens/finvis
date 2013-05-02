@@ -250,7 +250,8 @@ function initAddEntity() {
 }
 
 
-/** Change the UI to indicate that an entity is being added.
+/** Change the UI to indicate that an entity has been chosen and is
+ * now is being added.
  */
 function addEntityUI() {
   jQuery('#entitySel').prop('disabled', true);
@@ -268,6 +269,7 @@ function addEntityBtn() {
   addEntityUI();
   var entitySel = jQuery('#entitySel')[0];
   var id = entitySel.options[entitySel.selectedIndex].value;
+  jQuery('#clickToPlaceTxt').text('Loading...');
   jQuery.ajax('/entity.json/' + id, {
     success: function(d) {
       if ('error' in d) {
