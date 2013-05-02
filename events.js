@@ -140,6 +140,7 @@ window['periodChange'] = function(sel) {
     obj.render(true);
   });
   jQuery('#period').text(chosenoption.value);
+  viewstate.updateInfobox();
   return false;
 };
 

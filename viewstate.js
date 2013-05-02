@@ -2,7 +2,6 @@
 ViewState.prototype = new ParentingObject();
 
 
-
 /**
  * Construct a ViewState.
  * @constructor
@@ -355,4 +354,21 @@ ViewState.prototype.finishAddingView = function(position) {
 ViewState.prototype.cancelAddingView = function() {
   this._addingData = null;
   this.mouseData.inDropState = false;
+};
+
+
+/**
+ * Update the infobox, either with a new viewObj/callback object, or
+ * the old one (presumably with an updated period).
+ *
+ * @param {ViewObj=} opt_viewobj Use the given viewobj.
+ * @param {Object=} opt_callback_data Use the given callback object.
+ */
+ViewState.prototype.updateInfobox = function(opt_viewobj, opt_callback_data) {
+  if (opt_viewobj !== undefined) {
+    this.infoboxViewObj = opt_viewobj;
+    this.infoboxCallbackData = opt_callback_data;
+  }
+  if (!this.infoboxViewObj) return;
+  jQuery('#infobox').html(this.infoboxViewObj.info(this.infoboxCallbackData));
 };

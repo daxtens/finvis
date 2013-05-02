@@ -150,7 +150,7 @@ function ViewObj(data, parent, position, category) {
       that.mouseData.lastTouch = t2;
 
       // set infobox
-      info(d, that.period());
+      viewstate.updateInfobox(that, d);
 
       if (!dt || dt > 500 || fingers > 1) {
         // not double-tap
@@ -827,6 +827,47 @@ ViewObj.prototype.availablePeriods = function() {
 };
 
 
+/** Turn myself in infobox filler.
+ * @param {Object} callback_data The callback data we set - a d3 datum.
+ * @return {string} What should go in the infobox.
+ */
+ViewObj.prototype.info = function(callback_data) {
+  var p = this.period();
+  var d = callback_data;
+
+  // the object d3 provides for aggregates wraps the data. This unwrapps it.
+  if ('data' in d) {
+    d = d['data'];
+  }
+
+  var text = '<h2>' + d['name'] + '</h2><h3>';
+  if (this.isInvalidPeriod) {
+    text = text + '<p>No data for this period.</p>';
+  } else {
+    text = text + '$' + formatDollarValue(d['periods'][p]['value']);
+    text = text + '</h3><p>';
+    if ('metadata' in d['periods'][p] &&
+        'info' in d['periods'][p]['metadata']) {
+      text = text + htmlEscape(d['periods'][p]['metadata']['info']);
+    } else if ('metadata' in d && 'info' in d['metadata']) {
+      text = text + htmlEscape(d['metadata']['info']);
+    }
+    text = text + '</p><p>';
+    if ('metadata' in d['periods'][p] &&
+        'link' in d['periods'][p]['metadata']) {
+      text = text + '<a href="' + d['periods'][p]['metadata']['link'] + '" ';
+      text = text + 'target="_blank">';
+      text = text + 'More...</a>';
+    } else if ('metadata' in d && 'info' in d['metadata']) {
+      text = text + '<a href="' + d['metadata']['link'] + '" target="_blank">';
+      text = text + 'More...</a>';
+    }
+    text = text + '</p>';
+  }
+  return text;
+};
+
+
 /**
  * Recalculate all the children positions. As this depends on positions
  * throughout the entire tree, this will ascend to the top level and work down,
@@ -878,6 +919,7 @@ ViewObj.prototype.render = function(animate) {
   var bindings = { 'deleteMenuItem' : function() {
     that.remove();
     updatePeriodSelector();
+    viewstate.updateInfobox(null, null);
   },
   'centreViewMenuItem' : function() {
     viewstate.centreViewOn(that);
@@ -973,38 +1015,6 @@ ViewObjRenderers.scaleFactor = function(minValue, naturalValue) {
 };
 
 
-/** Render the infobox.
- *  @param {Object} d Data for the clicked item.
- *  @param {string} p Name of the period.
- */
-function info(d, p) {
-  // make this work for aggregates and items:
-  if ('data' in d) d = d['data'];
-
-  var text = '<h2>' + d['name'] + '</h2><h3>$';
-  text = text + formatDollarValue(d['periods'][p]['value']);
-  text = text + '</h3><p>';
-  if ('metadata' in d['periods'][p] &&
-      'info' in d['periods'][p]['metadata']) {
-    text = text + htmlEscape(d['periods'][p]['metadata']['info']);
-  } else if ('metadata' in d && 'info' in d['metadata']) {
-    text = text + htmlEscape(d['metadata']['info']);
-  }
-  text = text + '</p><p>';
-  if ('metadata' in d['periods'][p] &&
-      'link' in d['periods'][p]['metadata']) {
-    text = text + '<a href="' + d['periods'][p]['metadata']['link'] + '" ';
-    text = text + 'target="_blank">';
-    text = text + 'More...</a>';
-  } else if ('metadata' in d && 'info' in d['metadata']) {
-    text = text + '<a href="' + d['metadata']['link'] + '" target="_blank">';
-    text = text + 'More...</a>';
-  }
-  text = text + '</p>';
-  jQuery('#infobox').html(text);
-}
-
-
 /**
  * The default sector renderer.
  *
@@ -1018,7 +1028,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
   var renderMode = viewObj.renderMode;
 
   var _info = function(d) {
-    info(d, p);
+    viewstate.updateInfobox(viewObj, d);
   };
 
   /***** Pre-process the data */
@@ -1650,7 +1660,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
   var category = viewObj['category'];
 
   var _info = function(d) {
-    info(d, p);
+    viewstate.updateInfobox(viewObj, d);
   };
 
   // create the bubble
