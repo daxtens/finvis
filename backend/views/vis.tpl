@@ -21,23 +21,25 @@
     <link rel="stylesheet" href="/css/web.css" />
   </head>
   <body>
+    <div id="headline"><img src="/images/greens-logo.svg" alt="Greens Logo" />THE AUSTRALIAN GREENS OPEN ECONOMY PROJECT</div>
     <!--[if lt IE 9]>
+      <div id="oldBrowserWarning">
         Hi! You seem to be using Internet Explorer 8 or below. Unfortunately this website only functions on modern, standards-compliant browsers such as:
         <ul>
-          <li><a href="http://windows.microsoft.com/en-AU/internet-explorer/products/ie/home">Internet Explorer 9</a></li>
+          <li><a href="http://windows.microsoft.com/en-AU/internet-explorer/products/ie/home">Internet Explorer 9 or above</a></li>
           <li><a href="http://www.google.com/chrome">Google Chrome</a></li>
           <li><a href="http://www.getfirefox.com/">Mozilla Firefox</a></li>
           <li><a href="http://www.apple.com/safari/">Safari</a></li>
           <li><a href="http://www.opera.com/">Opera</a>
         </ul>
         Please try again with one of those.<br />
-        <style type="text/css">
-          #rightToolBox {
-          display: none;
-          }
-        </style>
-        <![endif]-->
-    <div id="headline"><img src="/images/greens-logo.svg" alt="Greens Logo" />THE AUSTRALIAN GREENS OPEN ECONOMY PROJECT</div>
+      </div>
+      <style type="text/css">
+      #rightToolBox {
+        display: none;
+      }
+      </style>
+    <![endif]-->
     <div id="rightContainer">
       <div id="rightToolBox">
         <a href="#" title="Zoom in" id="zoomIn"><img class="btnimg" src="/images/icons/zoom-in.png" alt="Zoom in"/></a>

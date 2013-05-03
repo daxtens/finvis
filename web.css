@@ -5,6 +5,18 @@ body {
 	font: 10px sans-serif;
 }
 
+#oldBrowserWarning {
+    position: fixed;
+    top: 70px;
+    background-color: #FFF;
+    color: #000;
+    font-size: 120%;
+    padding: 0.5em;
+    border-color: #F00;
+    border-width: 2px;
+    border-style: solid;
+}
+
 #rightContainer {
     float:right;
     width:200px;
