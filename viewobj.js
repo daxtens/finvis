@@ -799,14 +799,12 @@ ViewObj.prototype.popOut = function(aggregate) {
 
 /**
  * canPopOut
- * @param {aggregate} aggregate Selected aggregate.
- * @return {integer} length of items of aggregate of data
- *  else length of items of data if there are items of data
- *  if there are no items in data, the result is undefined.
+ * @param {number=} opt_aggregate Aggregate to query, if applicable.
+ * @return {Boolean} can this aggregate/entity be popped out?
  */
-ViewObj.prototype.canPopOut = function(aggregate) {
+ViewObj.prototype.canPopOut = function(opt_aggregate) {
   if ('aggregates' in this.data()) {
-    return this.data()['aggregates'][aggregate]['items'].length > 0;
+    return this.data()['aggregates'][opt_aggregate]['items'].length > 0;
   } else {
     return ('items' in this.data()) && (this.data()['items'].length > 0);
   }
