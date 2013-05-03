@@ -5,6 +5,62 @@ body {
 	font: 10px sans-serif;
 }
 
+#rightContainer {
+    float:right;
+    width:200px;
+    text-align:right;
+}
+
+#rightContainer .tighttop {
+    margin-top: 0;
+}
+
+#rightToolBox {
+    position:fixed; 
+    right:5px;
+    top: 50px;
+}
+
+#rightToolBox hr {
+    width: 96px;
+    float: right;
+}
+
+#ephemeralUploadFile {
+    width: 190px;
+}
+
+#financialYearTxt {
+    text-align: center;
+}
+
+#period {
+    width: 155px;
+    font-size: 400%;
+    text-align: right;
+    margin: 0;
+    float: right;
+}
+
+#periodSel {
+    width: 96px;
+}
+
+#toggleInfoBoxContainer {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+#infobox {
+    width: 150px;
+    min-height: 150px;
+    float: right;
+}
+
+#entitySel {
+    width: 190px;
+}
+
 #headline {
     position:fixed;
     right: 5px;

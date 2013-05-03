@@ -52,10 +52,13 @@ window.onresize = function() {
   }, 50);
 };
 
-/** Stop mobile browsers scrolling the page. */
-document.ontouchmove = function(event){
-    event.preventDefault();
-}
+
+/** Stop mobile browsers scrolling the page.
+ *  @param {Event} event The event we're stopping.
+ */
+document.ontouchmove = function(event) {
+  event.preventDefault();
+};
 
 
 /** Initalise the document when we start.
@@ -63,6 +66,8 @@ document.ontouchmove = function(event){
 jQuery('document').ready(function() {
 
   // wire up a bundle of event handlers
+  jQuery('#zoomIn').on('click', zoomIn);
+  jQuery('#zoomOut').on('click', zoomOut);
   jQuery('#fitToScreen').on('click', fitToScreen);
   jQuery('#initAddEntity').on('click', initAddEntity);
   jQuery('#addEntity').on('click', addEntityBtn);
@@ -71,6 +76,7 @@ jQuery('document').ready(function() {
   jQuery('#saveToDisk').on('click', saveToDisk);
   jQuery('#cancelSaveToDisk').on('click', cancelSaveToDisk);
   jQuery('#packingSel').on('change', changePacking);
+  jQuery('#periodSel').on('change', periodChange);
   jQuery('#nextPeriodBtn').on('click', nextPeriodBtn);
   jQuery('#prevPeriodBtn').on('click', prevPeriodBtn);
   jQuery('#playBtn').on('click', playBtn);
@@ -126,12 +132,12 @@ jQuery('document').ready(function() {
 
 
 /** Handler for the period selector
- * @param {Object} sel The <select> tag.
- * @return {Boolean} undefined if sel out of bounds or false.
+ * @return {Boolean} false.
  */
-window['periodChange'] = function(sel) {
+function periodChange() {
+  var sel = jQuery('#periodSel')[0];
   if (sel.selectedIndex < 0 || sel.selectedIndex >= sel.options.length) {
-    return;
+    return false;
   }
   var chosenoption = sel.options[sel.selectedIndex];
   viewstate.children().map(function(obj) {
@@ -142,7 +148,7 @@ window['periodChange'] = function(sel) {
   jQuery('#period').text(chosenoption.value);
   viewstate.updateInfobox();
   return false;
-};
+}
 
 
 /** Move on to the next period
@@ -152,7 +158,7 @@ function nextPeriodBtn() {
   var sel = jQuery('#periodSel')[0];
   if (sel.selectedIndex < sel.options.length - 1) {
     sel.selectedIndex++;
-    window['periodChange'](sel);
+    periodChange();
   }
   return false;
 }
@@ -165,7 +171,7 @@ function prevPeriodBtn() {
   var sel = jQuery('#periodSel')[0];
   if (sel.selectedIndex > 0) {
     sel.selectedIndex--;
-    window['periodChange'](sel);
+    periodChange();
   }
   return false;
 }
@@ -181,7 +187,7 @@ var playtimer;
 function playBtn() {
   var sel = jQuery('#periodSel')[0];
   sel.selectedIndex = 0;
-  window['periodChange'](sel);
+  periodChange();
   playtimer = window.setInterval(function() {
     var sel = jQuery('#periodSel')[0];
     //console.log(sel.selectedIndex);
@@ -191,7 +197,7 @@ function playBtn() {
     } else {
       sel.selectedIndex = nextIndex;
     }
-    window['periodChange'](sel);
+    periodChange();
   }, 2000);
   return false;
 }
@@ -230,6 +236,24 @@ function updatePeriodSelector() {
                         ' selected="selected">' + oldOpt + '</option>');
     sel.append(newOpt);
   }
+}
+
+
+/** Zoom in by a fixed increment.
+ *  @return {Boolean} false.
+ */
+function zoomIn() {
+  viewstate.zoom(4 / 3, [viewstate.width / 2, viewstate.height / 2]);
+  return false;
+}
+
+
+/** Zoom out by a fixed increment.
+ *  @return {Boolean} false.
+ */
+function zoomOut() {
+  viewstate.zoom(3 / 4, [viewstate.width / 2, viewstate.height / 2]);
+  return false;
 }
 
 

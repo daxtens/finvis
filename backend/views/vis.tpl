@@ -37,16 +37,14 @@
           }
         </style>
         <![endif]-->
-    <div id="headline"><img src="/images/greens-logo.svg" />THE AUSTRALIAN GREENS OPEN ECONOMY PROJECT</div>
-    <div style="float:right; width:200px; text-align:right">
-      <div id="rightToolBox" style="position:fixed; right:5px; top: 50px;"
-           onmousedown="javascript:event.stopPropagation();"
-           onmouseup="javascript:event.stopPropagation();">
-        <a href="#" title="Zoom in" onClick="javascript:viewstate.zoom(4/3,[viewstate.width/2,viewstate.height/2]); return false;"><img class="btnimg" src="/images/icons/zoom-in.png" alt="Zoom in"/></a>
-        <a href="#" title="Zoom out" onClick="javascript:viewstate.zoom(3/4,[viewstate.width/2,viewstate.height/2]); return false;"><img class="btnimg" src="/images/icons/zoom-out.png" alt="Zoom out"/></a><br/>
-        <!--<a href="#" onClick="javascript:return false;"><img src="/images/icons/zoom-box.png" class="btnimg" alt="Zoom in on a region"/></a><br/>-->
+    <div id="headline"><img src="/images/greens-logo.svg" alt="Greens Logo" />THE AUSTRALIAN GREENS OPEN ECONOMY PROJECT</div>
+    <div id="rightContainer">
+      <div id="rightToolBox">
+        <a href="#" title="Zoom in" id="zoomIn"><img class="btnimg" src="/images/icons/zoom-in.png" alt="Zoom in"/></a>
+        <a href="#" title="Zoom out" id="zoomOut"><img class="btnimg" src="/images/icons/zoom-out.png" alt="Zoom out"/></a><br/>
+        <!--<a href="#" title="Zoom region" id="zoomRegion"><img src="/images/icons/zoom-box.png" class="btnimg" alt="Zoom in on a region"/></a><br/>-->
         <a href="#" title="Fit to screen" id="fitToScreen"><img src="/images/icons/zoom-original.png" class="btnimg" alt="Fit to screen"/></a><br/>
-        <hr style="width: 96px; float:right;"/>
+        <hr />
         <br style="clear:both; height:0px;"/>
         <a href="#" title="Save to disk" id="initSaveToDisk"><img src="/images/icons/document-export.png" class="btnimg" alt="Save to disk"/></a>
         <a href="#" id="initAddEntity"><img src="/images/icons/list-add.png" class="btnimg" alt="Add an entity"/></a><br/>
@@ -62,7 +60,7 @@
         </form>
         <div id="addEntityContainer" class="hidden">
           Choose an existing entity:<br/>
-          <select id="entitySel" style="width:190px;">
+          <select id="entitySel">
             %for entity in public_entities:
             <option value="{{entity.id}}">{{entity.name}}</option>
             %end
@@ -73,7 +71,7 @@
           or upload one from Excel:
           <form id="ephemeralUploadForm" action="/excel_to_json.json"
                 enctype="multipart/form-data" method="POST">
-            <input id="ephemeralUploadFile" type="file" name="excelfile" style="width:190px"></input><br>
+            <input id="ephemeralUploadFile" type="file" name="excelfile"></input><br>
             <input id="ephemeralUploadBtn" type="submit" value="Upload"></input>
           </form>
           <div id="ephemeralOutput" class="hidden"></div>
@@ -81,46 +79,46 @@
           <a href="#" id="cancelAddEntity"><img src="/images/icons/dialog-cancel.png" class="btnimg" alt="Cancel"/></a>
           <p id="clickToPlaceTxt" class="hidden">Click to place</p>
         </div>
-        <hr style="width: 96px; float:right;"/>
+        <hr/>
         <br style="clear:both; height:0px;"/>
-        <p id="period" style="width:155px; font-size: 400%; text-align:right; margin:0; float:right"></p>
+        <p id="period"></p>
         <br>
         <table style="float:right;">
           <tr><td><a href="#" id="prevPeriodBtn"><img class="smlbtnimg" alt="Prevous period" src="/images/icons/seek-backward.png" /></a></td>
-        <td style="text-align:center; width: 96px;">FINANCIAL YEAR</td>
+        <td id="financialYearTxt">FINANCIAL YEAR</td>
         <td><a href="#" id="nextPeriodBtn"><img class="smlbtnimg" alt="Next period" src="/images/icons/seek-forward.png" /></a></td></tr>
         
         <tr><td><a href="#" id="playBtn"><img alt="Play" class="smlbtnimg" src="/images/icons/playback-start.png" /></a></td>
-        <td><select style="width:96px;" onChange="javascript:periodChange(this);" id="periodSel">
+        <td><select id="periodSel">
         </select></td>
         <td><a href="#" id="stopBtn"><img alt="Stop" class="smlbtnimg" src="/images/icons/playback-stop.png" /></a></td></tr>
         </table>
         <br style="clear:both;" />
-        <hr style="width:96px; float:right"/>
+        <hr/>
         <br/>
-        <p style="margin-top:0">Packing model:</p>
+        <p class="tighttop">Packing model:</p>
         <select id="packingSel">
           <option value="default">Old-style</option>
           <option value="dendritic" selected="selected">Dendritic</option>
         </select>
         <br />
-        <hr style="width:96px; float:right"/>
+        <hr/>
         <br/>
-        <p style="margin-top:0; margin-bottom:0;">[ <a href="#" id="toggleInfoBox">&mdash;</a> ]</p>
-        <div id="infobox" style="width: 150px; min-height:150px; float:right;" ontouchstart="javascript:return false;"></div>
+        <p id="toggleInfoBoxContainer">[ <a href="#" id="toggleInfoBox">&mdash;</a> ]</p>
+        <div id="infobox" ontouchstart="javascript:return false;"></div>
         <br style="clear:both;"/>
-        <hr style="width:96px; float:right"/>
+        <hr/>
         <br/>
 
         %if username:
-        <p style="margin-top:0">{{ username }}</p>
+        <p class="tighttop">{{ username }}</p>
         <p><a href="/entities">Manage data</a></p>
         %if admin:
         <p>Admin: <a href="/data_admin">Data</a> | <a href="/admin">Users</a></p>
         %end
         <p><a href="/logout">Log out</a></p>
         %else:
-        <p style="margin-top:0"><a href="/login">Log in</a></p>
+        <p class="tighttop"><a href="/login">Log in</a></p>
         <p><a href="/register">Register</a></p>
         %end
 
@@ -130,7 +128,6 @@
       <ul>
         <li id="deleteMenuItem">Delete</li>
         <li id="centreViewMenuItem">Centre view on</li>
-        <!--<li id="duplicateMenuItem">Duplicate</li>-->
 	<li id="resetMenuItem">Reset</li>
       </ul>
     </div>
