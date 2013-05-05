@@ -15,7 +15,7 @@ import crud
 rootdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 
 aaa = Cork(backend=MongoDBBackend(db_name='finvis-auth'),
-           email_sender='vis@dja.id.au',
+           email_sender=settings.email_sender,
            smtp_url=settings.smtp_url)
 
 app = bottle.app()
