@@ -89,18 +89,17 @@ jQuery('document').ready(function() {
     jQuery('#clickToPlaceTxt').text('Processing...');
     jQuery(this).ajaxSubmit({
       success: function(d) {
-        if ('error' in d) {
-          alert('Error:' + d['error']);
-          cancelAddEntity();
-        } else {
-          //console.log(d);
-          var sel = jQuery('#periodSel')[0];
-          viewstate.beginAddingView(d, sel.options[
-              sel.selectedIndex].value);
-        }
+        //console.log(d);
+        var sel = jQuery('#periodSel')[0];
+        viewstate.beginAddingView(d, sel.options[sel.selectedIndex].value);
       },
       error: function(d) {
-        alert('An unknown error occured.');
+        var resp = JSON.parse(d.responseText);
+        if ('error' in resp) {
+          alert('Error: ' + resp['error']);
+        } else {
+          alert('An unknown error occured.');
+        }
         cancelAddEntity();
       },
       complete: function() {
@@ -114,18 +113,20 @@ jQuery('document').ready(function() {
   window.viewstate = new ViewState(d3.select('body').append('svg'));
   jQuery.ajax('/entity.json/' + window['initial_id'], {
     success: function(d) {
-      if ('error' in d) {
-        alert('Error:' + d['error']);
-      } else {
-        var vo = new ViewObj(d, viewstate, [0, 0]);
-        updatePeriodSelector();
-        vo.period(jQuery('#periodSel option')[0].value);
-        jQuery('#period').text(jQuery('#periodSel option')[0].value);
-        vo.render();
-      }
+      var vo = new ViewObj(d, viewstate, [0, 0]);
+      updatePeriodSelector();
+      vo.period(jQuery('#periodSel option')[0].value);
+      jQuery('#period').text(jQuery('#periodSel option')[0].value);
+      vo.render();
     },
     error: function(d) {
-      alert('An unknown error occured.');
+      var resp = JSON.parse(d.responseText);
+      if ('error' in resp) {
+        alert('Error: ' + resp['error']);
+      } else {
+        alert('An unknown error occured. We\'re very sorry. Try reloading?');
+      }
+      cancelAddEntity();
     }
   });
 });
@@ -298,18 +299,17 @@ function addEntityBtn() {
   jQuery('#clickToPlaceTxt').text('Loading...');
   jQuery.ajax('/entity.json/' + id, {
     success: function(d) {
-      if ('error' in d) {
-        alert('Error:' + d['error']);
-        cancelAddEntity();
-      } else {
-        //console.log(d);
-        var sel = jQuery('#periodSel')[0];
-        viewstate.beginAddingView(d, sel.options[
-            sel.selectedIndex].value);
-      }
+      var sel = jQuery('#periodSel')[0];
+      viewstate.beginAddingView(d, sel.options[
+          sel.selectedIndex].value);
     },
     error: function(d) {
-      alert('An unknown error occured.');
+      var resp = JSON.parse(d.responseText);
+      if ('error' in resp) {
+        alert('Error: ' + resp['error']);
+      } else {
+        alert('An unknown error occured. We\'re very sorry. Try reloading?');
+      }
       cancelAddEntity();
     },
     complete: function() {

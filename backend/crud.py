@@ -36,25 +36,36 @@ def data_admin():
 
 @route('/entity.json/:entityid')
 def entity_json(entityid):
+    # FIXME?: this doesn't verify that the user has the rights to view.
+    # Should it? Not enforcing this will make embedding much easier...
     response.content_type = 'text/json'
     result = bson.json_util.dumps(Entity._get_collection().find_one(
         {"_id": bson.objectid.ObjectId(entityid)}))
     # obvious but slow:
     # result = bson.json_util.dumps(Entity.objects(id=entityid)[0].to_mongo())
     #return entityid
+    if result == "null":
+        response.status = 422
+        result = '{"error":"Requested an entity that does not exist."}'
+
     return result
 
 
 @post('/excel_to_json.json')
 def excel_to_json():
     """Return the uploaded excel file as a JSON document."""
+    response.content_type = 'text/json'
+
     excelfile = request.files.get('excelfile')
 
-    response.content_type = 'text/json'
+    if excelfile is None:
+        response.status = 422
+        return {'error': 'No file detected. Please chose a file to upload.'}
 
     try:
         obj = excel.import_excel(excelfile.file.read(), 'anonymous')
     except excel.ExcelError as e:
+        response.status = 422
         return {'error': str(e)}
 
     result = bson.json_util.dumps(obj.to_mongo())
@@ -68,6 +79,10 @@ def excel_upload():
     finvis.aaa.require(fail_redirect="/login")
 
     excelfile = request.files.get('excelfile')
+
+    if excelfile is None:
+        response.status = 422
+        return 'Error: No file sent. Please submit a file.'
 
     try:
         obj = excel.import_excel(excelfile.file.read(),
