@@ -17,6 +17,10 @@ body {
     border-style: solid;
 }
 
+#oldBrowserWarning a:link {
+    color: #00F;
+}
+
 #rightContainer {
     float:right;
     /*width:200px;*/
