@@ -1141,7 +1141,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .attr('transform',
               function(d) {
         return 'translate(0,' + (0 - viewstate.scaler(d)) + ')';
-              });
+              })
+        .classed('invalidPeriod', viewObj.isInvalidPeriod);
 
   labels.exit().remove();
 
@@ -1328,7 +1329,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .text(innerLabelsText)
         .attr('x', labelsX)
       //.attr("y", innerLabelsY): x may change with period, y will not.
-        .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; });
+        .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; })
+        .classed('invalidPeriod', viewObj.isInvalidPeriod);
 
   wedgeInnerLabels.exit().remove();
 
@@ -1351,7 +1353,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .text(outerLabelsText)
         .attr('x', labelsX)
       //.attr("y", outerLabelsY)
-        .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; });
+        .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; })
+        .classed('invalidPeriod', viewObj.isInvalidPeriod);
 
   wedgeOuterLabels.exit().remove();
 
@@ -1370,7 +1373,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
   entitylabel
         .attr('x', function(d) { return -safeGetBBox(this)['width'] / 2; })
         .attr('y', 80)
-        .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; });
+        .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; })
+        .classed('invalidPeriod', viewObj.isInvalidPeriod);
 
   // Halo if the whole thing is just too small to see.
 
@@ -1388,7 +1392,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .on('touchstart', _info);
 
   tinyHalo.attr('display',
-      function(d) { return d < tinyHaloThreshold ? null : 'none' });
+      function(d) { return d < tinyHaloThreshold ? null : 'none' })
+      .classed('invalidPeriod', viewObj.isInvalidPeriod);
 
 
   /***** Relations */
@@ -1560,7 +1565,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .classed('name', isLoss)
         .classed('value', isProfit)
         .attr('x', labelX)
-        .attr('y', relationInnerY);
+        .attr('y', relationInnerY)
+        .classed('invalidPeriod', viewObj.isInvalidPeriod);
 
   for (var style in cssStyles) {
     updater.classed(cssStyles[style],
@@ -1600,7 +1606,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .classed('name', isProfit)
         .classed('value', isLoss)
         .attr('x', labelX)
-        .attr('y', relationOuterY);
+        .attr('y', relationOuterY)
+        .classed('invalidPeriod', viewObj.isInvalidPeriod);
 
   for (var style in cssStyles) {
     updater.classed(cssStyles[style],
@@ -1763,7 +1770,8 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
   var updater = nameLabel;
   if (animate) updater = updater.transition().duration(1000);
   updater
-        .attr('x', centredTextLabelX);
+        .attr('x', centredTextLabelX)
+        .classed('invalidPeriod', viewObj.isInvalidPeriod);
 
   nameLabel.exit().remove();
 
@@ -1777,7 +1785,8 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
         .on('click', _info);
 
   valueLabel
-      .text(function(d) {return formatDollarValue(d['periods'][p]['value']);});
+      .text(function(d) {return formatDollarValue(d['periods'][p]['value']);})
+      .classed('invalidPeriod', viewObj.isInvalidPeriod);
 
   var updater = valueLabel;
   if (animate) updater = valueLabel.transition().duration(1000);
