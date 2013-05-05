@@ -115,7 +115,7 @@
         <div class="box" id="informationbox">
           <p class="rotate">INFO</p>
           <p id="toggleInfoBoxContainer">[ <a href="#" id="toggleInfoBox">&mdash;</a> ]</p>
-          <div id="infobox" ontouchstart="javascript:return false;"></div>
+          <div id="infobox" ontouchstart="javascript:return false;"><h2>Welcome to the Open Economy</h2><p>To start exploring, just click, double-click or right-click on things and see what happens...</div>
         </div>
         <div class="box" id="userbox">
           <p class="rotate">TOOLS</p>
