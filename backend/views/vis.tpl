@@ -3,7 +3,9 @@
   <head>
     <title>The Open Economy</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="og:image" content="/images/fb-img.gif">
+    <meta name="og:title" content="The Open Economy">
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
     <script type="text/javascript" src="/js/jquery.contextmenu.r2.js"></script>
