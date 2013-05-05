@@ -61,6 +61,7 @@ body {
 #toggleInfoBoxContainer {
     margin-top: 0;
     margin-bottom: 0;
+    clear: both;
 }
 
 #infobox {
@@ -120,11 +121,13 @@ div a {
 img.btnimg {
     height: 32px;
     width: 32px;
+    border: none;
 }
 
 img.smlbtnimg {
     height: 24px;
     width: 24px;
+    border: none;
 }
 
 .hidden {

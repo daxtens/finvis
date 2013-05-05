@@ -22,11 +22,11 @@
   </head>
   <body>
     <div id="headline"><img src="/images/greens-logo.svg" alt="Greens Logo" />THE AUSTRALIAN GREENS OPEN ECONOMY PROJECT</div>
-    <!--[if lt IE 9]>
+    <!--[if lt IE 10]>
       <div id="oldBrowserWarning">
-        Hi! You seem to be using Internet Explorer 8 or below. Unfortunately this website only functions on modern, standards-compliant browsers such as:
+        Hi! You seem to be using Internet Explorer 9 or below. Unfortunately this website only functions on modern, standards-compliant browsers such as:
         <ul>
-          <li><a href="http://windows.microsoft.com/en-AU/internet-explorer/products/ie/home">Internet Explorer 9 or above</a></li>
+          <li><a href="http://windows.microsoft.com/en-AU/internet-explorer/products/ie/home">Internet Explorer 10</a></li>
           <li><a href="http://www.google.com/chrome">Google Chrome</a></li>
           <li><a href="http://www.getfirefox.com/">Mozilla Firefox</a></li>
           <li><a href="http://www.apple.com/safari/">Safari</a></li>
@@ -84,7 +84,7 @@
         <hr/>
         <br style="clear:both; height:0px;"/>
         <p id="period"></p>
-        <br>
+        <br clear="both">
         <table style="float:right;">
           <tr><td><a href="#" id="prevPeriodBtn"><img class="smlbtnimg" alt="Prevous period" src="/images/icons/seek-backward.png" /></a></td>
         <td id="financialYearTxt">FINANCIAL YEAR</td>
@@ -95,9 +95,9 @@
         </select></td>
         <td><a href="#" id="stopBtn"><img alt="Stop" class="smlbtnimg" src="/images/icons/playback-stop.png" /></a></td></tr>
         </table>
-        <br style="clear:both;" />
+        <br style="clear:both;"/>
         <hr/>
-        <br/>
+        <br style="clear:both;"/>
         <p class="tighttop">Packing model:</p>
         <select id="packingSel">
           <option value="default">Old-style</option>
@@ -110,7 +110,7 @@
         <div id="infobox" ontouchstart="javascript:return false;"></div>
         <br style="clear:both;"/>
         <hr/>
-        <br/>
+        <br style="clear:both;"/>
 
         %if username:
         <p class="tighttop">{{ username }}</p>
