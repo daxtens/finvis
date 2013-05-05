@@ -30,10 +30,6 @@ app = SessionMiddleware(app, session_opts)
 
 
 @bottle.route('/')
-def redir():
-    bottle.redirect('index.html')
-
-
 @bottle.route('/index.html')
 @bottle.route('/index.html/:entity_id')
 @bottle.view('vis')
