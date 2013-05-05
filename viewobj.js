@@ -929,8 +929,19 @@ ViewObj.prototype.render = function(animate) {
   },
   'popBothMenuItem': function() {
     that.popIn();
-    that.popOut(0);
-    that.popOut(1);
+    var aggregates = that.data()['aggregates'];
+    if (that.renderMode.specifiedAggregates) {
+      var targets = that.renderMode.specifiedAggregates;
+      for (var i = 0; i < aggregates.length; i++) {
+        if (aggregates[i].category == targets[0] ||
+            aggregates[i].category == targets[1]) {
+          that.popOut(i);
+        }
+      }
+    } else {
+      that.popOut(0);
+      that.popOut(1);
+    }
     that.reposition();
     that.render();
   }
