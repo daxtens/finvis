@@ -19,7 +19,7 @@ body {
 
 #rightContainer {
     float:right;
-    width:200px;
+    /*width:200px;*/
     text-align:right;
 }
 
@@ -30,12 +30,75 @@ body {
 #rightToolBox {
     position:fixed; 
     right:5px;
-    top: 50px;
+    top: 40px;
+    width: 200px;
 }
 
 #rightToolBox hr {
     width: 96px;
     float: right;
+}
+
+.box {
+    /*width: 200px;*/
+    /*background-color: rgb(7, 16, 43);*/
+    background-color: rgba(0, 0, 96, 0.4);
+    padding: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+/* this is full of shameful hackery. FIXME */
+.box p.rotate {
+    position: fixed;
+}
+
+#viewbox {
+}
+
+#viewbox p {
+    right: 166px;
+    width: 50px;
+    margin: 0;
+}
+
+#iobox {
+    min-height: 50px;
+}
+
+#iobox p.rotate {
+    width: 67px;
+    right: 157px;
+}
+
+#periodbox {
+    height: 110px;
+}
+
+#periodbox p.rotate,
+#informationbox p.rotate  {
+    width: 50px;
+    right: 166px;
+    margin: 0;
+}
+
+#informationbox {
+    min-height: 37px;
+}
+
+#morebox p.rotate {
+    width: 64px;
+    right: 160px;
+    margin: 0;
+}
+
+#userbox {
+    min-height: 50px;
+}
+
+#userbox p.rotate {
+    width: 72px;
+    right: 156px;
+    margin: 0;
 }
 
 #ephemeralUploadFile {
@@ -60,14 +123,13 @@ body {
 
 #toggleInfoBoxContainer {
     margin-top: 0;
-    margin-bottom: 0;
+    margin-bottom: 2.25em;
     clear: both;
 }
 
 #infobox {
-    width: 150px;
-    min-height: 150px;
-    float: right;
+    width: 190px;
+    min-height: 125px;
 }
 
 #entitySel {
@@ -137,4 +199,22 @@ img.smlbtnimg {
 rect.eventGrabber {
     opacity: 0;
     fill-opacity: 0
+}
+
+.rotate {
+    /* From http://css-tricks.com/snippets/css/text-rotation/ */
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    text-align: left;
+    font-size: 120%;
+}
+
+a:link {
+    color: #FFF;
+}
+
+a:visited {
+    color: #99F;
 }
