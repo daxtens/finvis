@@ -36,9 +36,16 @@ def data_admin():
 
 @route('/entity.json/:entityid')
 def entity_json(entityid):
+    response.content_type = 'text/json'
+
+    # WARNING: THIS ONLY WORKS BECAUSE IT IS IMPOSSIBLE TO UPDATE A FILE ATM
+    # IF THAT CONDITION IS EVER WEAKEND, THIS WILL BREAK AND PEOPLE WILL BE SAD
+    if request.get_header('If-None-Match') == "W/" + entityid:
+        response.status = 304
+        return
+
     # FIXME?: this doesn't verify that the user has the rights to view.
     # Should it? Not enforcing this will make embedding much easier...
-    response.content_type = 'text/json'
     result = bson.json_util.dumps(Entity._get_collection().find_one(
         {"_id": bson.objectid.ObjectId(entityid)}))
     # obvious but slow:
@@ -48,8 +55,6 @@ def entity_json(entityid):
         response.status = 422
         result = '{"error":"Requested an entity that does not exist."}'
 
-    # WARNING: THIS ONLY WORKS BECAUSE IT IS IMPOSSIBLE TO UPDATE A FILE ATM
-    # IF THAT CONDITION IS EVER WEAKEND, THIS WILL BREAK AND PEOPLE WILL BE SAD
     response.add_header("ETag", "W/" + entityid)
 
     return result
