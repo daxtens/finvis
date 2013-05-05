@@ -48,6 +48,10 @@ def entity_json(entityid):
         response.status = 422
         result = '{"error":"Requested an entity that does not exist."}'
 
+    # WARNING: THIS ONLY WORKS BECAUSE IT IS IMPOSSIBLE TO UPDATE A FILE ATM
+    # IF THAT CONDITION IS EVER WEAKEND, THIS WILL BREAK AND PEOPLE WILL BE SAD
+    response.add_header("ETag", "W/" + entityid)
+
     return result
 
 
