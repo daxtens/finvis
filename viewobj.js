@@ -401,15 +401,16 @@ function ViewObj(data, parent, position, category) {
           if (i == 1) angles[j] = angle;
           // compare to sum
           sum = 0;
-          for (var k = 1; k <= i; k++) {
-            var idx2 = (j - i + k + list.length + 1) % list.length;
-            //console.log(idx2)
+          for (var k = 0; k < i; k++) {
+            var idx2 = (j + k) % list.length;
+            //console.log(idx2, list[idx2])
             sum += angles[idx2];
           }
           // replace saved sum if smaller
           if (sum < angle) {
+            var idx2 = (j + i) % list.length;
             //console.log('drop between ' + j + ' (' + list[j] + ')  and ' +
-            // (j + i) + ' (' + list[j + i] + ') at gap ' + i + '. Was ' +
+            // (idx2) + ' (' + list[idx2] + ') at gap ' + i + '. Was ' +
             // sum + ' now ' + angle);
             // FIXME: This only works for maxGap = 2
             angles[j + i - 1] = angle - angles[j];
@@ -451,8 +452,8 @@ function ViewObj(data, parent, position, category) {
           if (i == 1) angles[j] = angle;
           // compare to sum
           sum = 0;
-          for (var k = 1; k <= i; k++) {
-            var idx2 = (j - i + k + 1);
+          for (var k = 0; k < i; k++) {
+            var idx2 = (j + k);
             //console.log(j, idx2)
             sum += angles[idx2];
           }
