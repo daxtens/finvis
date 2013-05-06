@@ -411,9 +411,8 @@ function ViewObj(data, parent, position, category) {
             //console.log('drop between ' + j + ' (' + list[j] + ')  and ' +
             // (j + i) + ' (' + list[j + i] + ') at gap ' + i + '. Was ' +
             // sum + ' now ' + angle);
-            for (var k = 0; k < i; k++) {
-              angles[j + k] = (angle) / i;
-            }
+            // FIXME: This only works for maxGap = 2
+            angles[j + i - 1] = angle - angles[j];
             // skip it
             j++;
           }
@@ -462,9 +461,8 @@ function ViewObj(data, parent, position, category) {
             //console.log('drop between ' + j + ' (' + list[j] + ')  and ' +
             // (j + i) + ' (' + list[j + i] + ') at gap ' + i + '. Was ' +
             // sum + ' now ' + angle);
-            for (var k = 0; k < i; k++) {
-              angles[j + k] = (angle) / i;
-            }
+            // FIXME: This only works for maxGap = 2
+            angles[j + i - 1] = angle - angles[j];
             // skip it
             j++;
           }
