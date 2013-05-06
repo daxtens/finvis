@@ -384,80 +384,125 @@ function ViewObj(data, parent, position, category) {
       return Math.asin(r / (r + R));
     },
 
-    sumFnAcross: function(fn, R, list, bubblePtRadii) {
-      var sum = 0;
-      for (var j = 0; j < list.length - 1; j++) {
-        sum += fn(R, bubblePtRadii[list[j]],
-            bubblePtRadii[list[j + 1]]);
+    _WrapNoOverlap: function(R, list, bubblePtRadii) {
+      var sum;
+      var angles = [];
+      var angle;
+      // for each possible gap length
+      var maxGap = Math.min(list.length / 2, 2);
+      for (var i = 1; i <= maxGap; i++) {
+        // for each pair
+        for (var j = 0; j < list.length; j++) {
+          // evaluate directly
+          var idx2 = (j + i) % list.length;
+          //console.log(j, idx2)
+          angle = calcs.phi(R, bubblePtRadii[list[j]],
+                            bubblePtRadii[list[idx2]]);
+          if (i == 1) angles[j] = angle;
+          // compare to sum
+          sum = 0;
+          for (var k = 1; k <= i; k++) {
+            var idx2 = (j - i + k + list.length + 1) % list.length;
+            //console.log(idx2)
+            sum += angles[idx2];
+          }
+          // replace saved sum if smaller
+          if (sum < angle) {
+            //console.log('drop between ' + j + ' (' + list[j] + ')  and ' +
+            // (j + i) + ' (' + list[j + i] + ') at gap ' + i + '. Was ' +
+            // sum + ' now ' + angle);
+            for (var k = 0; k < i; k++) {
+              angles[j + k] = (angle) / i;
+            }
+            // skip it
+            j++;
+          }
+        }
       }
-      return sum;
+      // calculate final sum
+      sum = 0;
+      for (var i = 0; i < list.length; i++) {
+        sum += angles[i];
+      }
+      return [sum, angles];
     },
 
-    sumPhiAcrossWithPadding: function(R, list, bubblePtRadii) {
-      var subangle;
-      subangle = calcs.psi(R, bubblePtRadii[list[0]]);
-      subangle += calcs.sumFnAcross(calcs.phi, R, list, bubblePtRadii);
-      subangle += Math.asin(bubblePtRadii[list[list.length - 1]] /
-          (bubblePtRadii[list[list.length - 1]] + R));
-      return subangle;
+    sumPhiWrapNoOverlap: function(R, list, bubblePtRadii) {
+      return calcs._WrapNoOverlap(R, list, bubblePtRadii)[0];
+    },
+
+    anglesWrapNoOverlap: function(R, list, bubblePtRadii) {
+      return calcs._WrapNoOverlap(R, list, bubblePtRadii)[1];
+    },
+
+    _NoWrapNoOverlap: function(R, list, bubblePtRadii) {
+      var sum;
+      var angles = [];
+      var angle;
+      // for each possible gap length
+      var maxGap = Math.min(list.length / 2, 2);
+      for (var i = 1; i <= maxGap; i++) {
+        // for each pair
+        for (var j = 0; j < list.length - i; j++) {
+          // evaluate directly
+          var idx2 = (j + i);
+          //console.log(j, idx2)
+          angle = calcs.phi(R, bubblePtRadii[list[j]],
+                            bubblePtRadii[list[idx2]]);
+          if (i == 1) angles[j] = angle;
+          // compare to sum
+          sum = 0;
+          for (var k = 1; k <= i; k++) {
+            var idx2 = (j - i + k + 1);
+            //console.log(j, idx2)
+            sum += angles[idx2];
+          }
+          // replace saved sum if smaller
+          if (sum < angle) {
+            //console.log('drop between ' + j + ' (' + list[j] + ')  and ' +
+            // (j + i) + ' (' + list[j + i] + ') at gap ' + i + '. Was ' +
+            // sum + ' now ' + angle);
+            for (var k = 0; k < i; k++) {
+              angles[j + k] = (angle) / i;
+            }
+            // skip it
+            j++;
+          }
+        }
+      }
+      // calculate final sum
+      sum = calcs.psi(R, bubblePtRadii[list[0]]);
+      for (var i = 0; i < list.length - 1; i++) {
+        sum += angles[i];
+      }
+      sum += calcs.psi(R, bubblePtRadii[list[list.length - 1]]);
+      return [sum, angles];
+    },
+
+    sumPhiNoWrapNoOverlap: function(R, list, bubblePtRadii) {
+      return calcs._NoWrapNoOverlap(R, list, bubblePtRadii)[0];
+    },
+
+    anglesNoWrapNoOverlap: function(R, list, bubblePtRadii) {
+      return calcs._NoWrapNoOverlap(R, list, bubblePtRadii)[1];
     },
 
     f: function(R, list1, list2, bubblePtRadii) {
       var sum = 0;
       if (!(list2 && list2.length)) {
-        sum += calcs.sumFnAcross(calcs.phi, R, list1, bubblePtRadii);
-        // wrap around
-        sum += calcs.phi(R, bubblePtRadii[list1[list1.length - 1]],
-            bubblePtRadii[list1[0]]);
+        sum += calcs.sumPhiWrapNoOverlap(R, list1, bubblePtRadii);
       } else {
         /* for each list:
                    - tangent to the perpendicular padding on each end.
                    - angle is max( pi, sum ): don't allow it to be squeezed out
                 */
         var subangle;
-        subangle = calcs.sumPhiAcrossWithPadding(R, list1, bubblePtRadii);
+        subangle = calcs.sumPhiNoWrapNoOverlap(R, list1, bubblePtRadii);
         sum += Math.max(Math.PI, subangle);
-        subangle = calcs.sumPhiAcrossWithPadding(R, list2, bubblePtRadii);
+        subangle = calcs.sumPhiNoWrapNoOverlap(R, list2, bubblePtRadii);
         sum += Math.max(Math.PI, subangle);
       }
       return 2 * Math.PI - sum;
-    },
-
-    dPhidR: function(R, ri, ri1) {
-      var radicand = (R * ri * ri1 * (R + ri + ri1)) /
-          (Math.pow((R + ri) * (R + ri1), 2));
-      var numerator = Math.sqrt(radicand) * (2 * R + ri + ri1);
-      return - numerator / (R * (R + ri + ri1));
-    },
-
-    dPsidR: function(R, r) {
-      return - r / ((r + R) * Math.sqrt(R * (2 * r + R)));
-    },
-
-    dFdR: function(R, list1, list2, bubblePtRadii) {
-      // this is massively complicated by the 2 list requirement
-      var sum = 0;
-      if (!(list2 && list2.length)) {
-        sum += calcs.sumFnAcross(calcs.dPhidR, R, list1, bubblePtRadii);
-        sum += calcs.dPhidR(R, bubblePtRadii[list1[list1.length - 1]],
-            bubblePtRadii[list1[0]]);
-      } else {
-        var subangle;
-        subangle = calcs.sumPhiAcrossWithPadding(R, list1, bubblePtRadii);
-        if (subangle > Math.PI) {
-          sum += calcs.dPsidR(R, bubblePtRadii[list1[0]]);
-          sum += calcs.sumFnAcross(calcs.dPhidR, R, list1, bubblePtRadii);
-          sum += calcs.dPsidR(R, bubblePtRadii[list1[list1.length - 1]]);
-        } // else Pi, derivative = 0
-
-        subangle = calcs.sumPhiAcrossWithPadding(R, list2, bubblePtRadii);
-        if (subangle > Math.PI) {
-          sum += calcs.dPsidR(R, bubblePtRadii[list2[0]]);
-          sum += calcs.sumFnAcross(calcs.dPhidR, R, list2, bubblePtRadii);
-          sum += calcs.dPsidR(R, bubblePtRadii[list2[list2.length - 1]]);
-        } // else Pi, derivative = 0
-      }
-      return -sum;
     },
 
     bubbleAnglesSum: function(sectorPtRadius, list1, list2, bubblePtRadii) {
@@ -523,9 +568,16 @@ function ViewObj(data, parent, position, category) {
       } else {
         var angle = angleOffset;
       }
-      if (tangentPad) angle += angleScaler(calcs.psi(sectorPtRadius,
-          bubblePtRadii[itemIdxs[0]])
-            );
+      if (tangentPad) {
+        angle += angleScaler(calcs.psi(sectorPtRadius,
+                                       bubblePtRadii[itemIdxs[0]]));
+        var angles = calcs.anglesNoWrapNoOverlap(sectorPtRadius, itemIdxs,
+                                                  bubblePtRadii);
+
+      } else {
+        var angles = calcs.anglesWrapNoOverlap(sectorPtRadius, itemIdxs,
+                                               bubblePtRadii);
+      }
 
       for (var i = 0; i < itemIdxs.length; i++) {
         var item = itemIdxs[i];
@@ -534,11 +586,7 @@ function ViewObj(data, parent, position, category) {
           (sectorPtRadius + bubblePtRadii[item]) * Math.sin(angle)
         ].map(viewstate.scaler.invert);
         items[item].treeAngle = angle;
-        if (i + 1 < itemIdxs.length) {
-          angle += angleScaler(calcs.phi(sectorPtRadius,
-              bubblePtRadii[item],
-              bubblePtRadii[itemIdxs[i + 1]]));
-        }
+        angle += angleScaler(angles[i]);
         items[item].moveTo(itemPosition, animate);
 
       }
@@ -550,10 +598,10 @@ function ViewObj(data, parent, position, category) {
           2 * Math.PI, Math.PI, false);
     } else {
       actuallyPosition(list1,
-          calcs.sumPhiAcrossWithPadding(sectorPtRadius, list1, bubblePtRadii),
+          calcs.sumPhiNoWrapNoOverlap(sectorPtRadius, list1, bubblePtRadii),
           Math.PI, Math.PI, true);
       actuallyPosition(list2,
-          calcs.sumPhiAcrossWithPadding(sectorPtRadius, list2, bubblePtRadii),
+          calcs.sumPhiNoWrapNoOverlap(sectorPtRadius, list2, bubblePtRadii),
           Math.PI, 0, true);
     }
 
@@ -622,21 +670,27 @@ function ViewObj(data, parent, position, category) {
       bubblePtRadii[item] = viewstate.scaler(itemRadius);
     }
 
-    // Newton's method
+    // Binary Search
     if (calcs.bubbleAnglesSum(sectorPtRadius, list1, list2,
         bubblePtRadii) > 2 * Math.PI) {
 
       var Rn = sectorPtRadius;
-      var Rn1 = Rn - calcs.f(Rn, list1, list2, bubblePtRadii) /
-                calcs.dFdR(Rn, list1, list2, bubblePtRadii);
+      var Rn1 = 3 * sectorPtRadius;
 
-      while (Math.abs((Rn - Rn1) / Rn) > 0.01 ||
-          calcs.f(Rn1, list1, list2, bubblePtRadii) < 0) {
-        Rn = Rn1;
-        Rn1 = Rn - calcs.f(Rn, list1, list2, bubblePtRadii) /
-            calcs.dFdR(Rn, list1, list2, bubblePtRadii);
+      var result = calcs.f((Rn1 + Rn) / 2, list1, list2, bubblePtRadii);
+      while (result == 0 || result < -0.001) {
+        //console.log(Rn, Rn1, result);
+        if (result == 0) {
+          // too big
+          Rn1 = (Rn1 + Rn) / 2;
+        } else {
+          // too small
+          Rn = (Rn1 + Rn) / 2;
+        }
+        result = calcs.f((Rn1 + Rn) / 2, list1, list2, bubblePtRadii);
       }
-      sectorPtRadius = Rn1;
+      //console.log(Rn, Rn1, (Rn + Rn1) / 2, result);
+      sectorPtRadius = (Rn + Rn1) / 2;
     }
 
 
@@ -652,9 +706,16 @@ function ViewObj(data, parent, position, category) {
       } else {
         var angle = angleOffset;
       }
-      if (tangentPad) angle += angleScaler(calcs.psi(sectorPtRadius,
-          bubblePtRadii[itemIdxs[0]])
-                                                );
+      if (tangentPad) {
+        angle += angleScaler(calcs.psi(sectorPtRadius,
+                                       bubblePtRadii[itemIdxs[0]]));
+
+        var angles = calcs.anglesNoWrapNoOverlap(sectorPtRadius, itemIdxs,
+                                                 bubblePtRadii);
+      } else {
+        var angles = calcs.anglesWrapNoOverlap(sectorPtRadius, itemIdxs,
+                                               bubblePtRadii);
+      }
 
       circles = [];
       for (var i = 0; i < itemIdxs.length; i++) {
@@ -664,15 +725,11 @@ function ViewObj(data, parent, position, category) {
           (sectorPtRadius + bubblePtRadii[item]) * Math.sin(angle)
         ];
         if (i + 1 < itemIdxs.length) {
-          angle += angleScaler(calcs.phi(sectorPtRadius,
-              bubblePtRadii[item],
-              bubblePtRadii[itemIdxs[i + 1]]));
+          angle += angleScaler(angles[i]);
         }
         circles.push({'cx': itemPosition[0],
           'cy': itemPosition[1],
-          'radius': viewstate.scaler(
-                                  items[item].boundingCircle.radius)});
-
+          'radius': viewstate.scaler(items[item].boundingCircle.radius)});
       }
       return circles;
     };
@@ -685,11 +742,11 @@ function ViewObj(data, parent, position, category) {
     } else {
       var circles = generatePositions(
           list1,
-          calcs.sumPhiAcrossWithPadding(sectorPtRadius, list1, bubblePtRadii),
+          calcs.sumPhiNoWrapNoOverlap(sectorPtRadius, list1, bubblePtRadii),
           Math.PI, Math.PI, true);
       var circles = generatePositions(
           list2,
-          calcs.sumPhiAcrossWithPadding(sectorPtRadius, list1, bubblePtRadii),
+          calcs.sumPhiNoWrapNoOverlap(sectorPtRadius, list1, bubblePtRadii),
           Math.PI, 0, true);
     }
 
@@ -1797,6 +1854,44 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
 
 
   valueLabel.exit().remove();
+
+  /* If I have children, draw a little circle around us all to indicate that
+       we go together */
+
+  var enclosingCircleData = [];
+
+  if (viewObj.children().length) {
+    //console.log(viewObj.boundingCircle);
+    enclosingCircleData.push(viewObj.boundingCircle);
+  }
+
+  var enclosingCircleGroup = viewObj.svg
+        .select('g.enclosingCircle');
+  if (enclosingCircleGroup.empty()) {
+    enclosingCircleGroup = viewObj.svg.append('g')
+            .classed('enclosingCircle', true);
+  }
+
+  var enclosingCircle = enclosingCircleGroup
+        .selectAll('circle.axis_circle')
+        .data(enclosingCircleData);
+
+  enclosingCircle.enter().append('circle')
+        .classed('axis_circle', true)
+        .attr('r', function(d) { return viewstate.scaler(d.radius); })
+        .attr('cx', function(d) { return viewstate.scaler(d.cx); })
+        .attr('cy', function(d) { return viewstate.scaler(d.cy); });
+
+
+  var updater = enclosingCircle;
+  if (animate) updater = enclosingCircle.transition().duration(1000);
+  updater
+        .attr('r', function(d) { return viewstate.scaler(d.radius); })
+        .attr('cx', function(d) { return viewstate.scaler(d.cx); })
+        .attr('cy', function(d) { return viewstate.scaler(d.cy); });
+
+  enclosingCircle.exit().remove();
+
 
 };
 
