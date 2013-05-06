@@ -1858,7 +1858,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
 
   var enclosingCircleData = [];
 
-  if (viewObj.children().length) {
+  if (viewObj.children().length && false) {
     //console.log(viewObj.boundingCircle);
     enclosingCircleData.push(viewObj.boundingCircle);
   }
