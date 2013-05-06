@@ -1767,11 +1767,12 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
         .on('touchstart', _info)
         .on('click', _info);
 
-  var updater = nameLabel;
+  var updater = nameLabel
+      .classed('invalidPeriod', viewObj.isInvalidPeriod);
   if (animate) updater = updater.transition().duration(1000);
   updater
-        .attr('x', centredTextLabelX)
-        .classed('invalidPeriod', viewObj.isInvalidPeriod);
+      .attr('x', centredTextLabelX);
+
 
   nameLabel.exit().remove();
 
