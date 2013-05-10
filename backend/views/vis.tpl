@@ -22,7 +22,10 @@
     <link rel="stylesheet" href="/css/web.css" />
   </head>
   <body>
-    <div id="headline"><img src="/images/greens-logo.svg" alt="Greens Logo" />THE AUSTRALIAN GREENS OPEN ECONOMY PROJECT</div>
+    <div id="headline">
+      <a href="http://greensmps.com.au/" target="_blank"><img src="/images/greens-logo.svg" alt="Greens Logo" /></a>
+      THE AUSTRALIAN GREENS OPEN ECONOMY PROJECT
+    </div>
     <!--[if lt IE 10]>
       <div id="oldBrowserWarning">
         Hi! You seem to be using Internet Explorer 9 or below. Unfortunately this website only functions on modern, standards-compliant browsers such as:

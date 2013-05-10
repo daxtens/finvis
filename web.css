@@ -143,7 +143,6 @@ body {
 #headline {
     position:fixed;
     right: 5px;
-    z-index: -1;
     font-size: 18pt;
     color: rgb(66, 77, 100);
     text-align: right;
