@@ -1428,7 +1428,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
 
   entitylabel
         .attr('x', function(d) { return -safeGetBBox(this)['width'] / 2; })
-        .attr('y', 80)
+        .attr('y', 120)
         .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; })
         .classed('invalidPeriod', viewObj.isInvalidPeriod);
 

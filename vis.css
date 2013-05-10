@@ -75,8 +75,9 @@ text.wedgeLabel {
 }
 
 text.entityLabel {
-	fill: black;
-	font-size: 18px;
+	fill: rgb(156, 156, 156);
+	font-size: 32px;
+        font-family: Palatino, Garamond, serif
 }
 
 text.wedgeLabel.value {
