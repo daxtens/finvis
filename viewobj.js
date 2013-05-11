@@ -1114,10 +1114,10 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
 
   data['aggregates']
         .sort(function(a, b) {
-        var ref = { 'assets': 0,
-          'revenue': 1,
-          'expenses': 2,
-          'liabilities': 3 };
+        var ref = { 'liabilities': 0,
+          'expenses': 1,
+          'revenue': 2,
+          'assets': 3 };
         return ref[a.category] - ref[b.category];
       });
 
@@ -1268,8 +1268,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
   // General Case
   // ... utility functions
   function isTop(d) {
-    if (d.data['category'] == 'revenue' ||
-            d.data['category'] == 'assets') {
+    if (d.data['category'] == 'expenses' ||
+            d.data['category'] == 'liabilities') {
       return true;
     } else {
       return false;
@@ -1528,7 +1528,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
     var height = safeGetBBox(this)['height'];
     // save the value for the outer label
     d.computedTextHeight = height;
-    if (isProfit(d)) {
+    if (isLoss(d)) {
       return -15;
     } else {
       return (height + 10);
@@ -1540,8 +1540,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
     if (scaleFactor < ViewObjRenderers.MIN_SCALE_FACTOR_FOR_LABEL_DISPLAY)
       return 0;
     var height = safeGetBBox(this)['height'];
-    if (isProfit(d)) {
-      return -9 - d.computedTextHeight;
+    if (isLoss(d)) {
+      return -15 - d.computedTextHeight;
     } else {
       return d.computedTextHeight + height + 5;
     }
