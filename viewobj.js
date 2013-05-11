@@ -73,8 +73,13 @@ function ViewObj(data, parent, position, category) {
       if (newPeriod in periods) {
         this.isInvalidPeriod = false;
       } else {
-        if (oldPeriod) this._oldPeriod = oldPeriod;
-        else this._oldPeriod = Object.keys(periods)[0];
+        // save the last valid period.
+        // don't overwrite an old period with an invalid period.
+        // i.e. only save if !isInvalidPeriod
+        if (!this.isInvalidPeriod) {
+          if (oldPeriod) this._oldPeriod = oldPeriod;
+          else this._oldPeriod = Object.keys(periods)[0];
+        }
         this.isInvalidPeriod = true;
       }
       this.children().map(function(child) { child.period(newPeriod); });
