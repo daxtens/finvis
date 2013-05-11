@@ -2,6 +2,7 @@
 ViewState.prototype = new ParentingObject();
 
 
+
 /**
  * Construct a ViewState.
  * @constructor
@@ -112,6 +113,7 @@ ViewState.prototype.calculateSize = function(scaleMax) {
 
   var maxOuterRadius = Math.min(this.width, this.height) / 2;
   this.scaleMax = scaleMax;
+  this.scaleFactor = 1;
   this.scaler = d3.scale.sqrt()
         .domain([0, this.scaleMax]).range([0, maxOuterRadius]);
 };
@@ -230,20 +232,30 @@ ViewState.prototype.centreViewOn = function(viewthing) {
   }
   var bbox = svg.getBBox();
 
-  var doesHeightLimit =
-      ((this.height / bbox.height) < (this.width / bbox.width)) ?
-      true : false;
+  // if there is a halo, this process doesn't get it right.  rather
+  // than trying to inspect for a halo (which you can do for a viewObj
+  // but not for a viewstate, and it makes things horridly
+  // implementation specific too), we just iterate until we get the
+  // result we expect. This is potentially slow, but oh well!
 
-  if (doesHeightLimit) {
-    var scaleFactor = (this.scaler.invert(this.height / 2)) /
-        this.scaler.invert(bbox.height / 2);
-  } else {
-    var scaleFactor = (this.scaler.invert(this.width / 2)) /
-        this.scaler.invert(bbox.width / 2);
+  while (Math.abs(bbox['height'] - this.height) > 1 &&
+         Math.abs(bbox['width'] - this.width) > 1) {
+
+    var doesHeightLimit =
+        ((this.height / bbox.height) < (this.width / bbox.width)) ?
+        true : false;
+
+    if (doesHeightLimit) {
+      var scaleFactor = (this.scaler.invert(this.height / 2)) /
+          this.scaler.invert(bbox.height / 2);
+    } else {
+      var scaleFactor = (this.scaler.invert(this.width / 2)) /
+          this.scaler.invert(bbox.width / 2);
+    }
+
+    this.zoom(scaleFactor, [0, 0], true);
+    bbox = svg.getBBox();
   }
-
-  this.zoom(scaleFactor, [0, 0], true);
-  bbox = svg.getBBox();
 
   var xpos = bbox.x;
   var ypos = bbox.y;
