@@ -148,6 +148,9 @@ function periodChange() {
   });
   jQuery('#period').text(chosenoption.value);
   viewstate.updateInfobox();
+
+  // make sure that if we were moving off a disabled period, we can't go back.
+  jQuery('#periodSel option:disabled').remove();
   return false;
 }
 
@@ -224,19 +227,35 @@ function updatePeriodSelector() {
   var newOpt;
   var found = false;
   sel.empty();
-  for (var x in periods) {
-    newOpt = jQuery('<option value="' + periods[x] + '">' + periods[x] +
-        '</option>');
-    if (oldOpt == periods[x]) newOpt.prop('selected', true);
-    sel.append(newOpt);
+  jQuery('#period').text('n/a');
 
+  if (!periods.length) return;
+
+  // updating the period selector cannot move us off our current year,
+  // so if we can't find (and it exists!) stuff it in and sort it.
+  for (var x in periods) {
     if (periods[x] == oldOpt) found = true;
   }
   if (!found && !!oldOpt) {
-    newOpt = jQuery('<option value="' + oldOpt + '" disabled="disabled"' +
-                        ' selected="selected">' + oldOpt + '</option>');
+    periods.push(oldOpt);
+    periods.sort();
+  }
+
+  // create the options
+  for (var x in periods) {
+    newOpt = jQuery('<option value="' + periods[x] + '">' + periods[x] +
+                    '</option>');
+    if (oldOpt == periods[x]) newOpt.prop('selected', true);
+    if (oldOpt == periods[x] && !found) newOpt.prop('disabled', true);
     sel.append(newOpt);
   }
+
+  // if we've got no old option to select (we're going from nothing)
+  // then select the latest period by default.
+  if (!oldOpt) {
+    jQuery('#periodSel option:last').prop('selected', true);
+  }
+  jQuery('#period').text(jQuery('#periodSel option:selected').val());
 }
 
 
@@ -300,8 +319,23 @@ function addEntityBtn() {
   jQuery.ajax('/entity.json/' + id, {
     success: function(d) {
       var sel = jQuery('#periodSel')[0];
-      viewstate.beginAddingView(d, sel.options[
-          sel.selectedIndex].value);
+      // if we have a selected period, set that
+      // otherwise load its latest period
+      var period;
+      if (jQuery('#periodSel option:selected').length) {
+        period = jQuery('#periodSel option:selected').val();
+      } else {
+        if ('aggregates' in d) {
+          var periods = d['aggregates'][0]['periods'];
+        } else {
+          var periods = d['item']['periods'];
+        }
+        periods = Object.keys(periods);
+        periods.sort();
+        period = periods[periods.length - 1];
+      }
+      console.log(period);
+      viewstate.beginAddingView(d, period);
     },
     error: function(d) {
       var resp = JSON.parse(d.responseText);
