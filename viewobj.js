@@ -792,7 +792,7 @@ ViewObj.prototype.moveTo = function(position, animate) {
  * Also remove current object from parent.
  */
 ViewObj.prototype.remove = function() {
-  this.svg.remove();
+  this._svg.remove();
   this.parent.removeChild(this);
 };
 
