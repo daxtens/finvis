@@ -388,6 +388,10 @@ function ViewObj(data, parent, position, category) {
       var sum;
       var angles = [];
       var angle;
+      // special case: list is a single element
+      if (list.length == 1) {
+        angles = [0];
+      }
       // for each possible gap length
       var maxGap = Math.min(list.length / 2, 2);
       for (var i = 1; i <= maxGap; i++) {
@@ -716,7 +720,7 @@ function ViewObj(data, parent, position, category) {
                                                bubblePtRadii);
       }
 
-      circles = [];
+      var circles = [];
       for (var i = 0; i < itemIdxs.length; i++) {
         var item = itemIdxs[i];
         var itemPosition = [
