@@ -989,7 +989,11 @@ ViewObj.prototype.render = function(animate) {
   },
   'popBothMenuItem': function() {
     that.popIn();
-    var aggregates = that.data()['aggregates'];
+    // previously we naievely popped these out in order. This breaks
+    // when the data order doesn't match the order of the entities.
+    // now we sort them.
+    var aggregates = that.data()['aggregates'].sort(aggregateSort);
+
     if (that.renderMode.specifiedAggregates) {
       var targets = that.renderMode.specifiedAggregates;
       for (var i = 0; i < aggregates.length; i++) {
@@ -1116,14 +1120,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
     });
   }
 
-  data['aggregates']
-        .sort(function(a, b) {
-        var ref = { 'liabilities': 0,
-          'expenses': 1,
-          'revenue': 2,
-          'assets': 3 };
-        return ref[a.category] - ref[b.category];
-      });
+  data['aggregates'].sort(aggregateSort);
 
   /***** Calculate ranges etc */
   var maxValue = -1;

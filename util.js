@@ -12,3 +12,12 @@ function htmlEscape(str) {
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
 }
+
+function aggregateSort(a, b) {
+  var ref = { 'liabilities': 0,
+              'expenses': 1,
+              'revenue': 2,
+              'assets': 3 };
+  return ref[a.category] - ref[b.category];
+}
+
