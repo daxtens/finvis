@@ -87,3 +87,41 @@ test('viewstate: dollar positions remain invariant upon scaling', function() {
 
   vo1.remove();
 });
+
+test('viewstate.centreViewOn()', function () {
+  viewstate.calculateSize(tril);
+  viewstate.zoom(1, [viewstate.width / 2, viewstate.height / 2], true);
+
+  var vo = new ViewObj(abudhabi, viewstate, [0, 0]);
+  vo.period('2011-12');
+  vo.reposition();
+  vo.render();
+
+  viewstate.centreViewOn(vo);
+
+  var bbox = vo._svg[0][0].getBBox()
+  console.log(bbox, viewstate.width, viewstate.height);
+  ok(bbox['width'] == viewstate.width ||
+     bbox['height'] == viewstate.height,
+     'Zoom large object up to full size.');
+
+  vo.remove();
+
+  viewstate.centreView();
+
+  vo = new ViewObj(packingEffTestData, viewstate, [0, 0]);
+  vo.period('2011-12');
+  vo.reposition();
+  vo.render();
+
+  viewstate.centreViewOn(vo);
+
+  bbox = vo._svg[0][0].getBBox()
+  console.log(bbox, viewstate.width, viewstate.height);
+  ok(bbox['width'] == viewstate.width ||
+     bbox['height'] == viewstate.height,
+     'Zoom tiny object up to full size.');
+
+  vo.remove();
+  viewstate.centreView();
+});
