@@ -115,8 +115,8 @@ jQuery('document').ready(function() {
     success: function(d) {
       var vo = new ViewObj(d, viewstate, [0, 0]);
       updatePeriodSelector();
-      vo.period(jQuery('#periodSel option')[0].value);
-      jQuery('#period').text(jQuery('#periodSel option')[0].value);
+      vo.period(jQuery('#periodSel option:selected').val());
+      jQuery('#period').text(jQuery('#periodSel option:selected').val());
       vo.render();
     },
     error: function(d) {
@@ -334,7 +334,7 @@ function addEntityBtn() {
         periods.sort();
         period = periods[periods.length - 1];
       }
-      console.log(period);
+      //console.log(period);
       viewstate.beginAddingView(d, period);
     },
     error: function(d) {
