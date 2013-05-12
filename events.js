@@ -303,8 +303,6 @@ function addEntityUI() {
   jQuery('#entitySel').prop('disabled', true);
   jQuery('#addEntity').addClass('hidden');
   jQuery('#clickToPlaceTxt').removeClass('hidden');
-  jQuery('#ephemeralUploadFile').prop('disabled', true);
-  jQuery('#ephemeralUploadBtn').prop('disabled', true);
 }
 
 
@@ -314,6 +312,11 @@ function addEntityUI() {
 function addEntityBtn() {
   addEntityUI();
   var entitySel = jQuery('#entitySel')[0];
+  console.log(jQuery('#ephemeralUploadFile').val());
+  if (jQuery('#ephemeralUploadFile').val()) {
+    jQuery('#ephemeralUploadForm').trigger('submit');
+    return;
+  }
   var id = entitySel.options[entitySel.selectedIndex].value;
   jQuery('#clickToPlaceTxt').text('Loading...');
   jQuery.ajax('/entity.json/' + id, {
@@ -360,8 +363,7 @@ function addEntityBtn() {
 function cancelAddEntity() {
   jQuery('#addEntityContainer').addClass('hidden');
   jQuery('#entitySel').prop('disabled', false);
-  jQuery('#ephemeralUploadFile').prop('disabled', false);
-  jQuery('#ephemeralUploadBtn').prop('disabled', false);
+  jQuery('#ephemeralUploadForm').trigger('reset');
   jQuery('#addEntity').removeClass('hidden');
   jQuery('#clickToPlaceTxt').addClass('hidden');
   viewstate.cancelAddingView();

@@ -82,8 +82,7 @@
             or upload one from Excel:
             <form id="ephemeralUploadForm" action="/excel_to_json.json"
             enctype="multipart/form-data" method="POST">
-            <input id="ephemeralUploadFile" type="file" name="excelfile"></input><br>
-            <input id="ephemeralUploadBtn" type="submit" value="Upload"></input>
+            <input id="ephemeralUploadFile" type="file" name="excelfile"></input>
             </form>
           <div id="ephemeralOutput" class="hidden"></div>
           <a href="#" id="addEntity"><img src="/images/icons/dialog-apply.png" class="btnimg" alt="Add this entity"/></a>
