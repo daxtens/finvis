@@ -51,7 +51,8 @@ function minimumBoundingCircle(pts) {
       }
     }
   }
-
+  console.assert(!isNaN(best.cx) && !isNaN(best.cy) && !isNaN(best.radius),
+                 'NaNs in minimumBoundingCircle');
   return best;
 }
 
@@ -70,7 +71,9 @@ function minimumBoundingCircleForCircles(circles) {
   var best = {radius: 9E9};
 
   for (var i = 0; i < circles.length; i++) {
+    if (circles[i].radius == 0) continue;
     for (var j = i + 1; j < circles.length; j++) {
+      if (circles[j].radius == 0) continue;
       var circle = circleFrom2Circles(circles[i], circles[j]);
       if (areAllCirclesInOrOnCircle(circles, circle) &&
           circle.radius < best.radius) {
@@ -79,9 +82,11 @@ function minimumBoundingCircleForCircles(circles) {
       }
 
       for (var k = j + 1; k < circles.length; k++) {
+        if (circles[k].radius == 0) continue;
         var signs = [-1, 1, 1, 1];
         circle = apollonius(circles[i], circles[j], circles[k],
             signs);
+        if ('error' in circle) continue;
         if (areAllCirclesInOrOnCircle(circles, circle) &&
             circle.radius < best.radius) {
           best.cx = circle.cx; best.cy = circle.cy;
@@ -90,6 +95,9 @@ function minimumBoundingCircleForCircles(circles) {
       }
     }
   }
+  console.assert(!isNaN(best.cx) && !isNaN(best.cy) && !isNaN(best.radius),
+                 'NaNs in minimumBoundingCircleForCircles!\n' +
+                 (new Error('').stack));
 
   return best;
 }
@@ -147,6 +155,9 @@ function symmetricBoundingCircleForCircles(circles, tangentPt, centerPt) {
   // construct circle from p1, result
   var result = circleFrom2Pts(tangentPt, endPt);
   //console.log('1end', result);
+  console.assert(!isNaN(result.cx) && !isNaN(result.cy) &&
+                 !isNaN(result.radius),
+                 'NaNs in symmetricBoundingCircleForCircles');
   return result;
 }
 
@@ -157,9 +168,9 @@ function optimisedDendriticBoundingCircleForCircles(
   if (result.radius / 1.25 > altresult.radius || isNaN(result.radius) ||
       isNaN(result.cx) || isNaN(result.cy)) {
     //todo: post back the data that results in NaNs.
-    console.log('1end', result);
+    //console.log('1end', result);
     result = altresult;
-    console.log('2end', result);
+    //console.log('2end', result);
   }
   return result;
 }
@@ -268,6 +279,12 @@ function apollonius(circle1, circle2, circle3, signs) {
 
   var sqr = function(x) { return x * x };
 
+  if (isNaN(circle1.cx) || isNaN(circle1.cy) ||
+      isNaN(circle2.cx) || isNaN(circle2.cy) ||
+      isNaN(circle3.cx) || isNaN(circle3.cy)) {
+    return {'error': 'Invalid inputs!'};
+  }
+
   var a1 = 2 * (circle1.cx - circle2.cx);
   var a2 = 2 * (circle1.cx - circle3.cx);
   var b1 = 2 * (circle1.cy - circle2.cy);
@@ -290,18 +307,42 @@ function apollonius(circle1, circle2, circle3, signs) {
   // you are not expected to understand this.
   // It was generated using Mathematica's Solve function.
   var det = (2 * (-sqr(q) + sqr(s) - sqr(u)));
+  console.assert(det != 0, 'Determinant is zero in apollonius. ' +
+                 reprCircle(circle1) + reprCircle(circle2) +
+                 reprCircle(circle3));
+  if (det == 0) return {'error': 'Determinant is zero'};
+
+  var radicand = sqr(-2 * p * q - 2 * circle1.radius * sqr(s) - 2 * t * u +
+                     2 * q * s * circle1.cx + 2 * s * u * circle1.cy) -
+                 4 * (-sqr(q) + sqr(s) - sqr(u)) *
+                 (-sqr(p) + sqr(circle1.radius) * sqr(s) - sqr(t) +
+                 2 * p * s * circle1.cx - sqr(s) * sqr(circle1.cx) +
+                 2 * s * t * circle1.cy - sqr(s) * sqr(circle1.cy));
+
+  console.assert(radicand > 0, 'Radicand to calcuate radius is not greater ' +
+                 'than zero in apollonius. ' + radicand + ' ' +
+                 reprCircle(circle1) + reprCircle(circle2) +
+                 reprCircle(circle3) + '\n' + (new Error('dummy').stack));
+  if (radicand <= 0) return {'error': 'Radicand is not greater than zero'};
+
+
   var r = (1 / det) *
       (2 * p * q + 2 * circle1.radius * sqr(s) + 2 * t * u -
       2 * q * s * circle1.cx - 2 * s * u * circle1.cy + signs[3] *
-      Math.sqrt(sqr(-2 * p * q - 2 * circle1.radius * sqr(s) - 2 * t * u +
-                       2 * q * s * circle1.cx + 2 * s * u * circle1.cy) -
-                   4 * (-sqr(q) + sqr(s) - sqr(u)) *
-                   (-sqr(p) + sqr(circle1.radius) * sqr(s) - sqr(t) +
-                    2 * p * s * circle1.cx - sqr(s) * sqr(circle1.cx) +
-                    2 * s * t * circle1.cy - sqr(s) * sqr(circle1.cy))));
+      Math.sqrt(radicand));
 
   //console.log(r);
   r = Math.abs(r);
+  console.assert(!isNaN(r), 'Radius is NaN in apollonius. ' +
+                 reprCircle(circle1) + reprCircle(circle2) +
+                 reprCircle(circle3) + '\n' + (new Error('dummy').stack));
+  if (isNaN(r)) return {'error': 'Radius is NaN (somehow?!?)'};
+
+
+  console.assert(s != 0, 's = 0 in apollonius. ' +
+                 reprCircle(circle1) + reprCircle(circle2) +
+                 reprCircle(circle3));
+  if (s == 0) return {'error': 's is zero'};
 
   var x = (p + q * r) / s;
 
@@ -376,4 +417,13 @@ function bSearch(start, end, tol, f) {
   }
   //console.log(iterations);
   return (start + end) / 2;
+}
+
+
+/** Represent a circle as a string
+ * @param {Object.<string,number>} c Circle.
+ * @return {string} The circle as a string.
+ */
+function reprCircle(c) {
+  return '{cx: ' + c.cx + ', cy:' + c.cy + ', r:' + c.radius + '}';
 }

@@ -343,7 +343,7 @@ function ViewObj(data, parent, position, category) {
     boundsToList: function(items, lowerbound, upperbound, dendritic) {
       var itemIdxs = [];
       // create a sorting map
-      // TODO extend to pick up data from excel
+      // TODO extend to pick up order from excel?
       // sort based on last period
       // todo cache this or something?
       var periods = Object.keys(items[lowerbound].data()['periods']);
@@ -386,7 +386,11 @@ function ViewObj(data, parent, position, category) {
 
     // this is the function for tangent padding
     psi: function(R, r) {
-      return Math.asin(r / (r + R));
+      var result = Math.asin(r / (r + R));
+      console.assert(!isNaN(result), 'psi is NaN for r=' + r + ' R=' + R +
+                     '\n' + (new Error('').stack));
+      if (isNaN(result)) return 0;
+      return result;
     },
 
     _WrapNoOverlap: function(R, list, bubblePtRadii) {
@@ -402,11 +406,25 @@ function ViewObj(data, parent, position, category) {
       for (var i = 1; i <= maxGap; i++) {
         // for each pair
         for (var j = 0; j < list.length; j++) {
-          // evaluate directly
           var idx2 = (j + i) % list.length;
-          //console.log(j, idx2)
-          angle = calcs.phi(R, bubblePtRadii[list[j]],
-                            bubblePtRadii[list[idx2]]);
+          // this is a bit of a hacky way to handle 0s, and leads to a
+          // bit too much space. FIXME
+          if (bubblePtRadii[list[j]] == 0) {
+            angle = calcs.psi(R, bubblePtRadii[list[idx2]]);
+          } else if (bubblePtRadii[list[idx2]] == 0) {
+            angle = calcs.psi(R, bubblePtRadii[list[j]]);
+          } else {
+            // evaluate angle directly
+            angle = calcs.phi(R, bubblePtRadii[list[j]],
+                              bubblePtRadii[list[idx2]]);
+
+            console.assert(!isNaN(angle), 'NaN angle for ' + that._data.name +
+                           ' -> "' + that.children()[list[j]]._data.name +
+                           '" (' + bubblePtRadii[list[j]] + ') & ' +
+                           that.children()[list[idx2]]._data.name + ' (' +
+                           bubblePtRadii[list[idx2]] + ')' +
+                           '\n' + (new Error('').stack));
+          }
           if (i == 1) angles[j] = angle;
           // compare to sum
           sum = 0;
@@ -417,12 +435,12 @@ function ViewObj(data, parent, position, category) {
           }
           // replace saved sum if smaller
           if (sum < angle) {
-            var idx2 = (j + i) % list.length;
+            var idx2 = (j + i - 1) % list.length;
             //console.log('drop between ' + j + ' (' + list[j] + ')  and ' +
             // (idx2) + ' (' + list[idx2] + ') at gap ' + i + '. Was ' +
             // sum + ' now ' + angle);
             // FIXME: This only works for maxGap = 2
-            angles[j + i - 1] = angle - angles[j];
+            angles[idx2] = angle - angles[j];
             // skip it
             j++;
           }
@@ -453,11 +471,25 @@ function ViewObj(data, parent, position, category) {
       for (var i = 1; i <= maxGap; i++) {
         // for each pair
         for (var j = 0; j < list.length - i; j++) {
-          // evaluate directly
           var idx2 = (j + i);
-          //console.log(j, idx2)
-          angle = calcs.phi(R, bubblePtRadii[list[j]],
-                            bubblePtRadii[list[idx2]]);
+          // this is a bit of a hacky way to handle 0s, and leads to a
+          // bit too much space. FIXME
+          if (bubblePtRadii[list[j]] == 0) {
+            angle = calcs.psi(R, bubblePtRadii[list[idx2]]);
+          } else if (bubblePtRadii[list[idx2]] == 0) {
+            angle = calcs.psi(R, bubblePtRadii[list[j]]);
+          } else {
+            // evaluate angle directly
+            angle = calcs.phi(R, bubblePtRadii[list[j]],
+                              bubblePtRadii[list[idx2]]);
+
+            console.assert(!isNaN(angle), 'NaN angle for ' + that._data.name +
+                           ' -> "' + that.children()[list[j]]._data.name +
+                           '" (' + bubblePtRadii[list[j]] + ') & ' +
+                           that.children()[list[idx2]]._data.name + ' (' +
+                           bubblePtRadii[list[idx2]] + ')' +
+                           '\n' + (new Error('').stack));
+          }
           if (i == 1) angles[j] = angle;
           // compare to sum
           sum = 0;
@@ -576,6 +608,11 @@ function ViewObj(data, parent, position, category) {
       } else {
         var angle = angleOffset;
       }
+      console.assert(!isNaN(angle), 'Angle is NaN!\n' + (new Error('').stack));
+      console.assert(!isNaN(domain), 'Domain is NaN in "' + that._data.name +
+                     '"\n' + (new Error('').stack));
+      console.assert(!isNaN(range), 'Range is NaN!\n' + (new Error('').stack));
+
       if (tangentPad) {
         angle += angleScaler(calcs.psi(sectorPtRadius,
                                        bubblePtRadii[itemIdxs[0]]));
@@ -714,6 +751,12 @@ function ViewObj(data, parent, position, category) {
       } else {
         var angle = angleOffset;
       }
+
+      console.assert(!isNaN(angle), 'Angle is NaN!\n' + (new Error('').stack));
+      console.assert(!isNaN(domain), 'Domain is NaN!\n' +
+                     (new Error('').stack));
+      console.assert(!isNaN(range), 'Range is NaN!\n' + (new Error('').stack));
+
       if (tangentPad) {
         angle += angleScaler(calcs.psi(sectorPtRadius,
                                        bubblePtRadii[itemIdxs[0]]));
@@ -786,6 +829,19 @@ function ViewObj(data, parent, position, category) {
  */
 ViewObj.prototype.moveTo = function(position, animate) {
   this.position = position;
+
+  // don't do anything stupid
+  console.assert(!isNaN(position[0]) && !isNaN(position[1]),
+                 'Tried to move ' + this._data.name + ' to a raw NaN!\n' +
+                 (new Error('').stack));
+  if (isNaN(position[0]) || isNaN(position[1])) return;
+  console.assert(!isNaN(viewstate.scaler(position[0])) &&
+                 !isNaN(viewstate.scaler(position[1])),
+                 'Tried to move ' + this._data.name + ' to a scaled NaN!\n' +
+                 (new Error('').stack));
+  if (isNaN(viewstate.scaler(position[0])) ||
+      isNaN(viewstate.scaler(position[1]))) return;
+
   var updater;
   if (animate) updater = this._svg.transition().duration(1000);
   else updater = this._svg;
