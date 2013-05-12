@@ -307,9 +307,9 @@ function apollonius(circle1, circle2, circle3, signs) {
   // you are not expected to understand this.
   // It was generated using Mathematica's Solve function.
   var det = (2 * (-sqr(q) + sqr(s) - sqr(u)));
-  console.assert(det != 0, 'Determinant is zero in apollonius. ' +
+  /*console.assert(det != 0, 'Determinant is zero in apollonius. ' +
                  reprCircle(circle1) + reprCircle(circle2) +
-                 reprCircle(circle3));
+                 reprCircle(circle3));*/
   if (det == 0) return {'error': 'Determinant is zero'};
 
   var radicand = sqr(-2 * p * q - 2 * circle1.radius * sqr(s) - 2 * t * u +
@@ -319,10 +319,10 @@ function apollonius(circle1, circle2, circle3, signs) {
                  2 * p * s * circle1.cx - sqr(s) * sqr(circle1.cx) +
                  2 * s * t * circle1.cy - sqr(s) * sqr(circle1.cy));
 
-  console.assert(radicand > 0, 'Radicand to calcuate radius is not greater ' +
+  /*console.assert(radicand > 0, 'Radicand to calcuate radius is not greater ' +
                  'than zero in apollonius. ' + radicand + ' ' +
                  reprCircle(circle1) + reprCircle(circle2) +
-                 reprCircle(circle3) + '\n' + (new Error('dummy').stack));
+                 reprCircle(circle3) + '\n' + (new Error('dummy').stack));*/
   if (radicand <= 0) return {'error': 'Radicand is not greater than zero'};
 
 
@@ -333,15 +333,15 @@ function apollonius(circle1, circle2, circle3, signs) {
 
   //console.log(r);
   r = Math.abs(r);
-  console.assert(!isNaN(r), 'Radius is NaN in apollonius. ' +
+  /*console.assert(!isNaN(r), 'Radius is NaN in apollonius. ' +
                  reprCircle(circle1) + reprCircle(circle2) +
-                 reprCircle(circle3) + '\n' + (new Error('dummy').stack));
+                 reprCircle(circle3) + '\n' + (new Error('dummy').stack));*/
   if (isNaN(r)) return {'error': 'Radius is NaN (somehow?!?)'};
 
 
-  console.assert(s != 0, 's = 0 in apollonius. ' +
+  /*console.assert(s != 0, 's = 0 in apollonius. ' +
                  reprCircle(circle1) + reprCircle(circle2) +
-                 reprCircle(circle3));
+                 reprCircle(circle3));*/
   if (s == 0) return {'error': 's is zero'};
 
   var x = (p + q * r) / s;
