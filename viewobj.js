@@ -218,11 +218,11 @@ function ViewObj(data, parent, position, category) {
           // full entity: go down to relation
           if (d.data['category'] == 'revenue' ||
               d.data['category'] == 'expenses') {
-            that.renderMode.specifiedAggregates = ['revenue',
-              'expenses'];
+            that.renderMode.specifiedAggregates = ['expenses',
+              'revenue'];
           } else {
-            that.renderMode.specifiedAggregates = ['assets',
-              'liabilities'];
+            that.renderMode.specifiedAggregates = ['liabilities',
+              'assets'];
           }
           that.render();
         } else if ((that.data().aggregates.length == 2 &&
@@ -237,19 +237,11 @@ function ViewObj(data, parent, position, category) {
           // a single: pop in/out
           if (that.poppedOut) {
             that.popIn();
-            that.render();
           } else {
-            for (var idx in that.data().aggregates) {
-              if (that.data().aggregates[idx]['category'] ==
-                  d.data['category']) {
-
-                that.popOut(idx);
-                that.reposition();
-                that.render();
-                break;
-              }
-            }
+            that.popOut();
           }
+          that.reposition();
+          that.render();
         }
       } else {
         // a bubble: pop in/out
@@ -882,36 +874,59 @@ ViewObj.prototype.popIn = function() {
 
 
 /**
- * Select items and category of instance data()
- *  or of its aggregates if aggregates are present
- * Create a new ViewObj for every item with a value > 0
- *    and render it with bubbleRenderer
- * @param {number=} aggregate The index of the aggregate
- *                  (revenue/expenditure/assets/liabilites) to pop out.
- *                  Ignored if not a sector based object.
- *
+ * Pops out the children of the specified aggregates (if applicable)
+ * of the viewObj. Creates a new ViewObj for each child and renders it
+ * with bubbleRenderer.
+ * Sets the poppedOut flag if we actually popped anything out.
  */
-ViewObj.prototype.popOut = function(aggregate) {
-  if ('aggregates' in this.data()) {
-    var items = this.data()['aggregates'][aggregate]['items'];
-    var category = this.data()['aggregates'][aggregate]['category'];
-  } else {
-    var items = this.data()['items'];
-    var category = this['category'];
-  }
-  if (!items || items.length < 1) return;
+ViewObj.prototype.popOut = function() {
 
-  this.poppedOutAggregate = aggregate;
-  this.poppedOut = true;
-
-  var numChildren = items.length;
-
-  for (var item in items) {
-    var itemObj = new ViewObj(items[item], this, [0, 0], category);
-    itemObj.period(this.period());
-    itemObj._oldPeriod = this._oldPeriod;
-    itemObj.isInvalidPeriod = this.isInvalidPeriod;
+  var that = this;
+  var createItem = function(data, category) {
+    var itemObj = new ViewObj(data, that, [0, 0], category);
+    itemObj.period(that.period());
+    itemObj._oldPeriod = that._oldPeriod;
+    itemObj.isInvalidPeriod = that.isInvalidPeriod;
     itemObj.renderMode = {'name': 'bubbleRenderer'};
+  };
+
+  if ('aggregates' in this.data()) {
+    // figure out which aggregates to use. If we specify some, match
+    // them to indexes. otherwise, pop out everything.
+    var aggregateData = this.data()['aggregates'];
+    if (this.renderMode.specifiedAggregates) {
+      var aggregates = [];
+      for (var i in this.renderMode.specifiedAggregates) {
+        for (var j in aggregateData) {
+          if (aggregateData[j]['category'] ==
+              this.renderMode.specifiedAggregates[i]) {
+            aggregates.push(j);
+            break;
+          }
+        }
+      }
+    } else {
+      var aggregates = Object.keys(aggregateData);
+    }
+    // actually create the items
+    for (var aggregateIdx in aggregates) {
+      var aggregate = aggregateData[aggregates[aggregateIdx]];
+      if (aggregate['items'].length) {
+        this.poppedOut = true;
+      }
+      for (var item in aggregate['items']) {
+        createItem(aggregate['items'][item], aggregate['category']);
+      }
+    }
+  } else {
+    // woo, not an aggregate. Nice simple iteration.
+    if (this.data()['items'].length) {
+      this.poppedOut = true;
+    }
+    for (var item in this.data()['items']) {
+      createItem(this.data()['items'][item],
+                 this['category']);
+    }
   }
 };
 
@@ -1048,23 +1063,7 @@ ViewObj.prototype.render = function(animate) {
   },
   'popBothMenuItem': function() {
     that.popIn();
-    // previously we naievely popped these out in order. This breaks
-    // when the data order doesn't match the order of the entities.
-    // now we sort them.
-    var aggregates = that.data()['aggregates'].sort(aggregateSort);
-
-    if (that.renderMode.specifiedAggregates) {
-      var targets = that.renderMode.specifiedAggregates;
-      for (var i = 0; i < aggregates.length; i++) {
-        if (aggregates[i].category == targets[0] ||
-            aggregates[i].category == targets[1]) {
-          that.popOut(i);
-        }
-      }
-    } else {
-      that.popOut(0);
-      that.popOut(1);
-    }
+    that.popOut();
     that.reposition();
     that.render();
   }
