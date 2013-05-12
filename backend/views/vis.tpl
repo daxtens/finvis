@@ -79,9 +79,9 @@
               <option value="{{entity.id}}">{{entity.name}}</option>
               %end
             </select><br/>
-            or upload one from Excel:
             <form id="ephemeralUploadForm" action="/excel_to_json.json"
             enctype="multipart/form-data" method="POST">
+            or upload one from Excel:
             <input id="ephemeralUploadFile" type="file" name="excelfile"></input>
             </form>
           <div id="ephemeralOutput" class="hidden"></div>

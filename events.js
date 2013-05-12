@@ -292,6 +292,14 @@ function fitToScreen() {
 function initAddEntity() {
   cancelSaveToDisk();
   jQuery('#addEntityContainer').removeClass('hidden');
+  // don't display the upload on iDevices - they can't sensibly upload
+  // spreadsheets (except in like iCab? and possibly others but we
+  // don't care - none of Safari, Chrome or Opera Mini on my iPhone
+  // support it).
+  var is_idevice = /(iPhone|iPod|iPad)/i.test(navigator.userAgent);
+  if (is_idevice) {
+    jQuery('#ephemeralUploadForm').addClass('hidden');
+  }
   return false;
 }
 
