@@ -907,8 +907,6 @@ ViewObj.prototype.popOut = function(aggregate) {
   var numChildren = items.length;
 
   for (var item in items) {
-    // it it's non-zero, create it.
-    if (items[item]['periods'][this.period()]['value'] <= 0) continue;
     var itemObj = new ViewObj(items[item], this, [0, 0], category);
     itemObj.period(this.period());
     itemObj._oldPeriod = this._oldPeriod;
