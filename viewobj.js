@@ -1247,18 +1247,18 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
   labels.enter().append('text')
         .text(formatDollarValue)
         .classed('axis_label', true)
-        .attr('transform', function(d) {
-            return 'translate(' + 0 + ',' + (0 - viewstate.scaler(d)) + ')';
-      })
-        .attr('dy', '1em')
-        .attr('dx', function(d) { return -safeGetBBox(this)['width'] / 2 });
+        .attr('transform',
+              function(d) {
+                return 'translate(' + 0 + ',' + (0 - viewstate.scaler(d)) + ')';
+              })
+        .attr('dy', '1em');
 
   labels
         .attr('transform',
               function(d) {
-        return 'translate(0,' + (0 - viewstate.scaler(d)) + ')';
+                return 'translate(0,' + (0 - viewstate.scaler(d)) + ')';
               })
-        .classed('invalidPeriod', viewObj.isInvalidPeriod);
+      .classed('invalidPeriod', viewObj.isInvalidPeriod);
 
   labels.exit().remove();
 
@@ -1389,9 +1389,9 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
   function labelsX(d) {
     var horiz = horizSide(d);
     if (horiz == 'left') {
-      return -(safeGetBBox(this)['width'] + 15);
+      return -15;
     } else if (horiz == 'middle') {
-      return -safeGetBBox(this)['width'] / 2;
+      return 0;
     } else { // assume right
       return 15;
     }
@@ -1436,6 +1436,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .call(viewObj.dragHandler)
         .text(innerLabelsText)
         .attr('x', labelsX)
+        .classed('centred', function(d) { return (horizSide(d) == 'middle'); })
+        .classed('right', function(d) { return (horizSide(d) == 'left'); })
         .attr('y', innerLabelsY)
         .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; })
         .on('click', _info)
@@ -1444,6 +1446,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
   wedgeInnerLabels
         .text(innerLabelsText)
         .attr('x', labelsX)
+        .classed('centred', function(d) { return (horizSide(d) == 'middle'); })
+        .classed('right', function(d) { return (horizSide(d) == 'left'); })
       //.attr("y", innerLabelsY): x may change with period, y will not.
         .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; })
         .classed('invalidPeriod', viewObj.isInvalidPeriod);
@@ -1460,6 +1464,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .call(viewObj.dragHandler)
         .text(outerLabelsText)
         .attr('x', labelsX)
+        .classed('centred', function(d) { return (horizSide(d) == 'middle'); })
+        .classed('right', function(d) { return (horizSide(d) == 'left'); })
         .attr('y', outerLabelsY)
         .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; })
         .on('click', _info)
@@ -1468,6 +1474,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
   wedgeOuterLabels
         .text(outerLabelsText)
         .attr('x', labelsX)
+        .classed('centred', function(d) { return (horizSide(d) == 'middle'); })
+        .classed('right', function(d) { return (horizSide(d) == 'left'); })
       //.attr("y", outerLabelsY)
         .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; })
         .classed('invalidPeriod', viewObj.isInvalidPeriod);
@@ -1487,7 +1495,6 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
   }
 
   entitylabel
-        .attr('x', function(d) { return -safeGetBBox(this)['width'] / 2; })
         .attr('y', 120)
         .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; })
         .classed('invalidPeriod', viewObj.isInvalidPeriod);
@@ -1615,7 +1622,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
     } else {
       return -viewstate.scaler(
           (assets > liabilities) ? assets : liabilities) /
-          scaleFactor - safeGetBBox(this)['width'] - 8;
+          scaleFactor - 8;
     }
   }
 
@@ -1663,6 +1670,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .classed('value', isProfit)
         .classed('revenue', isProfit)
         .classed('expenses', isLoss)
+        .classed('right',
+                 function(d) { return d.relation == 'assetsVliabilities'; })
         .call(viewObj.dragHandler)
         .attr('x', labelX)
         .attr('y', relationInnerY);
@@ -1680,6 +1689,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .classed('expenses', isLoss)
         .classed('name', isLoss)
         .classed('value', isProfit)
+        .classed('right',
+                 function(d) { return d.relation == 'assetsVliabilities'; })
         .attr('x', labelX)
         .attr('y', relationInnerY)
         .classed('invalidPeriod', viewObj.isInvalidPeriod);
@@ -1705,6 +1716,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .classed('value', isLoss)
         .classed('revenue', isProfit)
         .classed('expenses', isLoss)
+        .classed('right',
+                 function(d) { return d.relation == 'assetsVliabilities'; })
         .call(viewObj.dragHandler)
         .attr('x', labelX)
         .attr('y', relationOuterY);
@@ -1721,6 +1734,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .classed('expenses', isLoss)
         .classed('name', isProfit)
         .classed('value', isLoss)
+        .classed('right',
+                 function(d) { return d.relation == 'assetsVliabilities'; })
         .attr('x', labelX)
         .attr('y', relationOuterY)
         .classed('invalidPeriod', viewObj.isInvalidPeriod);
@@ -1872,30 +1887,24 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
     return safeGetBBox(this)['height'] - 10;
   }
 
-  function centredTextLabelX(d) { return -(safeGetBBox(this)['width']) / 2; };
-
   nameLabel.enter().append('text')
         .text(function(d) {return d['name'].toUpperCase();})
         .classed('wedgeLabel', true).classed('name', true)
         .call(viewObj.dragHandler)
-        .attr('x', centredTextLabelX)
+        .classed('centred', true)
         .attr('y', -10)
         .on('touchstart', _info)
         .on('click', _info);
 
-  var updater = nameLabel
+  nameLabel
       .classed('invalidPeriod', viewObj.isInvalidPeriod);
-  if (animate) updater = updater.transition().duration(1000);
-  updater
-      .attr('x', centredTextLabelX);
-
 
   nameLabel.exit().remove();
 
   valueLabel.enter().append('text')
         .text(function(d) {return formatDollarValue(d['periods'][p]['value']);})
         .classed('wedgeLabel', true).classed('value', true)
-        .attr('x', centredTextLabelX)
+        .classed('centred', true)
         .attr('y', valueLabelY)
         .call(viewObj.dragHandler)
         .on('touchstart', _info)
@@ -1908,9 +1917,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
   var updater = valueLabel;
   if (animate) updater = valueLabel.transition().duration(1000);
   updater
-        .attr('x', centredTextLabelX)
         .attr('y', valueLabelY);
-
 
   valueLabel.exit().remove();
 

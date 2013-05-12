@@ -66,18 +66,27 @@ text {
 	opacity: 1;
 }
 
-text.label {
-	text-anchor: middle;
+text.centred {
+    text-anchor: middle;
+} 
+
+text.right {
+    text-anchor: end;
+} 
+
+text.axis_label {
+    text-anchor: middle;
 }
 
 text.wedgeLabel {
-	fill: white;
+    fill: white;
 }
 
 text.entityLabel {
 	fill: rgb(156, 156, 156);
 	font-size: 32px;
-        font-family: Palatino, Garamond, serif
+        font-family: Palatino, Garamond, serif;
+        text-anchor: middle;
 }
 
 text.wedgeLabel.value {
