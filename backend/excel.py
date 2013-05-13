@@ -204,11 +204,16 @@ def read_sheet(sh, isItem, units):
         stack.append(item)
 
         for cell in xrange(depth+1, len(cols)):
-            if sh.cell_value(row, cell) == '':
-                continue
-
             if not cols[cell]:
                 continue
+
+            if sh.cell_value(row, cell) == '':
+                # this is ignorable iff it's a metadata column,
+                # otherwise throw an error
+                if cols[cell]['type'] == 'value':
+                    raise ExcelError(
+                        'Missing data in ' + column_number_to_code(cell) +
+                        str(row + 1) + ' in sheet "' + sh.name + '".')
 
             if cols[cell]['type'] == 'value':
                 item.periods[cols[cell]['period']] = Period(
