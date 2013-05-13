@@ -358,7 +358,7 @@ def write_sheet(sh, category, data, units):
             kind = headings[col]['kind']
             if kind == 'period':
                 period = headings[col]['period']
-                if period in item[periods]:
+                if period in item.periods:
                     sh.write(row, col, item.periods[period].value / units)
             elif kind == 'periodmeta':
                 val = headings[col]['value']
