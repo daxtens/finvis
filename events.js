@@ -84,6 +84,7 @@ jQuery('document').ready(function() {
   jQuery('#toggleInfoBox').on('click', toggleInfoBox);
   jQuery('#togglePacking').on('click', togglePacking);
   jQuery('#share').on('click', share);
+  jQuery('#fbbtn').on('click', fbShare);
   jQuery('#closeShareBox').on('click', finishSharing);
 
   // ephemeral upload
@@ -553,7 +554,7 @@ function share() {
                                         'count': 'none',
                                         'size': 'small',
                                         'text': 'Seeing financial data like' +
-                                            'never before'
+                                            ' never before'
                                       });
       jQuery('div.g-plus').attr('data-href', resp['url']);
       gapi.plus.go();
@@ -567,7 +568,7 @@ function share() {
 
 
 /** Special hander for the FB button. It's pretty special. */
-function fb_share() {
+function fbShare() {
   var fb_obj = {
     method: 'feed',
     redirect_uri: jQuery('#fbbtn').attr('data-link'),
