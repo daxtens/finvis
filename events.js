@@ -571,7 +571,6 @@ function share() {
 function fbShare() {
   var fb_obj = {
     method: 'feed',
-    redirect_uri: jQuery('#fbbtn').attr('data-link'),
     link: jQuery('#fbbtn').attr('data-link'),
     //picture: 'http://fbrell.com/f8.jpg',
     name: 'The Open Economy',
