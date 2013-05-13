@@ -19,6 +19,7 @@ function ViewState(svg) {
       .attr('y', 0);
   // publish a viewport that we can shift around.
   this.svg = this._svg.append('g');
+  this.childSVG = this.svg;
 
   /* Events */
   // this works fine, contra viewobj.js
@@ -238,8 +239,8 @@ ViewState.prototype.centreViewOn = function(viewthing) {
   // implementation specific too), we just iterate until we get the
   // result we expect. This is potentially slow, but oh well!
 
-  while (Math.abs(bbox['height'] - this.height) > 1 &&
-         Math.abs(bbox['width'] - this.width) > 1) {
+  while (Math.abs(bbox['height'] - this.height) > 10 &&
+         Math.abs(bbox['width'] - this.width) > 10) {
 
     var doesHeightLimit =
         ((this.height / bbox.height) < (this.width / bbox.width)) ?
@@ -383,4 +384,139 @@ ViewState.prototype.updateInfobox = function(opt_viewobj, opt_callback_data) {
   }
   if (!this.infoboxViewObj) return;
   jQuery('#infobox').html(this.infoboxViewObj.info(this.infoboxCallbackData));
+};
+
+
+/** Export the current state
+ * @return {Object} A representation of the current state.
+ */
+
+ViewState.prototype.exportState = function() {
+  var viewObjState = function(viewObj) {
+    var state = {};
+    if ('_id' in viewObj.data()) {
+      state['_id'] = viewObj.data()['_id']['$oid'];
+    } else if (viewObj.parent instanceof ViewState) {
+      // oh dear, an ephemeral
+      throw new Exception('Ephemeral!');
+    }
+
+    state['position'] = viewObj.position;
+    state['specifiedAggregates'] = viewObj.renderMode.specifiedAggregates;
+
+    var children = viewObj.children();
+    if (children.length) state['children'] = [];
+    for (child in children) {
+      state['children'].push(viewObjState(children[child]));
+    }
+
+    return state;
+  };
+
+  var state = {};
+  if (viewstate.children().length == 0) {
+    alert('You can\'t export an empty setup.');
+    return undefined;
+  }
+
+  state['period'] = viewstate.children()[0].period();
+  state['viewcenter'] = [viewstate.position[0] + viewstate.width / 2,
+                         viewstate.position[1] + viewstate.height / 2];
+  state['scaleMax'] = viewstate.scaleMax;
+
+  state['children'] = [];
+  var children = viewstate.children();
+  for (var child in children) {
+    try {
+      state['children'].push(viewObjState(children[child]));
+    } catch (e) {
+      alert(children[child].data()['name'] + ' cannot be saved because it is' +
+            ' not saved in the database. Please log in, upload it to the ' +
+            'database using "Manage data", and then try again.');
+      return undefined;
+    }
+  }
+
+  return state;
+};
+
+/** Import a state
+ * @param {Object} state A representation of the state to import.
+ */
+
+ViewState.prototype.importState = function(state) {
+  // I feel somewhat dirty having network code here. Not sure about
+  // the best way to get around this. Move it to events.js and
+  // abstract it?
+
+  var that = this;
+
+  var createChildren = function(viewObj, voState) {
+    if ('children' in voState && voState['children'].length) {
+      viewObj.popOut();
+      viewObj.reposition();
+      viewObj.render();
+      for (var child in voState.children) {
+        createChildren(viewObj.children()[child], voState.children[child]);
+      }
+    }
+  };
+
+  var updateChild = function(viewObj, voState) {
+    viewObj.moveTo(voState['position']);
+    if (!('children' in voState)) return;
+    for (var child in voState.children) {
+      updateChild(viewObj.children()[child], voState.children[child]);
+    }
+  };
+
+  var createTopLevelEntity = function(voState, globalState) {
+    jQuery.ajax('/entity.json/' + children[child]['_id'], {
+      success: function(d) {
+        var vo = new ViewObj(d, that, voState['position']);
+        vo.period(globalState['period']);
+        vo.renderMode.specifiedAggregates = voState['specifiedAggregates'];
+
+        // you wouldn't think that there would be any need to
+        // reposition and render here, but if you don't, things start
+        // not zooming properly, starting with the entity lable and
+        // some other lables, and ending with popped out
+        // bubbles. Weird bug, FIXME.
+        vo.reposition();
+        vo.render();
+
+        if ('children' in voState && voState['children'].length) {
+          vo.popOut();
+          vo.reposition();
+          vo.render();
+          for (var child in voState['children']) {
+            createChildren(vo.children()[child],
+                           voState['children'][child]);
+          }
+        }
+
+        // it does make logical sense to require a reposition here -
+        // sets bounding circle.
+        vo.reposition();
+        vo.render();
+
+        if ('children' in voState && voState['children'].length) {
+          for (var child in voState['children']) {
+            updateChild(vo.children()[child],
+                        voState['children'][child]);
+          }
+        }
+      }
+    });
+  };
+
+  this.moveTo([state['viewcenter'][0] - this.width / 2,
+               state['viewcenter'][1] - this.height / 2]);
+  this.scaleMax = state['scaleMax'];
+  this.zoom(1, [0, 0], true);
+
+  var children = state['children'];
+  for (var child in children) {
+    createTopLevelEntity(children[child], state);
+  }
 };
