@@ -97,8 +97,10 @@ function ViewObj(data, parent, position, category) {
        the heavy lifting is done by the renderers stored in the ViewObjRenders
        array.
     */
-  this._svg = this.parent.svg.append('g');
+  this._svg = this.parent.childSVG.append('g');
   this.svg = this._svg.append('g');
+  this.renderSVG = this.svg.append('g');
+  this.childSVG = this.svg.append('g').classed('children', true);
 
   if (this.data().metadata && this.data().metadata.renderMode) {
     this.renderMode = this.data().metadata.renderMode;
@@ -1043,34 +1045,33 @@ ViewObj.prototype.render = function(animate) {
 
   // as much as it irks me to do context menus this way, better to include
   // jQuery than try to write my own context menus!
-  // ... do this before children so they can do their own.
   ViewObjRenderers[this.renderMode['name']](this, animate);
 
   var that = this;
 
-  var bindings = { 'deleteMenuItem' : function() {
-    that.remove();
-    updatePeriodSelector();
-    viewstate.updateInfobox(null, null);
-  },
-  'centreViewMenuItem' : function() {
-    viewstate.centreViewOn(that);
-  },
-  'resetMenuItem' : function() {
-    that.renderMode.specifiedAggregates = undefined;
-    that.popIn();
-    that.render();
-  },
-  'popBothMenuItem': function() {
-    that.popIn();
-    that.popOut();
-    that.reposition();
-    that.render();
-  }
+  var bindings = {
+    'deleteMenuItem' : function() {
+      that.remove();
+      updatePeriodSelector();
+      viewstate.updateInfobox(null, null);
+    },
+    'centreViewMenuItem' : function() {
+      viewstate.centreViewOn(that);
+    },
+    'resetMenuItem' : function() {
+      that.renderMode.specifiedAggregates = undefined;
+      that.popIn();
+      that.render();
+    },
+    'popBothMenuItem': function() {
+      that.popIn();
+      that.popOut();
+      that.reposition();
+      that.render();
+    }
   };
 
   bindings = {'bindings': bindings};
-
 
   if (this.data().aggregates &&
       ((this.data().aggregates.length == 2 &&
@@ -1079,14 +1080,14 @@ ViewObj.prototype.render = function(animate) {
           this.renderMode.specifiedAggregates &&
           this.renderMode.specifiedAggregates.length == 2))) {
 
-    jQuery(this.svg[0][0]).find('.wedge')
+    jQuery(this.renderSVG[0][0]).find('.wedge')
             .contextMenu('wedge2Menu', bindings);
   } else {
-    jQuery(this.svg[0][0]).find('.wedge')
+    jQuery(this.renderSVG[0][0]).find('.wedge')
         .contextMenu('wedgeMenu', bindings);
   }
-  jQuery(this.svg[0][0]).find('.tinyHalo').contextMenu('wedgeMenu', bindings);
-
+  jQuery(this.renderSVG[0][0]).find('.tinyHalo')
+      .contextMenu('wedgeMenu', bindings);
 
 
   // render all children
@@ -1215,9 +1216,9 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
 
   backdata = backdata.concat(backdata2);
 
-  var backGroup = viewObj.svg.select('g.back');
+  var backGroup = viewObj.renderSVG.select('g.back');
   if (backGroup.empty()) {
-    backGroup = viewObj.svg.append('g').classed('back', true);
+    backGroup = viewObj.renderSVG.append('g').classed('back', true);
   }
 
 
@@ -1262,9 +1263,10 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
   labels.exit().remove();
 
   /***** Create the wedges/sectors */
-  var sectorsGroup = viewObj.svg.select('g.sections');
+  var sectorsGroup = viewObj.renderSVG.select('g.sections');
   if (sectorsGroup.empty()) {
-    sectorsGroup = viewObj.svg.append('g').classed('sections', true);
+    sectorsGroup = viewObj.renderSVG.append('g')
+        .classed('sections', true);
   }
 
 
@@ -1319,9 +1321,10 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
 
 
   /***** Create section labels */
-  var labelsGroup = viewObj.svg.select('g.labels');
+  var labelsGroup = viewObj.renderSVG.select('g.labels');
   if (labelsGroup.empty()) {
-    labelsGroup = viewObj.svg.append('g').classed('labels', true);
+    labelsGroup = viewObj.renderSVG.append('g')
+        .classed('labels', true);
   }
 
   // General Case
@@ -1498,26 +1501,6 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
         .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; })
         .classed('invalidPeriod', viewObj.isInvalidPeriod);
 
-  // Halo if the whole thing is just too small to see.
-
-  var tinyHaloThreshold = 30;
-  var tinyHalo = viewObj.svg
-        .selectAll('circle.tinyHalo')
-        .data([backdata.pop()].map(viewstate.scaler));
-
-  tinyHalo.enter().append('circle').classed('tinyHalo', true)
-        .call(viewObj.dragHandler)
-        .attr('r', tinyHaloThreshold)
-        .attr('display',
-              function(d) { return d < tinyHaloThreshold ? null : 'none' })
-        .on('click', _info)
-        .on('touchstart', _info);
-
-  tinyHalo.attr('display',
-      function(d) { return d < tinyHaloThreshold ? null : 'none' })
-      .classed('invalidPeriod', viewObj.isInvalidPeriod);
-
-
   /***** Relations */
   var revenue, expenses, assets, liabilities;
   var rVeData, aVlData;
@@ -1550,9 +1533,10 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
     aVlData = null;
   }
 
-  var relations = viewObj.svg.select('g.relations');
+  var relations = viewObj.renderSVG.select('g.relations');
   if (relations.empty()) {
-    relations = viewObj.svg.append('g').classed('relations', true);
+    relations = viewObj.renderSVG.append('g')
+        .classed('relations', true);
   }
 
   relations.attr('transform',
@@ -1749,6 +1733,25 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
 
   outerLabel.exit().remove();
 
+  // Halo if the whole thing is just too small to see.
+
+  var tinyHaloThreshold = 30;
+  var tinyHalo = viewObj.renderSVG
+        .selectAll('circle.tinyHalo')
+        .data([backdata.pop()].map(viewstate.scaler));
+
+  tinyHalo.enter().append('circle').classed('tinyHalo', true)
+        .call(viewObj.dragHandler)
+        .attr('r', tinyHaloThreshold)
+        .attr('display',
+              function(d) { return d < tinyHaloThreshold ? null : 'none' })
+        .on('click', _info)
+        .on('touchstart', _info);
+
+  tinyHalo.attr('display',
+      function(d) { return d < tinyHaloThreshold ? null : 'none' })
+      .classed('invalidPeriod', viewObj.isInvalidPeriod);
+
 };
 
 
@@ -1810,10 +1813,10 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
   };
 
   // create the bubble
-  var circleGroup = viewObj.svg.select('g.circle');
+  var circleGroup = viewObj.renderSVG.select('g.circle');
   if (circleGroup.empty()) {
-    circleGroup = viewObj.svg
-            .append('g')
+    circleGroup = viewObj.renderSVG
+        .append('g')
             .classed('circle', true);
   }
 
@@ -1850,9 +1853,9 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
         .classed('invalidPeriod', viewObj.isInvalidPeriod);
 
   /* Create section labels */
-  var labelsGroup = viewObj.svg.select('g.labels');
+  var labelsGroup = viewObj.renderSVG.select('g.labels');
   if (labelsGroup.empty()) {
-    labelsGroup = viewObj.svg
+    labelsGroup = viewObj.renderSVG
             .append('g')
             .classed('labels', true);
   }
@@ -1930,10 +1933,10 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
     enclosingCircleData.push(viewObj.boundingCircle);
   }
 
-  var enclosingCircleGroup = viewObj.svg
+  var enclosingCircleGroup = viewObj.renderSVG
         .select('g.enclosingCircle');
   if (enclosingCircleGroup.empty()) {
-    enclosingCircleGroup = viewObj.svg.append('g')
+    enclosingCircleGroup = viewObj.renderSVG.append('g')
             .classed('enclosingCircle', true);
   }
 
