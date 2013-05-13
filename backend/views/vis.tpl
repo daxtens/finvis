@@ -16,12 +16,17 @@
     <script type="text/javascript" src="/js/parenting.js"></script>
     <script type="text/javascript" src="/js/viewstate.js"></script>
     <script type="text/javascript" src="/js/viewobj.js"></script>
+    %if defined('initial_id'):
     <script type="text/javascript">window.initial_id="{{initial_id}}";</script>
+    %else:
+    <script type="text/javascript">window.initial_state="{{initial_state}}";</script>
+    %end
     <script type="text/javascript" src="/js/events.js"></script>
     <link rel="stylesheet" href="/css/vis.css" />
     <link rel="stylesheet" href="/css/web.css" />
   </head>
   <body>
+    <div id="fb-root"></div>
     <div id="headline">
       <a href="http://greensmps.com.au/" target="_blank"><img src="/images/greens-logo.svg" alt="Greens Logo" /></a>
       THE AUSTRALIAN GREENS OPEN ECONOMY PROJECT
@@ -105,33 +110,44 @@
             <td><a href="#" id="stopBtn"><img alt="Stop" class="smlbtnimg" src="/images/icons/playback-stop.png" /></a></td></tr>
           </table>
         </div>
-        <div class="box" id="morebox">
-          <p class="rotate">MORE</p>
-          <p class="tighttop">Packing model:</p>
-          <select id="packingSel">
-            <option value="default">Old-style</option>
-            <option value="dendritic" selected="selected">Dendritic</option>
-          </select>
-          <p><a href="http://daxtens.github.io/finvis/">HELP</a> | <a href="http://daxtens.github.io/finvis/contribute.html">CONTRIBUTE</a></p>
-        </div>
         <div class="box" id="informationbox">
           <p class="rotate">INFO</p>
           <p id="toggleInfoBoxContainer">[ <a href="#" id="toggleInfoBox">&mdash;</a> ]</p>
           <div id="infobox" ontouchstart="javascript:return false;"><h2>Welcome to the Open Economy</h2><p>To start exploring, just click, double-click or right-click on things and see what happens...</div>
         </div>
-        <div class="box" id="userbox">
-          <p class="rotate">TOOLS</p>
+        <div class="box" id="morebox">
+          <p class="rotate">MORE</p>
           %if username:
-          <p class="tighttop">{{ username }}</p>
-          <p><a href="/entities">Manage data</a></p>
+          <p class="tighttop">{{ username }} | <a href="/logout">Log out</a> | [ <a href="#" id="togglePacking">+</a> ]</p>
           %if admin:
           <p>Admin: <a href="/data_admin">Data</a> | <a href="/admin">Users</a></p>
-          %end
-          <p><a href="/logout">Log out</a></p>
           %else:
-          <p class="tighttop"><a href="/login">Log in</a></p>
-          <p><a href="/register">Register</a></p>
+          <p><a href="/entities">Manage data</a></p>
           %end
+          </p>
+          %else:
+          <p class="tighttop"><a href="/login">Log in</a> | <a href="/register">Sign up</a> | [ <a href="#" id="togglePacking">+</a> ]</p>
+          %end
+          
+          <div class="hidden" id="packing">
+            <p class="tighttop">Packing model:</p>
+            <select id="packingSel">
+              <option value="default">Circular</option>
+              <option value="dendritic" selected="selected">Dendritic</option>
+            </select>
+          </div>
+        </div>
+        <div id="actionbox" class="box">  
+          <p id="keyactions" class="tighttop"><a href="http://daxtens.github.io/finvis/">HELP</a> | <a href="#" id="share">SHARE</a></p> 
+          <p class="tighttop"><a href="http://daxtens.github.io/finvis/contribute.html">CONTRIBUTE</a></p>
+        </div>
+        <div id="sharebox" class="box hidden">
+          <input type="text" id="link"></input><br>
+          <a href="#" id="fbbtn"><img src="/images/icons/fbshare.png" /></a>
+          <span id="twttrbtn"></span>
+          <div style="display: inline" class="g-plus" data-action="share" data-annotation="none"></div>
+          <br />
+          <a href="#" id="closeShareBox">close</a>
         </div>
       </div>
     </div>
@@ -150,5 +166,18 @@
 	<li id="resetMenuItem">Reset</li>
       </ul>
     </div>
+    <!-- Google+ Share -->
+    <script type="text/javascript" src="https://apis.google.com/js/plusone.js">
+    {parsetags: 'explicit'}
+    </script>
+    <!-- Twitter -->
+    <script>window.twttr = (function (d,s,id) {
+    var t, js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return; js=d.createElement(s); js.id=id;
+    js.src="https://platform.twitter.com/widgets.js"; fjs.parentNode.insertBefore(js, fjs);
+    return window.twttr || (t = { _e: [], ready: function(f){ t._e.push(f) } });
+    }(document, "script", "twitter-wjs"));</script>
+    <!-- FB -->
+    <script src='http://connect.facebook.net/en_US/all.js'></script>
   </body>
 </html>

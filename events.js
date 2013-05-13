@@ -82,6 +82,9 @@ jQuery('document').ready(function() {
   jQuery('#playBtn').on('click', playBtn);
   jQuery('#stopBtn').on('click', stopBtn);
   jQuery('#toggleInfoBox').on('click', toggleInfoBox);
+  jQuery('#togglePacking').on('click', togglePacking);
+  jQuery('#share').on('click', share);
+  jQuery('#closeShareBox').on('click', finishSharing);
 
   // ephemeral upload
   jQuery('#ephemeralUploadForm').on('submit', function(e) {
@@ -144,6 +147,9 @@ jQuery('document').ready(function() {
       }
     });
   }
+
+  // prepare FB
+  FB.init({appId: 'YOUR_APP_ID', status: true, cookie: true});
 });
 
 
@@ -518,6 +524,76 @@ function toggleInfoBox() {
 }
 
 
+/** Toggle the display of the packing selector.
+ */
+function togglePacking() {
+  var displayed = (jQuery('#togglePacking').text() != '+');
+  jQuery('#packing').slideToggle();
+  jQuery('#togglePacking').html(displayed ? '+' : '&mdash;');
+}
+
+
+/** Get ready to share the state socially.
+ */
+function share() {
+  var state = viewstate.exportState();
+  if (!state) return;
+  jQuery.ajax({
+    url: '/save_state',
+    type: 'POST',
+    data: {'state': JSON.stringify(state)},
+    success: function(resp) {
+      jQuery('#sharebox').removeClass('hidden');
+      jQuery('#actionbox').addClass('hidden');
+      jQuery('#link').val(resp['url']);
+      twttr.widgets.createShareButton(resp['url'],
+                                      jQuery('#twttrbtn')[0],
+                                      function() {}, {
+                                        'hashtags': 'openeconomy',
+                                        'count': 'none',
+                                        'size': 'small',
+                                        'text': 'Seeing financial data like' +
+                                            'never before'
+                                      });
+      jQuery('div.g-plus').attr('data-href', resp['url']);
+      gapi.plus.go();
+
+      jQuery('#fbbtn').attr('data-link', resp['url']);
+    },
+    error: function(e) {
+    }
+  });
+}
+
+
+/** Special hander for the FB button. It's pretty special. */
+function fb_share() {
+  var fb_obj = {
+    method: 'feed',
+    redirect_uri: jQuery('#fbbtn').attr('data-link'),
+    link: jQuery('#fbbtn').attr('data-link'),
+    //picture: 'http://fbrell.com/f8.jpg',
+    name: 'The Open Economy',
+    caption: '',
+    description: 'A whole new way to see financial data.'
+  };
+
+  var callback = function(response) {
+    console.log(response);
+    finishSharing();
+  };
+
+  FB.ui(fb_obj, callback);
+}
+
+
+/** We're done sharing: clean up. */
+function finishSharing() {
+  jQuery('#sharebox').addClass('hidden');
+  jQuery('#actionbox').removeClass('hidden');
+}
+
+
 /** Recalculate and display packing efficiency
  */
 function recalcPackingEfficiency() {
@@ -527,3 +603,4 @@ function recalcPackingEfficiency() {
   result = result / viewstate.children().length * 100;
   jQuery('#packingEfficiency').text(result.toFixed(2) + '%');
 }
+

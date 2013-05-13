@@ -34,7 +34,7 @@ body {
 #rightToolBox {
     position:fixed; 
     right:5px;
-    top: 40px;
+    top: 33px;
     width: 200px;
 }
 
@@ -48,7 +48,7 @@ body {
     /*background-color: rgb(7, 16, 43);*/
     background-color: rgba(0, 0, 96, 0.4);
     padding: 0.5em;
-    margin-bottom: 0.5em;
+    margin-bottom: 0.4em;
 }
 
 /* this is full of shameful hackery. FIXME */
@@ -56,10 +56,7 @@ body {
     position: fixed;
 }
 
-#viewbox {
-}
-
-#viewbox p {
+#viewbox p.rotate {
     right: 166px;
     width: 50px;
     margin: 0;
@@ -75,7 +72,11 @@ body {
 }
 
 #periodbox {
-    height: 110px;
+    height: 100px;
+}
+
+#periodbox table td {
+    padding: 0;
 }
 
 #periodbox p.rotate,
@@ -89,19 +90,21 @@ body {
     min-height: 37px;
 }
 
-#morebox p.rotate {
-    width: 64px;
-    right: 160px;
-    margin: 0;
+#actionbox {
+    font-size: 14px;
 }
 
-#userbox {
+#actionbox #keyactions {
+    font-size: 18px;
+}
+
+#morebox {
     min-height: 50px;
 }
 
-#userbox p.rotate {
-    width: 72px;
-    right: 156px;
+#morebox p.rotate {
+    width: 64px;
+    right: 160px;
     margin: 0;
 }
 
@@ -143,7 +146,7 @@ body {
 #headline {
     position:fixed;
     right: 5px;
-    font-size: 18pt;
+    font-size: 17pt;
     color: rgb(66, 77, 100);
     text-align: right;
     width: 99%;
@@ -220,4 +223,9 @@ a:link {
 
 a:visited {
     color: #99F;
+}
+
+#link {
+    width: 190px;
+    text-size: 10px;
 }
