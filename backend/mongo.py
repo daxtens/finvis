@@ -2,9 +2,10 @@ from pymongo import *
 from mongoengine import *
 from bson import Binary, Code
 from bson.json_util import dumps
-
+import datetime
 
 connect('finvis-data')
+
 
 class Period(EmbeddedDocument):
     value = IntField(required=True)
@@ -16,6 +17,7 @@ class Item(EmbeddedDocument):
     periods = DictField(field=EmbeddedDocumentField(Period))
     items = ListField(EmbeddedDocumentField('Item'))
     metadata = DictField()
+    meta = {'allow_inheritance': True}
 
 
 class Aggregate(Item):
@@ -46,3 +48,31 @@ class AggregateEntity(Entity):
 class ItemEntity(Entity):
     item = EmbeddedDocumentField(Item)
     category = StringField(required=True)
+
+
+## State saving
+class ViewObjState(EmbeddedDocument):
+    entityId = ReferenceField(Entity, dbref=False)
+    position = ListField(FloatField(), required=True)
+    specifiedAggregates = ListField(StringField())
+    poppedOut = BooleanField()
+    children = ListField(EmbeddedDocumentField('ViewObjState'))
+    meta = {'allow_inheritance': False}
+
+
+class SavedState(Document):
+    period = StringField(required=True)
+    viewcenter = ListField(FloatField(), required=True)
+    scaleMax = FloatField(required=True)
+    children = ListField(EmbeddedDocumentField(ViewObjState))
+    visits = IntField(default=0)
+    visited_date = DateTimeField(default=datetime.datetime.now)
+    creation_date = DateTimeField()
+    creator = StringField()
+    meta = {'allow_inheritance': False}
+
+    def save(self, *args, **kwargs):
+        if not self.creation_date:
+            self.creation_date = datetime.datetime.now()
+        self.visited_date = datetime.datetime.now()
+        return super(SavedState, self).save(*args, **kwargs)

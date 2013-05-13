@@ -111,24 +111,39 @@ jQuery('document').ready(function() {
 
   // set up the viewstate and initial view object
   window.viewstate = new ViewState(d3.select('body').append('svg'));
-  jQuery.ajax('/entity.json/' + window['initial_id'], {
-    success: function(d) {
-      var vo = new ViewObj(d, viewstate, [0, 0]);
-      updatePeriodSelector();
-      vo.period(jQuery('#periodSel option:selected').val());
-      jQuery('#period').text(jQuery('#periodSel option:selected').val());
-      vo.render();
-    },
-    error: function(d) {
-      var resp = JSON.parse(d.responseText);
-      if ('error' in resp) {
-        alert('Error: ' + resp['error']);
-      } else {
-        alert('An unknown error occured. We\'re very sorry. Try reloading?');
+  if (window['initial_state']) {
+    jQuery.ajax('/state.json/' + window['initial_state'], {
+      success: function(d) {
+        viewstate.importState(d);
+      },
+      error: function(d) {
+        var resp = JSON.parse(d.responseText);
+        if ('error' in resp) {
+          alert('Error: ' + resp['error']);
+        } else {
+          alert('An unknown error occured. We\'re very sorry. Try reloading?');
+        }
       }
-      cancelAddEntity();
-    }
-  });
+    });
+  } else {
+    jQuery.ajax('/entity.json/' + window['initial_id'], {
+      success: function(d) {
+        var vo = new ViewObj(d, viewstate, [0, 0]);
+        updatePeriodSelector();
+        vo.period(jQuery('#periodSel option:selected').val());
+        jQuery('#period').text(jQuery('#periodSel option:selected').val());
+        vo.render();
+      },
+      error: function(d) {
+        var resp = JSON.parse(d.responseText);
+        if ('error' in resp) {
+          alert('Error: ' + resp['error']);
+        } else {
+          alert('An unknown error occured. We\'re very sorry. Try reloading?');
+        }
+      }
+    });
+  }
 });
 
 
@@ -320,7 +335,6 @@ function addEntityUI() {
 function addEntityBtn() {
   addEntityUI();
   var entitySel = jQuery('#entitySel')[0];
-  console.log(jQuery('#ephemeralUploadFile').val());
   if (jQuery('#ephemeralUploadFile').val()) {
     jQuery('#ephemeralUploadForm').trigger('submit');
     return;

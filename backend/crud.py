@@ -52,7 +52,7 @@ def entity_json(entityid):
     # result = bson.json_util.dumps(Entity.objects(id=entityid)[0].to_mongo())
     #return entityid
     if result == "null":
-        response.status = 422
+        response.status = 404
         result = '{"error":"Requested an entity that does not exist."}'
 
     response.add_header("ETag", "W/" + entityid)
@@ -155,3 +155,41 @@ def set_public(entity_id, public):
 
     target = request.headers.get('Referer', '/').strip()
     redirect(target)
+
+
+### Saved state stuff
+@post('/save_state')
+def save_state():
+    data = request.forms.get('state')
+    state = SavedState.from_json(data)
+    if finvis.aaa.user_is_anonymous:
+        state.creator = "anonymous"
+    else:
+        state.creator = finvis.aaa.current_user.username
+
+    state.save()
+    result = {'url': 'http://openeconomy.org.au/s/' + str(state.id)}
+    print(result)
+    response.content_type = 'text/json'
+    return result
+
+
+@route('/state.json/:state_id')
+def state_json(state_id):
+    response.content_type = 'text/json'
+    if request.get_header('If-None-Match') == "W/" + state_id:
+        response.status = 304
+        return
+
+    try:
+        result = SavedState.objects(id=state_id).get()
+    except DoesNotExist as e:
+        response.status = 404
+        return '{"error":"Requested a saved state that does not exist."}'
+
+    result.visits = result.visits + 1
+    result.save()
+
+    response.add_header("ETag", "W/" + state_id)
+
+    return bson.json_util.dumps(result.to_mongo())

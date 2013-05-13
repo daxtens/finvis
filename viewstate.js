@@ -395,7 +395,7 @@ ViewState.prototype.exportState = function() {
   var viewObjState = function(viewObj) {
     var state = {};
     if ('_id' in viewObj.data()) {
-      state['_id'] = viewObj.data()['_id']['$oid'];
+      state['entityId'] = viewObj.data()['_id']['$oid'];
     } else if (viewObj.parent instanceof ViewState) {
       // oh dear, an ephemeral
       throw new Exception('Ephemeral!');
@@ -449,6 +449,8 @@ ViewState.prototype.importState = function(state) {
   // the best way to get around this. Move it to events.js and
   // abstract it?
 
+  // this has many spurious render/repositions. FIXME
+
   var that = this;
 
   var createChildren = function(viewObj, voState) {
@@ -471,20 +473,19 @@ ViewState.prototype.importState = function(state) {
   };
 
   var createTopLevelEntity = function(voState, globalState) {
-    jQuery.ajax('/entity.json/' + children[child]['_id'], {
+    // deal with MongoDB/Engine cruft
+    if ('$oid' in children[child]['entityId']) {
+      var id = children[child]['entityId']['$oid'];
+    } else {
+      var id = children[child]['entityId'];
+    }
+    jQuery.ajax('/entity.json/' + id, {
       success: function(d) {
         var vo = new ViewObj(d, that, voState['position']);
         vo.period(globalState['period']);
         vo.renderMode.specifiedAggregates = voState['specifiedAggregates'];
-
-        // you wouldn't think that there would be any need to
-        // reposition and render here, but if you don't, things start
-        // not zooming properly, starting with the entity lable and
-        // some other lables, and ending with popped out
-        // bubbles. Weird bug, FIXME.
-        vo.reposition();
         vo.render();
-
+        vo.reposition();
         if ('children' in voState && voState['children'].length) {
           vo.popOut();
           vo.reposition();
@@ -495,8 +496,7 @@ ViewState.prototype.importState = function(state) {
           }
         }
 
-        // it does make logical sense to require a reposition here -
-        // sets bounding circle.
+        // reposition here - sets bounding circle.
         vo.reposition();
         vo.render();
 
@@ -506,6 +506,15 @@ ViewState.prototype.importState = function(state) {
                         voState['children'][child]);
           }
         }
+      },
+      complete: function() {
+        // this code breaks abstraction and needs to be moved out
+        // (it assumes things about the environment - that event.js is
+        // normal - that it shouldn't do; potentially breaking embedding.)
+        updatePeriodSelector();
+        jQuery('#periodSel option[value=' + d['period'] + ']')
+            .prop('selected', true);
+        jQuery('#period').text(d['period']);
       }
     });
   };

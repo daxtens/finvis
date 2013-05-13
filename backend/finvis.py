@@ -62,6 +62,37 @@ def vis(entity_id=None):
     return result
 
 
+@bottle.route('/s/:state_id')
+@bottle.view('vis')
+def vis(state_id=None):
+    if aaa.user_is_anonymous:
+        username = None
+        admin = False
+    else:
+        username = aaa.current_user.username
+        admin = (aaa.current_user.role == 'admin')
+
+    public_entities = Entity.objects(public=True).only("name")
+
+    if username:
+        user_entities = Entity.objects(username=username,
+                                       public=False).only('name')
+    else:
+        user_entities = []
+
+    if state_id is None:
+        redirect('index.html')
+
+    result = {'username': username,
+              'admin': admin,
+              'public_entities': public_entities,
+              'user_entities': user_entities,
+              'initial_state': state_id
+              }
+    #print(result)
+    return result
+
+
 # Static files
 @bottle.route('/static/<filename:path>')
 @bottle.route('/js/<filename:path>')

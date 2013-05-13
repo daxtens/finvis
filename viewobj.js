@@ -896,7 +896,8 @@ ViewObj.prototype.popOut = function() {
     // figure out which aggregates to use. If we specify some, match
     // them to indexes. otherwise, pop out everything.
     var aggregateData = this.data()['aggregates'];
-    if (this.renderMode.specifiedAggregates) {
+    if (this.renderMode.specifiedAggregates &&
+        this.renderMode.specifiedAggregates.length) {
       var aggregates = [];
       for (var i in this.renderMode.specifiedAggregates) {
         for (var j in aggregateData) {
@@ -1075,7 +1076,8 @@ ViewObj.prototype.render = function(animate) {
 
   if (this.data().aggregates &&
       ((this.data().aggregates.length == 2 &&
-          this.renderMode.specifiedAggregates == undefined) ||
+        (this.renderMode.specifiedAggregates == undefined ||
+         this.renderMode.specifiedAggregates.length == 0)) ||
       (this.data().aggregates.length == 4 &&
           this.renderMode.specifiedAggregates &&
           this.renderMode.specifiedAggregates.length == 2))) {
@@ -1167,7 +1169,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
   var data = JSON.parse(JSON.stringify(viewObj.data()));
 
   // which aggregates are we interested in?
-  if (renderMode['specifiedAggregates']) {
+  if (renderMode['specifiedAggregates'] &&
+      renderMode['specifiedAggregates'].length) {
     data['aggregates'] = data['aggregates'].filter(function(aggregate) {
       for (var specAgg in renderMode['specifiedAggregates']) {
         if (aggregate.category ==
@@ -1768,7 +1771,8 @@ ViewObjRenderers.defaultSectorRenderer.dollarRadiusWhenRendered = function(
   var renderMode = viewObj.renderMode;
 
   // which aggregates are we interested in?
-  if (renderMode['specifiedAggregates']) {
+  if (renderMode['specifiedAggregates'] &&
+      renderMode['specifiedAggregates'].length) {
     data['aggregates'] = data['aggregates'].filter(function(aggregate) {
       for (var specAgg in renderMode['specifiedAggregates']) {
         if (aggregate['category'] ==
