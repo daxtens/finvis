@@ -169,7 +169,7 @@ def save_state():
 
     state.save()
     result = {'url': 'http://openeconomy.org.au/s/' + str(state.id)}
-    print(result)
+    #print(result)
     response.content_type = 'text/json'
     return result
 

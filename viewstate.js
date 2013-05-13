@@ -512,20 +512,23 @@ ViewState.prototype.importState = function(state) {
         // (it assumes things about the environment - that event.js is
         // normal - that it shouldn't do; potentially breaking embedding.)
         updatePeriodSelector();
-        jQuery('#periodSel option[value=' + d['period'] + ']')
+        var period = that.children()[0].period();
+        jQuery('#periodSel option[value=' + period + ']')
             .prop('selected', true);
-        jQuery('#period').text(d['period']);
+        jQuery('#period').text(period);
       }
     });
   };
 
-  this.moveTo([state['viewcenter'][0] - this.width / 2,
-               state['viewcenter'][1] - this.height / 2]);
   this.scaleMax = state['scaleMax'];
   this.zoom(1, [0, 0], true);
+  this.moveTo([state['viewcenter'][0] - this.width / 2,
+               state['viewcenter'][1] - this.height / 2]);
 
   var children = state['children'];
   for (var child in children) {
     createTopLevelEntity(children[child], state);
   }
+
+
 };

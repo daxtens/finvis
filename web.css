@@ -228,4 +228,9 @@ a:visited {
 #link {
     width: 190px;
     text-size: 10px;
+    -moz-user-select: text;
+    -khtml-user-select: text;
+    -webkit-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
