@@ -207,6 +207,20 @@ rect.eventGrabber {
     fill-opacity: 0
 }
 
+rect.zoomGrabber {
+    opacity: 0;
+    fill-opacity: 0;
+    cursor: crosshair;
+}
+
+rect.zoomRect {
+    fill-opacity: 0.1;
+    opacity: 1;
+    stroke-width: 2;
+    stroke: black;
+    cursor: crosshair;
+}
+
 .rotate {
     /* From http://css-tricks.com/snippets/css/text-rotation/ */
     -webkit-transform: rotate(-90deg);

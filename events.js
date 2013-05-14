@@ -69,6 +69,7 @@ jQuery('document').ready(function() {
   jQuery('#zoomIn').on('click', zoomIn);
   jQuery('#zoomOut').on('click', zoomOut);
   jQuery('#fitToScreen').on('click', fitToScreen);
+  jQuery('#zoomRect').on('click', beginZoomRect);
   jQuery('#initAddEntity').on('click', initAddEntity);
   jQuery('#addEntity').on('click', addEntityBtn);
   jQuery('#cancelAddEntity').on('click', cancelAddEntity);
@@ -606,3 +607,62 @@ function recalcPackingEfficiency() {
   jQuery('#packingEfficiency').text(result.toFixed(2) + '%');
 }
 
+
+/** Create the zoom-to-rectangle event grabber, start grabbing events */
+function beginZoomRect() {
+  var zoomGrabber = viewstate._svg.append('rect').classed('zoomGrabber', true)
+      .attr('x', 0).attr('y', 0)
+      .attr('width', viewstate.width).attr('height', viewstate.height);
+
+  var dragHandler = d3.behavior.drag()
+      .on('dragstart', function() {
+        viewstate._svg.append('rect').classed('zoomRect', true)
+            .attr('x', d3.mouse(this)[0]).attr('y', d3.mouse(this)[1]);
+      })
+      .on('drag', function() {
+        var zr = viewstate._svg.select('rect.zoomRect');
+        var width = d3.event.x - zr.attr('x');
+        var height = d3.event.y - zr.attr('y');
+        if (width < 0) {
+          return;
+        }
+        if (height < 0) {
+          return;
+        }
+        zr.attr('width', width).attr('height', height);
+      })
+      .on('dragend', function() {
+        var zr = viewstate._svg.select('rect.zoomRect');
+
+        var x = zr.attr('x') * 1;
+        var y = zr.attr('y') * 1;
+        var width = zr.attr('width') * 1;
+        var height = zr.attr('height') * 1;
+
+        // keep things out of the right tool box
+        var vswidth = viewstate.width - 200;
+        var vsheight = viewstate.height;
+
+        if (width > 0 && height > 0) {
+          var factor;
+          if (width / vswidth > height / vsheight) {
+            factor = (viewstate.scaler.invert(vswidth / 2)) /
+                viewstate.scaler.invert(width / 2);
+          } else {
+            factor = (viewstate.scaler.invert(vsheight / 2)) /
+                viewstate.scaler.invert(height / 2);
+          }
+          width = viewstate.scaler(viewstate.scaler.invert(width) * factor);
+          height = viewstate.scaler(viewstate.scaler.invert(height) * factor);
+          viewstate.move([x, y]);
+          viewstate.zoom(factor, [0, 0], true);
+          viewstate.move([-(vswidth - width) / 2, -(vsheight - height) / 2]);
+        }
+
+        zr.remove();
+        zoomGrabber.remove();
+      });
+
+  zoomGrabber.call(dragHandler);
+
+}

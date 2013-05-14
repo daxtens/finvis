@@ -55,7 +55,7 @@
           <p class="rotate">VIEW</p>
           <a href="#" title="Zoom in" id="zoomIn"><img class="btnimg" src="/images/icons/zoom-in.png" alt="Zoom in"/></a>
           <a href="#" title="Zoom out" id="zoomOut"><img class="btnimg" src="/images/icons/zoom-out.png" alt="Zoom out"/></a><br/>
-          <!--<a href="#" title="Zoom region" id="zoomRegion"><img src="/images/icons/zoom-box.png" class="btnimg" alt="Zoom in on a region"/></a><br/>-->
+          <a href="#" title="Zoom region" id="zoomRect"><img src="/images/icons/zoom-box.png" class="btnimg" alt="Zoom in on a region"/></a>
           <a href="#" title="Fit to screen" id="fitToScreen"><img src="/images/icons/zoom-original.png" class="btnimg" alt="Fit to screen"/></a>
         </div>
         <div class="box" id="iobox">
