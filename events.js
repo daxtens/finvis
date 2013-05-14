@@ -556,7 +556,7 @@ function share() {
             'count': 'none',
             'size': 'small',
             'text': 'Seeing financial data like never before',
-            'counturl': 'http://openeconomy.org.au'
+            'counturl': 'http://openeconomy.org.au/'
           });
       jQuery('div.g-plus').attr('data-href', resp['url']);
       gapi.plus.go();
