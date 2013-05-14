@@ -1379,7 +1379,13 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
     if (!isTop(d)) {
       return d.data.name.toUpperCase();
     } else {
-      return formatDollarValue(d.data['periods'][p]['value']);
+      // work back from category to aggregate
+      var aggregates = viewObj.data()['aggregates'];
+      for (var a in aggregates) {
+        if (d.data['category'] == aggregates[a]['category']) break;
+      }
+      return formatDollarValue(d.data['periods'][p]['value']) +
+          (viewObj.canPopOut(a) && !viewObj.poppedOut ? '...' : '');
     }
   }
 
@@ -1387,7 +1393,13 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
     if (isTop(d)) {
       return d.data['name'].toUpperCase();
     } else {
-      return formatDollarValue(d.data['periods'][p]['value']);
+      // work back from category to aggregate
+      var aggregates = viewObj.data()['aggregates'];
+      for (var a in aggregates) {
+        if (d.data['category'] == aggregates[a]['category']) break;
+      }
+      return formatDollarValue(d.data['periods'][p]['value']) +
+          (viewObj.canPopOut(a) && !viewObj.poppedOut ? '...' : '');
     }
   }
 
@@ -1908,7 +1920,9 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
   nameLabel.exit().remove();
 
   valueLabel.enter().append('text')
-        .text(function(d) {return formatDollarValue(d['periods'][p]['value']);})
+        .text(function(d) {return formatDollarValue(d['periods'][p]['value']) +
+                                  (viewObj.canPopOut() && !viewObj.poppedOut ?
+                                   '...' : '');})
         .classed('wedgeLabel', true).classed('value', true)
         .classed('centred', true)
         .attr('y', valueLabelY)
@@ -1917,7 +1931,9 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
         .on('click', _info);
 
   valueLabel
-      .text(function(d) {return formatDollarValue(d['periods'][p]['value']);})
+      .text(function(d) {return formatDollarValue(d['periods'][p]['value']) +
+                                (viewObj.canPopOut() && !viewObj.poppedOut ?
+                                 '...' : '');})
       .classed('invalidPeriod', viewObj.isInvalidPeriod);
 
   var updater = valueLabel;
