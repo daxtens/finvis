@@ -547,15 +547,17 @@ function share() {
       jQuery('#sharebox').removeClass('hidden');
       jQuery('#actionbox').addClass('hidden');
       jQuery('#link').val(resp['url']);
-      twttr.widgets.createShareButton(resp['url'],
-                                      jQuery('#twttrbtn')[0],
-                                      function() {}, {
-                                        'hashtags': 'openeconomy',
-                                        'count': 'none',
-                                        'size': 'small',
-                                        'text': 'Seeing financial data like' +
-                                            ' never before'
-                                      });
+      twttr.widgets.createShareButton(
+          resp['url'],
+          jQuery('#twttrbtn')[0],
+          function() {},
+          {
+            'hashtags': 'openeconomy',
+            'count': 'none',
+            'size': 'small',
+            'text': 'Seeing financial data like never before',
+            'counturl': 'http://openeconomy.org.au'
+          });
       jQuery('div.g-plus').attr('data-href', resp['url']);
       gapi.plus.go();
 
