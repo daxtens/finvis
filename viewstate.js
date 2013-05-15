@@ -512,7 +512,7 @@ ViewState.prototype.importState = function(state) {
         // (it assumes things about the environment - that event.js is
         // normal - that it shouldn't do; potentially breaking embedding.)
         updatePeriodSelector();
-        var period = that.children()[0].period();
+        var period = globalState['period'];
         jQuery('#periodSel option[value=' + period + ']')
             .prop('selected', true);
         jQuery('#period').text(period);
