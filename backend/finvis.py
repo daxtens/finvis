@@ -29,8 +29,6 @@ session_opts = {
 app = SessionMiddleware(app, session_opts)
 
 
-@bottle.route('/')
-@bottle.route('/index.html')
 @bottle.route('/index.html/:entity_id')
 @bottle.view('vis')
 def vis(entity_id=None):
@@ -50,7 +48,7 @@ def vis(entity_id=None):
         user_entities = []
 
     if entity_id is None:
-        entity_id = settings.default_initial_id
+        redirect('/index.html')
 
     result = {'username': username,
               'admin': admin,
@@ -62,6 +60,8 @@ def vis(entity_id=None):
     return result
 
 
+@bottle.route('/')
+@bottle.route('/index.html')
 @bottle.route('/s/:state_id')
 @bottle.view('vis')
 def vis(state_id=None):
@@ -81,7 +81,7 @@ def vis(state_id=None):
         user_entities = []
 
     if state_id is None:
-        redirect('index.html')
+        state_id = settings.default_initial_state
 
     result = {'username': username,
               'admin': admin,
