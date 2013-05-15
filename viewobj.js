@@ -216,6 +216,7 @@ function ViewObj(data, parent, position, category) {
         // an entity
         if (that.data().aggregates.length == 4 &&
             (that.renderMode.specifiedAggregates == undefined ||
+             that.renderMode.specifiedAggregates.length == 0 ||
             that.renderMode.specifiedAggregates.length == 4)) {
           // full entity: go down to relation
           if (d.data['category'] == 'revenue' ||
@@ -228,9 +229,10 @@ function ViewObj(data, parent, position, category) {
           }
           that.render();
         } else if ((that.data().aggregates.length == 2 &&
-            that.renderMode.specifiedAggregates == undefined) ||
-            (that.data().aggregates.length == 4 &&
-            that.renderMode.specifiedAggregates.length == 2)) {
+                    (that.renderMode.specifiedAggregates == undefined ||
+                     that.renderMode.specifiedAggregates.length == 0)) ||
+                   (that.data().aggregates.length == 4 &&
+                    that.renderMode.specifiedAggregates.length == 2)) {
           // a relation: go down to a single
           that.renderMode.specifiedAggregates =
               [d.data['category']];
