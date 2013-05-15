@@ -3,11 +3,13 @@ layout: default
 title: Web-based financial data visualisation
 ---
 
-Welcome to the Australian Greens Open Economy Project – beta release. This
+Welcome to the [Australian Greens Open Economy Project][1] – beta release. This
 program offers a new way to explore government budgets and spending, and compare
 them with corporations and other financial entities at various scales and time
 periods. You can play around with the budget data we’ve loaded, or have a go at
 creating your own models to share.
+
+[1]: http://scott-ludlam.greensmps.org.au/campaigns/openeconomy "Australian Greens Open Economy Project"
 
 NAVIGATION
 ----------
@@ -88,6 +90,8 @@ better.
 TELL OTHERS
 -----------
 
+Tell others about the [Australian Greens Open Economy Project][1]:
+
 <div>
 <a href="https://twitter.com/share" class="twitter-share-button"
 data-url="http://openeconomy.org.au" data-text="See financial information in a whole new way:"
@@ -96,3 +100,4 @@ data-hashtags="openeconomy" data-size="large">Tweet</a>
 <br>
 <iframe src="//www.facebook.com/plugins/like.php?href=http%3A%2F%2Fopeneconomy.org.au&amp;send=false&amp;layout=standard&amp;width=450&amp;show_faces=false&amp;font&amp;colorscheme=light&amp;action=recommend&amp;height=35&amp;appId=340738022718757" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:450px; height:35px;" allowTransparency="true">&nbsp;</iframe>
 </div>
+
