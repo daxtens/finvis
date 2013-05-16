@@ -419,7 +419,8 @@ ViewState.prototype.exportState = function() {
     return undefined;
   }
 
-  state['period'] = viewstate.children()[0].period();
+  // this breaks the abstraction. FIXME
+  state['period'] = jQuery('#period').text();
   state['viewcenter'] = [viewstate.position[0] + viewstate.width / 2,
                          viewstate.position[1] + viewstate.height / 2];
   state['scaleMax'] = viewstate.scaleMax;
