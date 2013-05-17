@@ -58,6 +58,7 @@ Click to see the full image.
 
 Examples
 --------
- * [theopenbudget.org expense data.xls](http://vis.dja.id.au/static/example-data/theopenbudget.org%20expense%20data.xls)
- * [transportandcoms.xls](http://vis.dja.id.au/static/example-data/transportandcoms.xls)
- * [cth-fbo.xls](http://vis.dja.id.au/static/example-data/cth-fbo.xls)
+ * [A very simple example to get you started](http://openeconomy.org.au/static/example-data/VisBudgeteg.xls)
+ * [theopenbudget.org expense data](http://openeconomy.org.au/static/example-data/theopenbudget.org%20expense%20data.xls)
+ * [Transport And Communications Portfolio, 1990-2012](http://openeconomy.org.au/static/example-data/transportandcoms.xls)
+ * [Commonwealth Final Budget Outcome](http://openeconomy.org.au/static/example-data/cth-fbo.xls)
