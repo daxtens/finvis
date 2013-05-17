@@ -29,7 +29,7 @@
     <div id="fb-root"></div>
     <div id="headline">
       <a href="http://greensmps.com.au/" target="_blank"><img src="/images/greens-logo.svg" alt="Greens Logo" /></a>
-      <a href="http://scott-ludlam.greensmps.org.au/campaigns/openeconomy">THE AUSTRALIAN GREENS OPEN ECONOMY PROJECT</a>
+      <a href="http://scott-ludlam.greensmps.org.au/openeconomy">THE AUSTRALIAN GREENS OPEN ECONOMY PROJECT</a>
     </div>
     <!--[if lt IE 10]>
       <div id="oldBrowserWarning">
