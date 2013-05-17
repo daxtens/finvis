@@ -9,7 +9,7 @@ them with corporations and other financial entities at various scales and time
 periods. You can play around with the budget data we’ve loaded, or have a go at
 creating your own models to share.
 
-[1]: http://scott-ludlam.greensmps.org.au/campaigns/openeconomy "Australian Greens Open Economy Project"
+[1]: http://scott-ludlam.greensmps.org.au/openeconomy "Australian Greens Open Economy Project"
 
 NAVIGATION
 ----------
