@@ -363,7 +363,7 @@ def write_sheet(sh, category, data, units):
             elif kind == 'periodmeta':
                 val = headings[col]['value']
                 period = headings[col]['period']
-                if val in items.periods[period].metadata:
+                if val in item.periods[period].metadata:
                     sh.write(row, col, item.periods[period].metadata[val])
             else:  # assume metadata
                 val = headings[col]['value']
