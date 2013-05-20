@@ -37,6 +37,7 @@ class Entity(Document):
     # only saved so we can nondestructivly export
     units = IntField(required=True)
     metadata = DictField()
+    version = IntField(default=1, required=False)
     meta = {'allow_inheritance': True}
 
 

@@ -38,26 +38,23 @@ def data_admin():
 def entity_json(entityid):
     response.content_type = 'text/json'
 
-    # WARNING: THIS ONLY WORKS BECAUSE IT IS IMPOSSIBLE TO UPDATE A FILE ATM
-    # IF THAT CONDITION IS EVER WEAKEND, THIS WILL BREAK AND PEOPLE WILL BE SAD
-    if request.get_header('If-None-Match') == "W/" + entityid:
-        response.status = 304
-        return
-
     # FIXME?: this doesn't verify that the user has the rights to view.
     # Should it? Not enforcing this will make embedding much easier...
-    result = bson.json_util.dumps(Entity._get_collection().find_one(
-        {"_id": bson.objectid.ObjectId(entityid)}))
-    # obvious but slow:
-    # result = bson.json_util.dumps(Entity.objects(id=entityid)[0].to_mongo())
-    #return entityid
-    if result == "null":
+    obj = Entity.objects(id=entityid)[0]
+
+    if not obj:
         response.status = 404
         result = '{"error":"Requested an entity that does not exist."}'
 
-    response.add_header("ETag", "W/" + entityid)
+    if request.get_header('If-None-Match') == 'W/' + entityid + '/' + \
+            str(obj.version):
 
-    return result
+        response.status = 304
+        return
+
+    response.add_header("ETag", "W/" + entityid + '/' + str(obj.version))
+
+    return bson.json_util.dumps(obj.to_mongo())
 
 
 @post('/excel_to_json.json')
@@ -104,6 +101,56 @@ def excel_upload():
 
     target = request.headers.get('Referer', '/').strip()
     redirect(target)
+
+
+@route('/update/:entity_id')
+@view('update_form')
+def excel_update_form(entity_id):
+    finvis.aaa.require(fail_redirect='/sorry_page')
+
+    obj = Entity.objects(id=entity_id).only('name', 'id')[0]
+
+    # you can only update your own private documents, unless you're admin
+    # public docs are protected
+    if (obj.username != finvis.aaa.current_user.username or
+        obj.public is False) and \
+            finvis.aaa.current_user.role != 'admin':
+        return 'Error: you may not update that document.'
+
+    return {'name': obj.name, 'id': obj.id}
+
+
+@post('/update/:entity_id')
+def excel_update(entity_id):
+    finvis.aaa.require(fail_redirect='/sorry_page')
+
+    obj = Entity.objects(id=entity_id).only('id', 'version')[0]
+
+    # you can only update your own private documents, unless you're admin
+    # public docs are protected
+    if (obj.username != finvis.aaa.current_user.username or
+        obj.public is False) and \
+            finvis.aaa.current_user.role != 'admin':
+        return 'Error: you may not update that document.'
+
+    excelfile = request.files.get('excelfile')
+
+    if excelfile is None:
+        response.status = 422
+        return 'Error: No file sent. Please submit a file.'
+
+    try:
+        newobj = excel.import_excel(excelfile.file.read(),
+                                    finvis.aaa.current_user.username)
+    except excel.ExcelError as e:
+        response.status = 422
+        return 'Error: ' + e.message
+
+    newobj.id = obj.id
+    newobj.version = obj.version + 1
+    newobj.save()
+
+    redirect('/index.html/' + str(obj.id))
 
 
 @route('/download/:entity_id')

@@ -111,7 +111,7 @@ def import_excel(data, username):
         result.relations['assetsVliabilities'] = Relation(
             greater='Net Position',
             equal='No net debt',
-            less='Net Debt')
+            less='Net Position')
 
     return result
 

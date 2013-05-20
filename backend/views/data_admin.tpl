@@ -4,13 +4,14 @@
 <h2>Public Entities</h2>
 <table>
   <thead>
-    <tr><th>Name</th><th>Author</th><th>Make Private</th><th>Delete</th></tr>
+    <tr><th>Name</th><th>Author</th><th>Make Private</th><th>Update</th><th>Delete</th></tr>
   </thead><tbody>
     %for entity in public_entities:
     <tr>
       <td>{{entity.name}}</td>
       <td>{{entity.username}}</td>
       <td><a href="/set_public/{{entity.id}}/0">Make Private</a></td>
+      <td><a href="/update/{{entity.id}}">Update</a></td>
       <td><a href="/delete/{{entity.id}}">Delete</a></td>
     </tr>
     %end
@@ -21,7 +22,7 @@
 %if len(users_entities[me]):
 <table>
   <thead>
-    <tr><th>Name</th><th>View</th><th>Download</th><th>Visibility</th><th>Delete</th></tr>
+    <tr><th>Name</th><th>View</th><th>Download</th><th>Visibility</th><th>Update</th><th>Delete</th></tr>
   </thead><tbody>
     %for entity in users_entities[me]:
     <tr>
@@ -33,6 +34,7 @@
       %else:
       <td><a href="/set_public/{{entity.id}}/1">Make Public</a></td>
       %end
+      <td><a href="/update/{{entity.id}}">Update</a></td>
       <td><a href="/delete/{{entity.id}}">Delete</a></td>
     </tr>
     %end
@@ -52,7 +54,7 @@
 <h3>{{user}}</h3>
 <table>
   <thead>
-    <tr><th>Name</th><th>View</th><th>Download</th><th>Visibility</th><th>Delete</th></tr>
+    <tr><th>Name</th><th>View</th><th>Download</th><th>Visibility</th><th>Update</th><th>Delete</th></tr>
   </thead><tbody>
     %for entity in users_entities[user]:
     <tr>
@@ -64,6 +66,7 @@
       %else:
       <td><a href="/set_public/{{entity.id}}/1">Make Public</a></td>
       %end
+      <td><a href="/update/{{entity.id}}">Update</a></td>
       <td><a href="/delete/{{entity.id}}">Delete</a></td>
     </tr>
     %end
