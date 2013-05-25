@@ -548,6 +548,7 @@ function share() {
       jQuery('#sharebox').removeClass('hidden');
       jQuery('#actionbox').addClass('hidden');
       jQuery('#link').val(resp['url']);
+      jQuery('.twitter-count-none').remove();
       twttr.widgets.createShareButton(
           resp['url'],
           jQuery('#twttrbtn')[0],
