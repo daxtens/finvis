@@ -114,7 +114,7 @@ def main():
 
     # Start the Bottle webapp
     #bottle.debug(True)
-    bottle.run(app=app, server=bottle.CherryPyServer, reloader=True)
+    bottle.run(app=app, server=bottle.CherryPyServer)
 
 if __name__ == "__main__":
     main()
