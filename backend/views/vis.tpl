@@ -138,8 +138,8 @@
           </div>
         </div>
         <div id="actionbox" class="box">  
-          <p id="keyactions" class="tighttop"><a href="http://daxtens.github.io/finvis/">HELP</a> | <a href="#" id="share">SHARE</a></p> 
-          <p class="tighttop"><a href="http://daxtens.github.io/finvis/index.html#could_this_possibly_be_more_fun">CONTRIBUTE</a></p>
+          <p id="keyactions" class="tighttop"><a href="http://daxtens.github.io/finvis/" target="_blank">HELP</a> | <a href="#" id="share">SHARE</a></p> 
+          <p class="tighttop"><a href="http://daxtens.github.io/finvis/index.html#could_this_possibly_be_more_fun" target="_blank">CONTRIBUTE</a></p>
         </div>
         <div id="sharebox" class="box hidden">
           <input type="text" id="link"></input><br>
