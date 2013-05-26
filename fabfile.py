@@ -63,4 +63,7 @@ def init_machine():
         # install various dependencies
         run("sudo apt-get install -y nginx inkscape fabric python-virtualenv supervisor git")
 
+        # needed to compile pymongo
+        run("sudo apt-get -y install build-essential python-dev")
+
         print("You now have the required packages.")
