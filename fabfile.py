@@ -9,22 +9,22 @@ def hello():
 
 def setup(dev="False"):
         # web framework
-        run("pip install bottle")
-        run("pip install CherryPy")  # (accelerated server)
+        local("pip install bottle")
+        local("pip install CherryPy")  # (accelerated server)
         # auth
-        run("pip install bottle-cork")
+        local("pip install bottle-cork")
         # excel
-        run("pip install xlrd xlwt")
+        local("pip install xlrd xlwt")
         # database
-        run("pip install pymongo mongoengine")
+        local("pip install pymongo mongoengine")
         # PNG export: verify inkscape is installed
-        run("inkscape --version")
+        local("inkscape --version")
 
 	if dev == "True":
-		run("pip install pep8")
-		run("pip install http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download")
-		run("pip install nose")
-		run("easy_install http://closure-linter.googlecode.com/files/closure_linter-latest.tar.gz")
+		local("pip install pep8")
+		local("pip install http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download")
+		local("pip install nose")
+		local("easy_install http://closure-linter.googlecode.com/files/closure_linter-latest.tar.gz")
 
 
 def compile(advanced="False", pretty="True"):
