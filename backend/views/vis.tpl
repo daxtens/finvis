@@ -53,15 +53,15 @@
       <div id="rightToolBox">
         <div class="box" id="viewbox">
           <p class="rotate">VIEW</p>
-          <a href="#" title="Zoom in" id="zoomIn"><img class="btnimg" src="/images/icons/zoom-in.png" alt="Zoom in"/></a>
-          <a href="#" title="Zoom out" id="zoomOut"><img class="btnimg" src="/images/icons/zoom-out.png" alt="Zoom out"/></a><br/>
-          <a href="#" title="Zoom region" id="zoomRect"><img src="/images/icons/zoom-box.png" class="btnimg" alt="Zoom in on a region"/></a>
-          <a href="#" title="Fit to screen" id="fitToScreen"><img src="/images/icons/zoom-original.png" class="btnimg" alt="Fit to screen"/></a>
+          <a href="#" title="Zoom in" id="zoomIn"><img class="btnimg icon-zoom-in" src="/images/placeholder.png" alt="Zoom in"/></a>
+          <a href="#" title="Zoom out" id="zoomOut"><img class="btnimg icon-zoom-out" src="/images/placeholder.png" alt="Zoom out"/></a><br/>
+          <a href="#" title="Zoom region" id="zoomRect"><img src="/images/placeholder.png" class="btnimg icon-zoom-box" alt="Zoom in on a region"/></a>
+          <a href="#" title="Fit to screen" id="fitToScreen"><img src="/images/placeholder.png" class="btnimg icon-zoom-original" alt="Fit to screen"/></a>
         </div>
         <div class="box" id="iobox">
           <p class="rotate">MODELS</p>
-          <a href="#" title="Save to disk" id="initSaveToDisk"><img src="/images/icons/document-export.png" class="btnimg" alt="Save to disk"/></a>
-          <a href="#" id="initAddEntity"><img src="/images/icons/document-export.png" class="btnimg" alt="Add an entity"/></a><br/>
+          <a href="#" title="Save to disk" id="initSaveToDisk"><img src="/images/placeholder.png" class="btnimg icon-disk" alt="Save to disk"/></a>
+          <a href="#" id="initAddEntity"><img src="/images/placeholder.png" class="btnimg icon-disk" alt="Add an entity"/></a><br/>
           <p style="float:right;" class="tighttop">SAVE&nbsp;&nbsp;&nbsp;LOAD&nbsp;</p>
           <br style="clear: right;"/>
           <form id="saveToDiskForm" name="saveToDiskForm" class="hidden" action="/export" method="POST">
@@ -71,8 +71,8 @@
           </select>
           <input name="data" type="hidden"></input>
           <br/>
-          <a href="#" id="saveToDisk"><img src="/images/icons/dialog-apply.png" class="btnimg" alt="Save to disk"/></a>
-          <a href="#" id="cancelSaveToDisk"><img src="/images/icons/dialog-cancel.png" class="btnimg" alt="Cancel"/></a>
+          <a href="#" id="saveToDisk"><img src="/images/placeholder.png" class="btnimg icon-apply" alt="Save to disk"/></a>
+          <a href="#" id="cancelSaveToDisk"><img src="/images/placeholder.png" class="btnimg icon-cancel" alt="Cancel"/></a>
           </form>
           <div id="addEntityContainer" class="hidden">
             Choose an existing entity:<br/>
@@ -90,8 +90,8 @@
             <input id="ephemeralUploadFile" type="file" name="excelfile"></input>
             </form>
           <div id="ephemeralOutput" class="hidden"></div>
-          <a href="#" id="addEntity"><img src="/images/icons/dialog-apply.png" class="btnimg" alt="Add this entity"/></a>
-          <a href="#" id="cancelAddEntity"><img src="/images/icons/dialog-cancel.png" class="btnimg" alt="Cancel"/></a>
+          <a href="#" id="addEntity"><img src="/images/placeholder.png" class="btnimg icon-apply" alt="Add this entity"/></a>
+          <a href="#" id="cancelAddEntity"><img src="/images/placeholder.png" class="btnimg icon-cancel" alt="Cancel"/></a>
           <p id="clickToPlaceTxt" class="hidden">Click to place</p>
           </div>
         </div>
@@ -100,14 +100,14 @@
           <p id="period"></p>
           <br clear="both">
           <table style="float:right;">
-            <tr><td><a href="#" id="prevPeriodBtn"><img class="smlbtnimg" alt="Prevous period" src="/images/icons/seek-backward.png" /></a></td>
+            <tr><td><a href="#" id="prevPeriodBtn"><img class="smlbtnimg icon-seek-backwards" alt="Prevous period" src="/images/placeholder.png" /></a></td>
             <td id="financialYearTxt">FINANCIAL YEAR</td>
-            <td><a href="#" id="nextPeriodBtn"><img class="smlbtnimg" alt="Next period" src="/images/icons/seek-forward.png" /></a></td></tr>
+            <td><a href="#" id="nextPeriodBtn"><img class="smlbtnimg icon-seek-forwards" alt="Next period" src="/images/placeholder.png" /></a></td></tr>
             
-            <tr><td><a href="#" id="playBtn"><img alt="Play" class="smlbtnimg" src="/images/icons/playback-start.png" /></a></td>
+            <tr><td><a href="#" id="playBtn"><img alt="Play" class="smlbtnimg icon-start" src="/images/placeholder.png" /></a></td>
             <td><select id="periodSel">
             </select></td>
-            <td><a href="#" id="stopBtn"><img alt="Stop" class="smlbtnimg" src="/images/icons/playback-stop.png" /></a></td></tr>
+            <td><a href="#" id="stopBtn"><img alt="Stop" class="smlbtnimg icon-stop" src="/images/placeholder.png" /></a></td></tr>
           </table>
         </div>
         <div class="box" id="informationbox">

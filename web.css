@@ -189,13 +189,59 @@ div a {
 img.btnimg {
     height: 32px;
     width: 32px;
+    background-image: url(/images/icons.png);
     border: none;
+}
+
+img.icon-apply {
+    background-position: 0px 0px;
+}
+
+img.icon-cancel {
+    background-position: -32px 0px;
+}
+
+img.icon-disk {
+    background-position: -64px 0px;
+}
+
+img.icon-zoom-in {
+    background-position: 0px -32px;
+}
+
+img.icon-zoom-out {
+    background-position: -32px -32px;
+}
+
+img.icon-zoom-box {
+    background-position: -64px -32px;
+}
+
+img.icon-zoom-original {
+    background-position: -96px -32px;
 }
 
 img.smlbtnimg {
     height: 24px;
     width: 24px;
+    background-image: url(/images/icons.png);
     border: none;
+}
+
+img.icon-seek-backwards {
+    background-position: 0px -64px;
+}
+
+img.icon-seek-forwards {
+    background-position: -32px -64px;
+}
+
+img.icon-start {
+    background-position: -64px -64px;
+}
+
+img.icon-stop {
+    background-position: -96px -64px;
 }
 
 .hidden {
