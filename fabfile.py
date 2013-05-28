@@ -1,6 +1,6 @@
 from fabric.api import *
 
-srcfiles = ['circles.js', 'data.js', 'theopenbudget.js', 'parenting.js',
+srcfiles = ['circles.js', 'util.js', 'parenting.js',
             'viewstate.js', 'viewobj.js', 'events.js']
 
 
@@ -27,9 +27,8 @@ def setup(dev="False"):
 		local("easy_install http://closure-linter.googlecode.com/files/closure_linter-latest.tar.gz")
 
 
-def compile(advanced="False"):
-        files = ['d3.v3.js', 'jquery-1.8.3.js', 'jquery.contextmenu.r2.js'] + \
-            srcfiles
+def compile(advanced="False", pretty="True"):
+        files = srcfiles
 
         command = "java -jar ../compiler-latest/compiler.jar "
         command = command + "--language_in=ECMASCRIPT5_STRICT "
@@ -40,7 +39,8 @@ def compile(advanced="False"):
                 command = (command +
                            "--compilation_level ADVANCED_OPTIMIZATIONS ")
 
-        command = command + "--formatting=pretty_print "
+	if pretty == "True":
+                command = command + "--formatting=pretty_print "
         
         command = command + "--js_output_file=finvis.js"
         local( command )
@@ -49,3 +49,21 @@ def docs():
         local( "../jsdoc/jsdoc " + \
                " ".join(srcfiles) + " --destination ./docs/" )
 
+def init_machine():
+        # do system updates
+        run("sudo apt-get update")
+        run("sudo apt-get -y upgrade")
+
+        #install mongodb
+        run("sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10")
+        run("echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/10gen.list")
+        run("sudo apt-get update")
+        run("sudo apt-get -y install mongodb-10gen")
+
+        # install various dependencies
+        run("sudo apt-get install -y nginx inkscape fabric python-virtualenv supervisor git")
+
+        # needed to compile pymongo
+        run("sudo apt-get -y install build-essential python-dev")
+
+        print("You now have the required packages.")

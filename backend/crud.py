@@ -40,11 +40,13 @@ def entity_json(entityid):
 
     # FIXME?: this doesn't verify that the user has the rights to view.
     # Should it? Not enforcing this will make embedding much easier...
-    obj = Entity.objects(id=entityid)[0]
-
-    if not obj:
+    obj = Entity.objects(id=entityid)
+    if len(obj):
+        obj = obj[0]
+    else:
         response.status = 404
         result = '{"error":"Requested an entity that does not exist."}'
+        return result
 
     if request.get_header('If-None-Match') == 'W/' + entityid + '/' + \
             str(obj.version):
