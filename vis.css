@@ -64,6 +64,7 @@ text {
 	font: 10px sans-serif;
 	fill: white;
 	opacity: 1;
+	cursor: default;
 }
 
 text.centred {
