@@ -8,6 +8,29 @@ import mongo
 import excel
 import finvis
 
+def jsonp(variable_name):
+    """
+    Decorator function to convert methods that return JSON to methods that return
+    JSONP. Since this is only being used for 'comet' purposes, we don't need to
+    worry about accepting a callback function. we'll just assign them to a
+    predefined variable for later use in javascript.
+    """
+    def decorator(fn):
+        def wrapper(*args, **kwargs):
+            result = fn(*args, **kwargs)
+            response.content_type = 'application/javascript'
+                                         # Maybe this should be 'if "20" in ...'
+            if "200" in response.status: # in case we realise we need to
+                                         # support other 2xx status codes
+                return variable_name + "['{}'] = {}".format(
+                    kwargs.values()[0], result)
+                # We're assuming here that the first arg is the id
+            else:
+                return result
+        return wrapper
+    return decorator
+
+
 
 @route('/entities')
 @view('entity_list')
@@ -33,9 +56,16 @@ def data_admin():
     return {'public_entities': public_entities, 'users_entities': entities,
             'me': finvis.aaa.current_user.username}
 
+@route('/entity.jsonp/:entityid')
+@jsonp('window.precached_data')
+def entity_jsonp(entityid):
+    return entity(entityid)
 
 @route('/entity.json/:entityid')
 def entity_json(entityid):
+    return entity(entityid)
+
+def entity(entityid):
     response.content_type = 'text/json'
 
     # FIXME?: this doesn't verify that the user has the rights to view.
@@ -223,22 +253,40 @@ def save_state():
     return result
 
 
+def state_raw(state_id):
+    """
+    finvis.vis() needs to access states to precache their entities. This method
+    provides a common point for finvis.vis() and crud.state_json/state_json to
+    access states by id.
+    """
+    try:
+        result = SavedState.objects(id=state_id).get()
+    except DoesNotExist as e:
+        return (404, '{"error":"Requested a saved state that does not exist."}')
+
+    return (200, result)
+
+@route('/state.jsonp/:state_id')
+@jsonp('window.precached_data')
+def state_jsonp(state_id):
+    return state(state_id)
+
 @route('/state.json/:state_id')
 def state_json(state_id):
+    return state(state_id)
+
+def state(state_id):
     response.content_type = 'text/json'
     if request.get_header('If-None-Match') == "W/" + state_id:
         response.status = 304
         return
 
-    try:
-        result = SavedState.objects(id=state_id).get()
-    except DoesNotExist as e:
-        response.status = 404
-        return '{"error":"Requested a saved state that does not exist."}'
-
-    result.visits = result.visits + 1
-    result.save()
-
+    (response.status, result) = state_raw(state_id)
+    if '20' in response.status:
+        result.visits = result.visits + 1
+        result.save()
+        result = result.to_mongo()
     response.add_header("ETag", "W/" + state_id)
 
-    return bson.json_util.dumps(result.to_mongo())
+    return bson.json_util.dumps(result)
+

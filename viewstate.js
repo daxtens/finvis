@@ -480,44 +480,44 @@ ViewState.prototype.importState = function(state) {
     } else {
       var id = children[child]['entityId'];
     }
-    jQuery.ajax('/entity.json/' + id, {
-      success: function(d) {
-        var vo = new ViewObj(d, that, voState['position']);
-        vo.period(globalState['period']);
-        vo.renderMode.specifiedAggregates = voState['specifiedAggregates'];
-        vo.render();
-        vo.reposition();
-        if ('children' in voState && voState['children'].length) {
-          vo.popOut();
-          vo.reposition();
-          vo.render();
-          for (var child in voState['children']) {
-            createChildren(vo.children()[child],
-                           voState['children'][child]);
-          }
-        }
-
-        // reposition here - sets bounding circle.
+  getEntity(
+    id,
+    function(d) {
+      var vo = new ViewObj(d, that, voState['position']);
+      vo.period(globalState['period']);
+      vo.renderMode.specifiedAggregates = voState['specifiedAggregates'];
+      vo.render();
+      vo.reposition();
+      if ('children' in voState && voState['children'].length) {
+        vo.popOut();
         vo.reposition();
         vo.render();
-
-        if ('children' in voState && voState['children'].length) {
-          for (var child in voState['children']) {
-            updateChild(vo.children()[child],
-                        voState['children'][child]);
-          }
+        for (var child in voState['children']) {
+          createChildren(vo.children()[child],
+                         voState['children'][child]);
         }
-      },
-      complete: function() {
-        // this code breaks abstraction and needs to be moved out
-        // (it assumes things about the environment - that event.js is
-        // normal - that it shouldn't do; potentially breaking embedding.)
-        updatePeriodSelector();
-        var period = globalState['period'];
-        jQuery('#periodSel option[value=' + period + ']')
-            .prop('selected', true);
-        jQuery('#period').text(period);
       }
+
+      // reposition here - sets bounding circle.
+      vo.reposition();
+      vo.render();
+
+      if ('children' in voState && voState['children'].length) {
+        for (var child in voState['children']) {
+        updateChild(vo.children()[child],
+              voState['children'][child]);
+        }
+      }
+    },
+    function() {
+      // this code breaks abstraction and needs to be moved out
+      // (it assumes things about the environment - that event.js is
+      // normal - that it shouldn't do; potentially breaking embedding.)
+      updatePeriodSelector();
+      var period = globalState['period'];
+      jQuery('#periodSel option[value=' + period + ']')
+        .prop('selected', true);
+      jQuery('#period').text(period);
     });
   };
 

@@ -11,6 +11,7 @@ import auth
 from mongo import *
 import downloader
 import crud
+import bson
 
 rootdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 
@@ -54,7 +55,8 @@ def vis(entity_id=None):
               'admin': admin,
               'public_entities': public_entities,
               'user_entities': user_entities,
-              'initial_id': entity_id
+              'initial_id': entity_id,
+              'precached_data': precache_entity(entity_id)
               }
     #print(result)
     return result
@@ -87,11 +89,35 @@ def vis(state_id=None):
               'admin': admin,
               'public_entities': public_entities,
               'user_entities': user_entities,
-              'initial_state': state_id
+              'initial_state': state_id,
+              'precached_data': precache_state(state_id)
               }
     #print(result)
     return result
 
+def precache_state(state_id):
+    """
+    Build an array of URLs for scripts containing the requested data as JSONP.
+    This lets the data be loaded immediately, rather than having to wait for
+    document.ready and the latency associated with another AJAX call.
+    """
+    (status, result) = crud.state_raw(state_id)
+    precached_data = []
+    if status == 200:
+        precached_data.append("/state.jsonp/" + state_id)
+        for child in result.to_mongo()['children']:
+            # We're assuming here that any entity in a state is valid
+            # Not sure if this is always necessarily true...
+            precached_data.append("/entity.jsonp/" + str(child['entityId']))
+
+    return precached_data
+
+def precache_entity(entity_id):
+    # TODO: If the id is not found, what is expected to be a JSONP response is
+    # instead sent through as plain JSON. This does nothing, and isn't harmful,
+    # but it could probably be handled a bit more gracefully...
+    precached_data = [ "/entity.jsonp/" + entity_id ]
+    return precached_data
 
 # Static files
 @bottle.route('/static/<filename:path>')

@@ -179,5 +179,12 @@
     }(document, "script", "twitter-wjs"));</script>
     <!-- FB -->
     <script src='http://connect.facebook.net/en_US/all.js'></script>
+	<script type="text/javascript">
+		window.precached_data = {}
+	</script>
+		%for jsonp_path in precached_data:
+	<script type="text/javascript" src="{{jsonp_path}}"></script>
+		%end
+	</script>
   </body>
 </html>

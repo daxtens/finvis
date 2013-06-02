@@ -117,19 +117,23 @@ jQuery('document').ready(function() {
   // set up the viewstate and initial view object
   window.viewstate = new ViewState(d3.select('body').append('svg'));
   if (window['initial_state']) {
-    jQuery.ajax('/state.json/' + window['initial_state'], {
-      success: function(d) {
-        viewstate.importState(d);
-      },
-      error: function(d) {
-        var resp = JSON.parse(d.responseText);
-        if ('error' in resp) {
-          alert('Error: ' + resp['error']);
-        } else {
-          alert('An unknown error occured. We\'re very sorry. Try reloading?');
+    if (window['initial_state'] in window.precached_data) {
+      viewstate.importState(window.precached_data[window['initial_state']]);
+      } else {
+      jQuery.ajax('/state.json/' + window['initial_state'], {
+        success: function(d) {
+          viewstate.importState(d);
+        },
+        error: function(d) {
+          var resp = JSON.parse(d.responseText);
+          if ('error' in resp) {
+            alert('Error: ' + resp['error']);
+          } else {
+            alert('An unknown error occured. We\'re very sorry. Try reloading?');
+          }
         }
-      }
-    });
+      });
+    }
   } else {
     jQuery.ajax('/entity.json/' + window['initial_id'], {
       success: function(d) {
@@ -498,6 +502,18 @@ function saveToDisk() {
 function cancelSaveToDisk() {
   jQuery('#saveToDiskForm').addClass('hidden');
   return false;
+}
+
+function getEntity(id, success, complete) {
+  if (id in window.precached_data) {
+    success(window.precached_data[id]);
+    complete();
+  } else {
+    jQuery.ajax('/entity.json/' + id, {
+      success: success,
+      complete: complete
+    });
+  }
 }
 
 
