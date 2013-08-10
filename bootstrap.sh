@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This next line should be uncommented
-#apt-get update
+apt-get update
 apt-get install -y mongodb
 apt-get install -y inkscape
 apt-get install -y python-pip
