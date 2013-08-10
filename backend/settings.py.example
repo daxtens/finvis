@@ -1,7 +1,7 @@
 # Example for settings.py
 # Put your actual values here, then rename it settings.py
 
-smtp_url = "Put your URL here"
+smtp_url = "smtp://localhost"
 
 session_encrypt_key = "Insert a 32 byte random string"
 
@@ -10,5 +10,7 @@ email_sender = 'you@your.com'
 # Don't forget to change hostname in views/register_email.tpl
 # and view/password_reset_email.tpl
 
-default_initial_state = 'Set this to a state ID'
+# If you've followed the standard setup instructions, this should
+# load up the Commonwealth Final Budget Outcome
+default_initial_state = '5205fe5e441124423301c1c9'
 
