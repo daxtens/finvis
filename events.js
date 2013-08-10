@@ -96,10 +96,17 @@ jQuery('document').ready(function() {
       success: function(d) {
         //console.log(d);
         var sel = jQuery('#periodSel')[0];
-        viewstate.beginAddingView(d, sel.options[sel.selectedIndex].value);
+        if (sel.options[sel.selectedIndex]) {
+          viewstate.beginAddingView(d, sel.options[sel.selectedIndex].value);
+        } else {
+          // there's no year. This is probably because we've failed to load
+          // an initial state. Make something up; FIXME - this tends to leave
+          // things slightly broken.
+          viewstate.beginAddingView(d, '2011-12');
+        }
       },
       error: function(d) {
-        var resp = JSON.parse(d.responseText);
+        var resp = JSON.parse(JSON.parse(d.responseText));
         if ('error' in resp) {
           alert('Error: ' + resp['error']);
         } else {
@@ -125,11 +132,12 @@ jQuery('document').ready(function() {
           viewstate.importState(d);
         },
         error: function(d) {
-          var resp = JSON.parse(d.responseText);
+          var resp = JSON.parse(JSON.parse(d.responseText));
           if ('error' in resp) {
             alert('Error: ' + resp['error']);
           } else {
-            alert('An unknown error occured. We\'re very sorry. Try reloading?');
+            alert('An unknown error occured. We\'re very sorry. ' +
+                  'Try reloading?');
           }
         }
       });
@@ -144,7 +152,7 @@ jQuery('document').ready(function() {
         vo.render();
       },
       error: function(d) {
-        var resp = JSON.parse(d.responseText);
+        var resp = JSON.parse(JSON.parse(d.responseText));
         if ('error' in resp) {
           alert('Error: ' + resp['error']);
         } else {
@@ -599,7 +607,7 @@ function fbShare() {
   };
 
   var callback = function(response) {
-    console.log(response);
+    //console.log(response);
     finishSharing();
   };
 
