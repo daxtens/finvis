@@ -5,7 +5,15 @@ import bottle
 from beaker.middleware import SessionMiddleware
 from cork import Cork
 from cork.backends import MongoDBBackend
-import settings
+
+try:
+    import settings
+except ImportError:
+    import os.path
+    if os.path.exists("settings.py.example"):
+        print ("You probably haven't made a real settings.py file.\n"
+               "Open settings.py.example and go from there.")
+
 import auth
 # Various bits of the app
 from mongo import *
@@ -140,7 +148,8 @@ def main():
 
     # Start the Bottle webapp
     #bottle.debug(True)
-    bottle.run(app=app, server=bottle.CherryPyServer)
+    bottle.run(app=app, server=bottle.CherryPyServer, host="0.0.0.0")
 
 if __name__ == "__main__":
     main()
+

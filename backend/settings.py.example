@@ -1,0 +1,14 @@
+# Example for settings.py
+# Put your actual values here, then rename it settings.py
+
+smtp_url = "Put your URL here"
+
+session_encrypt_key = "Insert a 32 byte random string"
+
+email_sender = 'you@your.com'
+
+# Don't forget to change hostname in views/register_email.tpl
+# and view/password_reset_email.tpl
+
+default_initial_state = 'Set this to a state ID'
+
