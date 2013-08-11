@@ -103,6 +103,17 @@ def vis(state_id=None):
     #print(result)
     return result
 
+
+@bottle.route('/embed/:state_id')
+@bottle.view('embed')
+def embed(state_id):
+    """Fetch the necessary data to embed the state provided in another page.
+       The guts of this are in the template."""
+    result = {'initial_state': state_id,
+              'precached_data': precache_state(state_id)
+              }
+    return result
+
 def precache_state(state_id):
     """
     Build an array of URLs for scripts containing the requested data as JSONP.
@@ -129,13 +140,18 @@ def precache_entity(entity_id):
 
 # Static files
 @bottle.route('/static/<filename:path>')
-@bottle.route('/js/<filename:path>')
 @bottle.route('/css/<filename:path>')
 def static(filename):
-    # todo move static assets to static.finvis or somesuch
-    # served directly out of nginx for speed
+    """Serve a static file. This method should only be used on dev servers;
+       production servers should serve static files out of nginx."""
     return bottle.static_file(filename, root=rootdir)
 
+@bottle.route('/js/<filename:path>')
+def js(filename):
+    """Serve a static JS file. This method should only be used on dev servers;
+    production servers should serve static files out of nginx."""
+    return bottle.static_file(filename, root=os.path.join(rootdir, 'js'))
+    
 
 @bottle.route('/images/<filename:path>')
 def images(filename):
@@ -148,7 +164,8 @@ def main():
 
     # Start the Bottle webapp
     #bottle.debug(True)
-    bottle.run(app=app, server=bottle.CherryPyServer, host="0.0.0.0")
+    #bottle.run(app=app, server=bottle.CherryPyServer, host="0.0.0.0")
+    bottle.run(app=app, debug=True, host="0.0.0.0")
 
 if __name__ == "__main__":
     main()

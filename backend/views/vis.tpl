@@ -21,7 +21,8 @@
     %else:
     <script type="text/javascript">window.initial_state="{{initial_state}}";</script>
     %end
-    <script type="text/javascript" src="/js/events.js"></script>
+    <script type="text/javascript" src="/js/events/events_all.js"></script>
+    <script type="text/javascript" src="/js/events/events_standalone.js"></script>
     <link rel="stylesheet" href="/css/vis.css" />
     <link rel="stylesheet" href="/css/web.css" />
   </head>
@@ -132,7 +133,7 @@
           <div class="hidden" id="packing">
             <p class="tighttop">Packing model:</p>
             <select id="packingSel">
-              <option value="default">Circular</option>
+              <option value="oldstyle">Circular</option>
               <option value="dendritic" selected="selected">Dendritic</option>
             </select>
           </div>
