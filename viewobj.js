@@ -1167,6 +1167,8 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
     viewstate.updateInfobox(viewObj, d);
   };
 
+  var _dblclick = viewObj.ondblclickMaker();
+
   /***** Pre-process the data */
   var data = JSON.parse(JSON.stringify(viewObj.data()));
 
@@ -1295,7 +1297,7 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
       .classed('invalidPeriod', viewObj.isInvalidPeriod)
       .attr('d', arc)
       .call(viewObj.dragHandler)
-      .on('dblclick', viewObj.ondblclickMaker())
+      .on('dblclick', _dblclick)
       .on('touchstart', viewObj.ontouchstartMaker())
       .on('touchend', viewObj.ontouchendMaker())
       .on('click', _info);
@@ -1447,20 +1449,22 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
   //             for bottom labels this is the name
   // we determine what's what by virtue of the section's css class
   wedgeInnerLabels.enter()
-        .append('text')
-        .classed('wedgeLabel', true)
-        .classed('inner', true)
-        .classed('value', isTop)
-        .classed('name', isBottom)
-        .call(viewObj.dragHandler)
-        .text(innerLabelsText)
-        .attr('x', labelsX)
-        .classed('centred', function(d) { return (horizSide(d) == 'middle'); })
-        .classed('right', function(d) { return (horizSide(d) == 'left'); })
-        .attr('y', innerLabelsY)
-        .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; })
-        .on('click', _info)
-        .on('touchstart', _info);
+      .append('text')
+      .classed('wedgeLabel', true)
+      .classed('inner', true)
+      .classed('value', isTop)
+      .classed('name', isBottom)
+      .call(viewObj.dragHandler)
+      .text(innerLabelsText)
+      .attr('x', labelsX)
+      .classed('centred', function(d) { return (horizSide(d) == 'middle'); })
+      .classed('right', function(d) { return (horizSide(d) == 'left'); })
+      .attr('y', innerLabelsY)
+      .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; })
+      .on('click', _info)
+      .on('touchstart', _info)
+      .on('dblclick', _dblclick);
+
 
   wedgeInnerLabels
         .text(innerLabelsText)
@@ -1475,20 +1479,21 @@ ViewObjRenderers.defaultSectorRenderer = function(viewObj) {
 
   // outer text: vice versa
   wedgeOuterLabels.enter()
-        .append('text')
-        .classed('wedgeLabel', true)
-        .classed('outer', true)
-        .classed('value', isBottom)
-        .classed('name', isTop)
-        .call(viewObj.dragHandler)
-        .text(outerLabelsText)
-        .attr('x', labelsX)
-        .classed('centred', function(d) { return (horizSide(d) == 'middle'); })
-        .classed('right', function(d) { return (horizSide(d) == 'left'); })
-        .attr('y', outerLabelsY)
-        .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; })
-        .on('click', _info)
-        .on('touchstart', _info);
+      .append('text')
+      .classed('wedgeLabel', true)
+      .classed('outer', true)
+      .classed('value', isBottom)
+      .classed('name', isTop)
+      .call(viewObj.dragHandler)
+      .text(outerLabelsText)
+      .attr('x', labelsX)
+      .classed('centred', function(d) { return (horizSide(d) == 'middle'); })
+      .classed('right', function(d) { return (horizSide(d) == 'left'); })
+      .attr('y', outerLabelsY)
+      .attr('transform', function(d) {return 'scale(' + scaleFactor + ')'; })
+      .on('click', _info)
+      .on('touchstart', _info)
+      .on('dblclick', _dblclick);
 
   wedgeOuterLabels
         .text(outerLabelsText)
@@ -1830,6 +1835,8 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
     viewstate.updateInfobox(viewObj, d);
   };
 
+  var _dblclick = viewObj.ondblclickMaker();
+
   // create the bubble
   var circleGroup = viewObj.renderSVG.select('g.circle');
   if (circleGroup.empty()) {
@@ -1852,7 +1859,7 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
       .classed('poppedOut', function() {return viewObj.poppedOut;})
       .classed('invalidPeriod', viewObj.isInvalidPeriod)
       .call(viewObj.dragHandler)
-      .on('dblclick', viewObj.ondblclickMaker())
+      .on('dblclick', _dblclick)
       .on('touchstart', viewObj.ontouchstartMaker())
       .on('touchend', viewObj.ontouchendMaker())
       .on('click', _info)
@@ -1908,13 +1915,14 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
   }
 
   nameLabel.enter().append('text')
-        .text(function(d) {return d['name'].toUpperCase();})
-        .classed('wedgeLabel', true).classed('name', true)
-        .call(viewObj.dragHandler)
-        .classed('centred', true)
-        .attr('y', -10)
-        .on('touchstart', _info)
-        .on('click', _info);
+      .text(function(d) {return d['name'].toUpperCase();})
+      .classed('wedgeLabel', true).classed('name', true)
+      .call(viewObj.dragHandler)
+      .classed('centred', true)
+      .attr('y', -10)
+      .on('touchstart', _info)
+      .on('click', _info)
+      .on('dblclick', _dblclick);
 
   nameLabel
       .classed('invalidPeriod', viewObj.isInvalidPeriod);
@@ -1922,15 +1930,16 @@ ViewObjRenderers.bubbleRenderer = function(viewObj, animate) {
   nameLabel.exit().remove();
 
   valueLabel.enter().append('text')
-        .text(function(d) {return formatDollarValue(d['periods'][p]['value']) +
-                                  (viewObj.canPopOut() && !viewObj.poppedOut ?
-                                   '...' : '');})
-        .classed('wedgeLabel', true).classed('value', true)
-        .classed('centred', true)
-        .attr('y', valueLabelY)
-        .call(viewObj.dragHandler)
-        .on('touchstart', _info)
-        .on('click', _info);
+      .text(function(d) {return formatDollarValue(d['periods'][p]['value']) +
+                         (viewObj.canPopOut() && !viewObj.poppedOut ?
+                          '...' : '');})
+      .classed('wedgeLabel', true).classed('value', true)
+      .classed('centred', true)
+      .attr('y', valueLabelY)
+      .call(viewObj.dragHandler)
+      .on('touchstart', _info)
+      .on('click', _info)
+      .on('dblclick', _dblclick);
 
   valueLabel
       .text(function(d) {return formatDollarValue(d['periods'][p]['value']) +
