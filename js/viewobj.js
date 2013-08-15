@@ -1036,7 +1036,7 @@ ViewObj.prototype.reposition = function(animate) {
   // just apply it to children.
   obj.children().map(recenterChild);
 
-  recalcPackingEfficiency();
+  //recalcPackingEfficiency();
 };
 
 

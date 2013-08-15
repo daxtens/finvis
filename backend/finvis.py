@@ -109,8 +109,13 @@ def vis(state_id=None):
 def embed(state_id):
     """Fetch the necessary data to embed the state provided in another page.
        The guts of this are in the template."""
+
+    bottle.response.content_type = 'application/javascript'
+
+    # TODO: precached data isn't used yet.
     result = {'initial_state': state_id,
-              'precached_data': precache_state(state_id)
+              #'precached_data': precache_state(state_id),
+              'hostname': settings.hostname
               }
     return result
 
@@ -162,10 +167,9 @@ def images(filename):
 
 def main():
 
-    # Start the Bottle webapp
-    #bottle.debug(True)
+    # Start the Bottle webapp. Change this for deployment!
     #bottle.run(app=app, server=bottle.CherryPyServer, host="0.0.0.0")
-    bottle.run(app=app, debug=True, host="0.0.0.0")
+    bottle.run(app=app, debug=True, host="0.0.0.0", reloader=True)
 
 if __name__ == "__main__":
     main()

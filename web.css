@@ -2,10 +2,18 @@
 
 #openeconomy {
     font: 10px sans-serif;
+    /*background: url("images/back.jpg") repeat scroll 0 0 transparent;*/
+    background-color: rgb( 8, 27, 59 );
+}
+
+#openeconomy svg {
+   position: absolute;
+   top: 0px;
+   left: 0px;
 }
 
 #openeconomy #oldBrowserWarning {
-    position: fixed;
+    position: relative;
     top: 70px;
     background-color: #FFF;
     color: #000;
@@ -24,6 +32,8 @@
     float:right;
     /*width:200px;*/
     text-align:right;
+    position: relative;
+    z-index: 1;
 }
 
 #openeconomy #rightContainer .tighttop {
@@ -31,9 +41,9 @@
 }
 
 #openeconomy #rightToolBox {
-    position:fixed; 
+    position: relative; 
     right:5px;
-    top: 33px;
+    top: 5px;
     width: 200px;
 }
 
@@ -52,11 +62,12 @@
 
 /* this is full of shameful hackery. FIXME */
 #openeconomy .box p.rotate {
-    position: fixed;
+    position: relative;
+    float: left;
 }
 
 #openeconomy #viewbox p.rotate {
-    right: 166px;
+    right: 16px;
     width: 50px;
     margin: 0;
 }
@@ -66,6 +77,11 @@
     height: 100px;
 }
 
+#openeconomy #periodbox table {
+    color: white;
+    font-size: 10px;
+}
+
 #openeconomy #periodbox table td {
     padding: 0;
 }
@@ -73,7 +89,7 @@
 #openeconomy #periodbox p.rotate,
 #openeconomy #informationbox p.rotate  {
     width: 50px;
-    right: 166px;
+    right: 16px;
     margin: 0;
 }
 
@@ -87,6 +103,7 @@
 
 #openeconomy #actionbox #keyactions {
     font-size: 18px;
+    margin-bottom: 0.25em;
 }
 
 
@@ -95,10 +112,10 @@
 }
 
 #openeconomy #period {
-    width: 155px;
+    width: 200px;
     font-size: 400%;
     text-align: right;
-    margin: 0;
+    margin: -18px 0 0 0;
     float: right;
 }
 
@@ -109,7 +126,6 @@
 #openeconomy #toggleInfoBoxContainer {
     margin-top: 0;
     margin-bottom: 2.25em;
-    clear: both;
 }
 
 #openeconomy #infobox {

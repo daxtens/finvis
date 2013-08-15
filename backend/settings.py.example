@@ -3,12 +3,16 @@
 
 smtp_url = "smtp://localhost"
 
-session_encrypt_key = "Insert a 32 byte random string"
+# Replace this with you own 32 byte random string!
+session_encrypt_key = "a" * 32
 
 email_sender = 'you@your.com'
 
-# Don't forget to change hostname in views/register_email.tpl
-# and view/password_reset_email.tpl
+# This value is used in embed.tpl
+hostname = 'localhost:8080'
+# Don't forget to also change the hostname in views/register_email.tpl
+# and views/password_reset_email.tpl, which are hardcoded because Cork
+# doesn't support passing variables to templates...
 
 # If you've followed the standard setup instructions, this should
 # load up the Commonwealth Final Budget Outcome

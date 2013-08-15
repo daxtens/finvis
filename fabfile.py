@@ -1,7 +1,8 @@
 from fabric.api import *
 
-srcfiles = ['circles.js', 'util.js', 'parenting.js',
-            'viewstate.js', 'viewobj.js', 'events.js']
+srcfiles_embedded = ['js/circles.js', 'js/util.js', 'js/parenting.js',
+                     'js/viewstate.js', 'js/viewobj.js', 'js/events/events_all.js']
+srcfiles_standalone = ['js/events/events_standalone.js']
 
 
 def hello():
@@ -27,8 +28,10 @@ def setup(dev="False"):
 		local("easy_install http://closure-linter.googlecode.com/files/closure_linter-latest.tar.gz")
 
 
-def compile(advanced="False", pretty="True"):
-        files = srcfiles
+def compile(advanced="False", pretty="True", standalone="False"):
+        files = srcfiles_embedded
+	if standalone == "True":
+		files = files + srcfiles_standalone
 
         command = "java -jar ../compiler-latest/compiler.jar "
         command = command + "--language_in=ECMASCRIPT5_STRICT "
@@ -42,7 +45,7 @@ def compile(advanced="False", pretty="True"):
 	if pretty == "True":
                 command = command + "--formatting=pretty_print "
         
-        command = command + "--js_output_file=finvis.js"
+        command = command + "--js_output_file=js/finvis.js"
         local( command )
 
 def docs():

@@ -1,8 +1,6 @@
 'use strict';
 
-/** Event dispatcher. */
-
-
+/** Event dispatcher, for both integrated and standalone setups. */
 
 /** Timer to prevent resizing from firing expensive renders() too quickly.
 */
@@ -22,6 +20,9 @@ window.onresize = function() {
 };
 
 /** Initalise.
+    @param {string} svgContainerSelector A selector for the svg container where
+                      the SVG will be created. You want '#openeconomy'
+                      or 'body'.
     @return {ViewState} The viewstate we just created.
  */
 function initOpenEconomy(svgContainerSelector) {
@@ -40,14 +41,14 @@ function initOpenEconomy(svgContainerSelector) {
 
   // set up the viewstate
   var svg = d3.select(svgContainerSelector).append('svg');
-  
+
   // stop mobile browsers from scrolling TOE stuff
   svg[0][0].ontouchmove = function(event) {
     event.preventDefault();
   };
 
   return new ViewState(svg);
-};
+}
 
 
 /** Handler for the period selector
@@ -270,4 +271,17 @@ function beginZoomRect() {
 
   zoomGrabber.call(dragHandler);
 
+}
+
+
+function getEntity(id, success, complete) {
+  if (window.precached_data && id in window.precached_data) {
+    success(window.precached_data[id]);
+    complete();
+  } else {
+    jQuery.ajax('/entity.json/' + id, {
+      success: success,
+      complete: complete
+    });
+  }
 }

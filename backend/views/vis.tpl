@@ -11,22 +11,19 @@
     <script type="text/javascript" src="/js/jquery.form.js"></script>
     <script type="text/javascript">jQuery.noConflict();
     </script>
-    <script type="text/javascript" src="/js/circles.js"></script>
-    <script type="text/javascript" src="/js/util.js"></script>
-    <script type="text/javascript" src="/js/parenting.js"></script>
-    <script type="text/javascript" src="/js/viewstate.js"></script>
-    <script type="text/javascript" src="/js/viewobj.js"></script>
     %if defined('initial_id'):
     <script type="text/javascript">window.initial_id="{{initial_id}}";</script>
     %else:
     <script type="text/javascript">window.initial_state="{{initial_state}}";</script>
     %end
-    <script type="text/javascript" src="/js/events/events_all.js"></script>
+    <script type="text/javascript" src="/js/finvis.js"></script>
     <script type="text/javascript" src="/js/events/events_standalone.js"></script>
     <link rel="stylesheet" href="/css/vis.css" />
     <link rel="stylesheet" href="/css/web.css" />
+    <link rel="stylesheet" href="/css/web_standalone.css" />
+
   </head>
-  <body>
+  <body id="openeconomy">
     <div id="fb-root"></div>
     <div id="headline">
       <a href="http://greensmps.com.au/" target="_blank"><img src="/images/greens-logo.svg" alt="Greens Logo" /></a>

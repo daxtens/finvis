@@ -329,19 +329,6 @@ function cancelSaveToDisk() {
   return false;
 }
 
-function getEntity(id, success, complete) {
-  if (id in window.precached_data) {
-    success(window.precached_data[id]);
-    complete();
-  } else {
-    jQuery.ajax('/entity.json/' + id, {
-      success: success,
-      complete: complete
-    });
-  }
-}
-
-
 /** Change the packing model
  */
 function changePacking() {

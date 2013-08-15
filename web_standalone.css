@@ -1,9 +1,8 @@
 @charset "utf-8";
-body {
-	/*background: url("images/back.jpg") repeat scroll 0 0 transparent;*/
-        background-color: rgb( 8, 27, 59 );
-}
 
+#openeconomy #rightToolBox {
+    top: 30px;
+}
 
 #iobox {
     min-height: 50px;
@@ -11,7 +10,7 @@ body {
 
 #iobox p.rotate {
     width: 67px;
-    right: 157px;
+    right: 24px;
 }
 
 #morebox {
@@ -20,7 +19,7 @@ body {
 
 #morebox p.rotate {
     width: 64px;
-    right: 160px;
+    right: 24px;
     margin: 0;
 }
 
@@ -36,6 +35,7 @@ body {
     color: rgb(66, 77, 100);
     text-align: right;
     width: 99%;
+    z-index: 1;
 }
 
 #headline img {
