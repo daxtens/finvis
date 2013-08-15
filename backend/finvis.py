@@ -112,9 +112,8 @@ def embed(state_id):
 
     bottle.response.content_type = 'application/javascript'
 
-    # TODO: precached data isn't used yet.
     result = {'initial_state': state_id,
-              #'precached_data': precache_state(state_id),
+              'precached_data': precache_state(state_id),
               'hostname': settings.hostname
               }
     return result

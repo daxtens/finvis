@@ -279,7 +279,8 @@ function getEntity(id, success, complete) {
     success(window.precached_data[id]);
     complete();
   } else {
-    jQuery.ajax('/entity.json/' + id, {
+    jQuery.ajax((window.openEconomyHost ? window.openEconomyHost : '') +
+                '/entity.json/' + id, {
       success: success,
       complete: complete
     });

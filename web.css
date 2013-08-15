@@ -4,6 +4,7 @@
     font: 10px sans-serif;
     /*background: url("images/back.jpg") repeat scroll 0 0 transparent;*/
     background-color: rgb( 8, 27, 59 );
+    min-height: 425px;
 }
 
 #openeconomy svg {

@@ -27,15 +27,13 @@ function doOpenEconomy() {
     head.appendChild(script);
   }
 
-  // Force jQuery
-  if (typeof jQuery == 'undefined') {    
-    getScript('http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js', hasjQuery);    
-  } else {
-    hasjQuery();
-  };
+  // Step 1: Asynchronously load a bunch of resources
+  window.precached_data = {};
+  %for jsonp_path in precached_data:
+  getScript("http://{{hostname}}{{jsonp_path}}", function () {});
+  %end
 
-  // Load up all the necessary assets
-  // step 0: write a bunch of HTML into the div
+  // Step 2: write a bunch of HTML into the div
   document.getElementById('openeconomy').innerHTML = '<link rel="stylesheet" href="http://{{hostname}}/css/vis.css" />\
 <link rel="stylesheet" href="http://{{hostname}}/css/web.css" />\
 <style>\
@@ -112,47 +110,50 @@ function doOpenEconomy() {
       </ul>\
 </div>';
 
-  // step 1: load jQuery plugin
+  // Step 3: Force jQuery
+  if (typeof jQuery == 'undefined') {    
+    getScript('http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js', hasjQuery);    
+  } else {
+    hasjQuery();
+  };
+
+  // Step 4: Now that jQuery has loaded, load the plugin, app and d3
   function hasjQuery() {
     var $ = jQuery;
-    getScript('http://{{hostname}}/js/jquery.contextmenu.r2.js', function() {
-      jQuery.noConflict();
-      loadApp();
-    });
-  }
 
-  // step 2: load d3 and app js
-  function loadApp() {
+    getScript('http://{{hostname}}/js/jquery.contextmenu.r2.js', initApp); 
     getScript("http://d3js.org/d3.v3.min.js", initApp);
     getScript("http://{{hostname}}/js/finvis.js", initApp);
   }
 
-  // step 3 - kick things off
+  // Step 5: Once we have those 3 resources, kick off the app
   var scriptsLoaded = 0;
   function initApp() {
+    jQuery.noConflict();
     scriptsLoaded++;
-    if (scriptsLoaded != 2) return;
+    if (scriptsLoaded != 3) return;
 
-    // make sure we're by default at least 425px high
-    if (jQuery('#openeconomy').height() < 425) {
-      jQuery('#openeconomy').height(425);
-    }
-
+    
+    window.openEconomyHost = 'http://{{hostname}}';
     window.viewstate = initOpenEconomy('#openeconomy');
-    jQuery.ajax('http://{{hostname}}/state.json/{{ initial_state }}', {
+    if ('{{initial_state}}' in window.precached_data) {
+      viewstate.importState(window.precached_data['{{initial_state}}']);
+    } else {
+      jQuery.ajax('http://{{hostname}}/state.json/{{initial_state}}', {
         success: function(d) {
           viewstate.importState(d);
         },
         error: function(d) {
           var resp = JSON.parse(JSON.parse(d.responseText));
           if ('error' in resp) {
-            alert('Error: ' + resp['error']);
+            alert('Error loading Open Economy view: ' + resp['error']);
           } else {
-            alert('An unknown error occured. We\'re very sorry. ' +
+            alert('An unknown error occured loading the Open Economy view. We\'re very sorry. ' +
                   'Try reloading?');
           }
         }
       });
+    }
   }
 }
 
