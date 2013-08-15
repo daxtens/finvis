@@ -183,6 +183,5 @@
 		%for jsonp_path in precached_data:
 	<script type="text/javascript" src="{{jsonp_path}}"></script>
 		%end
-	</script>
   </body>
 </html>
