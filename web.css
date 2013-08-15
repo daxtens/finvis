@@ -10,6 +10,7 @@
    position: absolute;
    top: 0px;
    left: 0px;
+   overflow: hidden; /* Needed for IE10 embedding */
 }
 
 #openeconomy #oldBrowserWarning {
