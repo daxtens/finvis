@@ -67,7 +67,9 @@ def entity_json(entityid):
 
 def entity(entityid):
     response.content_type = 'text/json'
-
+    # Allow anyone to access entities.
+    response.add_header('Access-Control-Allow-Origin', '*')
+    
     # FIXME?: this doesn't verify that the user has the rights to view.
     # Should it? Not enforcing this will make embedding much easier...
     obj = Entity.objects(id=entityid)
@@ -277,6 +279,9 @@ def state_json(state_id):
 
 def state(state_id):
     response.content_type = 'text/json'
+    # Allow anyone to access states.
+    response.add_header('Access-Control-Allow-Origin', '*')
+
     if request.get_header('If-None-Match') == "W/" + state_id:
         response.status = 304
         return

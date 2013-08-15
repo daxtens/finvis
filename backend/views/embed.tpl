@@ -1,6 +1,5 @@
 'use strict';
 
-var HOSTNAME='http://{{hostname}}'
 /* Embed an Open Economy view into another website.
    Look for an #openeconomy div and do cleverness with that. */
 // JS loading from http://css-tricks.com/snippets/jquery/load-jquery-only-if-not-present/
@@ -37,8 +36,14 @@ function doOpenEconomy() {
 
   // Load up all the necessary assets
   // step 0: write a bunch of HTML into the div
-  document.getElementById('openeconomy').innerHTML = '<link rel="stylesheet" href="/css/vis.css" />\
-<link rel="stylesheet" href="/css/web.css" />\
+  document.getElementById('openeconomy').innerHTML = '<link rel="stylesheet" href="http://{{hostname}}/css/vis.css" />\
+<link rel="stylesheet" href="http://{{hostname}}/css/web.css" />\
+<style>\
+#openeconomy img.btnimg {\
+    /* Override specifically for embedding: give FQDN */\
+    background-image: url(http://{{hostname}}/images/icons.png);\
+}\
+</style>\
 <!--[if lt IE 10]>\
 <div id="oldBrowserWarning">\
   Hi! You seem to be using Internet Explorer 9 or below. Unfortunately this website only functions on modern, standards-compliant browsers such as:\
@@ -61,24 +66,24 @@ function doOpenEconomy() {
       <div id="rightToolBox">\
         <div class="box" id="viewbox">\
           <p class="rotate">VIEW</p>\
-          <a href="#" title="Zoom in" id="zoomIn"><img class="btnimg icon-zoom-in" src="/images/placeholder.png" alt="Zoom in"/></a>\
-          <a href="#" title="Zoom out" id="zoomOut"><img class="btnimg icon-zoom-out" src="/images/placeholder.png" alt="Zoom out"/></a><br/>\
-          <a href="#" title="Zoom region" id="zoomRect"><img src="/images/placeholder.png" class="btnimg icon-zoom-box" alt="Zoom in on a region"/></a>\
-          <a href="#" title="Fit to screen" id="fitToScreen"><img src="/images/placeholder.png" class="btnimg icon-zoom-original" alt="Fit to screen"/></a>\
+          <a href="#" title="Zoom in" id="zoomIn"><img class="btnimg icon-zoom-in" src="http://{{hostname}}/images/placeholder.png" alt="Zoom in"/></a>\
+          <a href="#" title="Zoom out" id="zoomOut"><img class="btnimg icon-zoom-out" src="http://{{hostname}}/images/placeholder.png" alt="Zoom out"/></a><br/>\
+          <a href="#" title="Zoom region" id="zoomRect"><img src="http://{{hostname}}/images/placeholder.png" class="btnimg icon-zoom-box" alt="Zoom in on a region"/></a>\
+          <a href="#" title="Fit to screen" id="fitToScreen"><img src="http://{{hostname}}/images/placeholder.png" class="btnimg icon-zoom-original" alt="Fit to screen"/></a>\
         </div>\
         <div class="box" id="periodbox">\
           <p class="rotate">TIME</p>\
           <p id="period"></p>\
           <br clear="both">\
           <table style="float:right;">\
-            <tr><td><a href="#" id="prevPeriodBtn"><img class="smlbtnimg icon-seek-backwards" alt="Prevous period" src="/images/placeholder.png" /></a></td>\
+            <tr><td><a href="#" id="prevPeriodBtn"><img class="smlbtnimg icon-seek-backwards" alt="Prevous period" src="http://{{hostname}}/images/placeholder.png" /></a></td>\
             <td id="financialYearTxt">FINANCIAL YEAR</td>\
-            <td><a href="#" id="nextPeriodBtn"><img class="smlbtnimg icon-seek-forwards" alt="Next period" src="/images/placeholder.png" /></a></td></tr>\
+            <td><a href="#" id="nextPeriodBtn"><img class="smlbtnimg icon-seek-forwards" alt="Next period" src="http://{{hostname}}/images/placeholder.png" /></a></td></tr>\
             \
-            <tr><td><a href="#" id="playBtn"><img alt="Play" class="smlbtnimg icon-start" src="/images/placeholder.png" /></a></td>\
+            <tr><td><a href="#" id="playBtn"><img alt="Play" class="smlbtnimg icon-start" src="http://{{hostname}}/images/placeholder.png" /></a></td>\
             <td><select id="periodSel">\
             </select></td>\
-            <td><a href="#" id="stopBtn"><img alt="Stop" class="smlbtnimg icon-stop" src="/images/placeholder.png" /></a></td></tr>\
+            <td><a href="#" id="stopBtn"><img alt="Stop" class="smlbtnimg icon-stop" src="http://{{hostname}}/images/placeholder.png" /></a></td></tr>\
           </table>\
         </div>\
         <div class="box" id="informationbox">\
@@ -110,7 +115,7 @@ function doOpenEconomy() {
   // step 1: load jQuery plugin
   function hasjQuery() {
     var $ = jQuery;
-    getScript(HOSTNAME + '/js/jquery.contextmenu.r2.js', function() {
+    getScript('http://{{hostname}}/js/jquery.contextmenu.r2.js', function() {
       jQuery.noConflict();
       loadApp();
     });
@@ -119,7 +124,7 @@ function doOpenEconomy() {
   // step 2: load d3 and app js
   function loadApp() {
     getScript("http://d3js.org/d3.v3.min.js", initApp);
-    getScript(HOSTNAME + "/js/finvis.js", initApp);
+    getScript("http://{{hostname}}/js/finvis.js", initApp);
   }
 
   // step 3 - kick things off
@@ -134,7 +139,7 @@ function doOpenEconomy() {
     }
 
     window.viewstate = initOpenEconomy('#openeconomy');
-    jQuery.ajax(HOSTNAME + '/state.json/{{ initial_state }}', {
+    jQuery.ajax('http://{{hostname}}/state.json/{{ initial_state }}', {
         success: function(d) {
           viewstate.importState(d);
         },
