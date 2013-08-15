@@ -114,13 +114,13 @@ function ViewState(svg) {
  * Resize the SVG and event grabbing rectangle to the container size.
  */
 ViewState.prototype.resizeToWindow = function() {
-  this.width = this._svg[0][0].parentElement.clientWidth;
+  this.width = this._svg[0][0].parentNode.clientWidth;
   // are we in a document or in a div? FIXME: this logic should go elsewhere
-  if (this._svg[0][0].parentElement.tagName == 'BODY') {
+  if (this._svg[0][0].parentNode.tagName == 'BODY') {
     // included space for "authorised by"
-    this.height = (this._svg[0][0].parentElement.scrollHeight - 30);
+    this.height = (this._svg[0][0].parentNode.scrollHeight - 30);
   } else {
-    this.height = this._svg[0][0].parentElement.clientHeight;
+    this.height = this._svg[0][0].parentNode.clientHeight;
   }
 
   this._svg.attr('style',
