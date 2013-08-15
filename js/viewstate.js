@@ -92,6 +92,14 @@ function ViewState(svg) {
     }
   });
 
+  // sizing: set so that a trillion dollar thing fits nicely in ~600 pixels.
+  this.resizeToWindow();
+  var maxOuterRadius = 600 / 2;
+  this.scaleMax = tril;
+  this.scaleFactor = 1;
+  this.scaler = d3.scale.sqrt()
+        .domain([0, this.scaleMax]).range([0, maxOuterRadius]);
+
   this.centreView();
 
   this.mouseData = {};
@@ -99,33 +107,21 @@ function ViewState(svg) {
 
   // zoom
   this.renderTimeout = -1;
-  this.scaleFactor = 1;
 }
 
 
 /**
- * Calculate the size so something of value scaleMax can fit on screen.
- * Adjusts the scaler to match.
- * @param {number} scaleMax The largest thing that should fit on the screen.
- */
-ViewState.prototype.calculateSize = function(scaleMax) {
-
-  this.resizeToWindow();
-
-  var maxOuterRadius = Math.min(this.width, this.height) / 2;
-  this.scaleMax = scaleMax;
-  this.scaleFactor = 1;
-  this.scaler = d3.scale.sqrt()
-        .domain([0, this.scaleMax]).range([0, maxOuterRadius]);
-};
-
-
-/**
- * Resize the SVG and event grabbing rectangle to the window size.
+ * Resize the SVG and event grabbing rectangle to the container size.
  */
 ViewState.prototype.resizeToWindow = function() {
-  this.width = window.innerWidth * 0.99;
-  this.height = (window.innerHeight - 30);
+  this.width = this._svg[0][0].parentElement.clientWidth;
+  // are we in a document or in a div? FIXME: this logic should go elsewhere
+  if (this._svg[0][0].parentElement.tagName == 'BODY') {
+    // included space for "authorised by"
+    this.height = (this._svg[0][0].parentElement.scrollHeight - 30);
+  } else {
+    this.height = this._svg[0][0].parentElement.clientHeight;
+  }
 
   this._svg.attr('style',
       'width: ' + this.width + 'px; ' +
@@ -142,7 +138,6 @@ ViewState.prototype.resizeToWindow = function() {
  * Move the ViewState object to the centre of the display
  */
 ViewState.prototype.centreView = function() {
-  this.calculateSize(tril);
   this.moveTo([-this.width / 2, -this.height / 2]);
 };
 

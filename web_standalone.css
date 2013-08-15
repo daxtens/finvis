@@ -1,0 +1,58 @@
+@charset "utf-8";
+
+#openeconomy #rightToolBox {
+    top: 30px;
+}
+
+#iobox {
+    min-height: 50px;
+}
+
+#iobox p.rotate {
+    width: 67px;
+    right: 24px;
+}
+
+#morebox {
+    min-height: 50px;
+}
+
+#morebox p.rotate {
+    width: 64px;
+    right: 24px;
+    margin: 0;
+}
+
+#ephemeralUploadFile {
+    width: 190px;
+}
+
+
+#headline {
+    position:fixed;
+    right: 5px;
+    font-size: 17pt;
+    color: rgb(66, 77, 100);
+    text-align: right;
+    width: 99%;
+    z-index: 1;
+}
+
+#headline img {
+    float: left;
+    /* This is an SVG, so we can guiltlessly scale it */
+    height: 60px;
+    width: 69px;
+    opacity: 0.25;
+}
+
+
+#link {
+    width: 190px;
+    text-size: 10px;
+    -moz-user-select: text;
+    -khtml-user-select: text;
+    -webkit-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}

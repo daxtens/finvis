@@ -1,4 +1,23 @@
 @charset "utf-8";
+rect.eventGrabber {
+    opacity: 0;
+    fill-opacity: 0
+}
+
+rect.zoomGrabber {
+    opacity: 0;
+    fill-opacity: 0;
+    cursor: crosshair;
+}
+
+rect.zoomRect {
+    fill-opacity: 0.1;
+    opacity: 1;
+    stroke-width: 2;
+    stroke: black;
+    cursor: crosshair;
+}
+
 circle.axis_circle {
   fill: none;
   stroke: #777;

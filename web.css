@@ -1,12 +1,19 @@
 @charset "utf-8";
-body {
-	/*background: url("images/back.jpg") repeat scroll 0 0 transparent;*/
-        background-color: rgb( 8, 27, 59 );
-	font: 10px sans-serif;
+
+#openeconomy {
+    font: 10px sans-serif;
+    /*background: url("images/back.jpg") repeat scroll 0 0 transparent;*/
+    background-color: rgb( 8, 27, 59 );
 }
 
-#oldBrowserWarning {
-    position: fixed;
+#openeconomy svg {
+   position: absolute;
+   top: 0px;
+   left: 0px;
+}
+
+#openeconomy #oldBrowserWarning {
+    position: relative;
     top: 70px;
     background-color: #FFF;
     color: #000;
@@ -17,33 +24,35 @@ body {
     border-style: solid;
 }
 
-#oldBrowserWarning a:link {
+#openeconomy #oldBrowserWarning a:link {
     color: #00F;
 }
 
-#rightContainer {
+#openeconomy #rightContainer {
     float:right;
     /*width:200px;*/
     text-align:right;
+    position: relative;
+    z-index: 1;
 }
 
-#rightContainer .tighttop {
+#openeconomy #rightContainer .tighttop {
     margin-top: 0;
 }
 
-#rightToolBox {
-    position:fixed; 
+#openeconomy #rightToolBox {
+    position: relative; 
     right:5px;
-    top: 33px;
+    top: 5px;
     width: 200px;
 }
 
-#rightToolBox hr {
+#openeconomy #rightToolBox hr {
     width: 96px;
     float: right;
 }
 
-.box {
+#openeconomy .box {
     /*width: 200px;*/
     /*background-color: rgb(7, 16, 43);*/
     background-color: rgba(0, 0, 96, 0.4);
@@ -52,123 +61,92 @@ body {
 }
 
 /* this is full of shameful hackery. FIXME */
-.box p.rotate {
-    position: fixed;
+#openeconomy .box p.rotate {
+    position: relative;
+    float: left;
 }
 
-#viewbox p.rotate {
-    right: 166px;
+#openeconomy #viewbox p.rotate {
+    right: 16px;
     width: 50px;
     margin: 0;
 }
 
-#iobox {
-    min-height: 50px;
-}
 
-#iobox p.rotate {
-    width: 67px;
-    right: 157px;
-}
-
-#periodbox {
+#openeconomy #periodbox {
     height: 100px;
 }
 
-#periodbox table td {
+#openeconomy #periodbox table {
+    color: white;
+    font-size: 10px;
+}
+
+#openeconomy #periodbox table td {
     padding: 0;
 }
 
-#periodbox p.rotate,
-#informationbox p.rotate  {
+#openeconomy #periodbox p.rotate,
+#openeconomy #informationbox p.rotate  {
     width: 50px;
-    right: 166px;
+    right: 16px;
     margin: 0;
 }
 
-#informationbox {
+#openeconomy #informationbox {
     min-height: 37px;
 }
 
-#actionbox {
+#openeconomy #actionbox {
     font-size: 14px;
 }
 
-#actionbox #keyactions {
+#openeconomy #actionbox #keyactions {
     font-size: 18px;
+    margin-bottom: 0.25em;
 }
 
-#morebox {
-    min-height: 50px;
-}
 
-#morebox p.rotate {
-    width: 64px;
-    right: 160px;
-    margin: 0;
-}
-
-#ephemeralUploadFile {
-    width: 190px;
-}
-
-#financialYearTxt {
+#openeconomy #financialYearTxt {
     text-align: center;
 }
 
-#period {
-    width: 155px;
+#openeconomy #period {
+    width: 200px;
     font-size: 400%;
     text-align: right;
-    margin: 0;
+    margin: -18px 0 0 0;
     float: right;
 }
 
-#periodSel {
+#openeconomy #periodSel {
     width: 96px;
 }
 
-#toggleInfoBoxContainer {
+#openeconomy #toggleInfoBoxContainer {
     margin-top: 0;
     margin-bottom: 2.25em;
-    clear: both;
 }
 
-#infobox {
+#openeconomy #infobox {
     width: 190px;
     min-height: 125px;
 }
 
-#entitySel {
+#openeconomy #entitySel {
     width: 190px;
 }
 
-#headline {
-    position:fixed;
-    right: 5px;
-    font-size: 17pt;
-    color: rgb(66, 77, 100);
-    text-align: right;
-    width: 99%;
-}
 
-#headline img {
-    float: left;
-    /* This is an SVG, so we can guiltlessly scale it */
-    height: 60px;
-    width: 69px;
-    opacity: 0.25;
-}
-
-div {
+#openeconomy div {
     color: white;
 }
 
-div a {
+#openeconomy div a {
     color: #77F;
 }
 
-* {
+#openeconomy * {
 	/* Stop selection (e.g. on double click) */
 	-moz-user-select: -moz-none;
 	-khtml-user-select: none;
@@ -182,92 +160,73 @@ div a {
 	user-select: none;
 }
 
-.link {
+#openeconomy .link {
 	cursor: pointer;
 }
 
-img.btnimg {
+#openeconomy img.btnimg {
     height: 32px;
     width: 32px;
     background-image: url(/images/icons.png);
     border: none;
 }
 
-img.icon-apply {
+#openeconomy img.icon-apply {
     background-position: 0px 0px;
 }
 
-img.icon-cancel {
+#openeconomy img.icon-cancel {
     background-position: -32px 0px;
 }
 
-img.icon-disk {
+#openeconomy img.icon-disk {
     background-position: -64px 0px;
 }
 
-img.icon-zoom-in {
+#openeconomy img.icon-zoom-in {
     background-position: 0px -32px;
 }
 
-img.icon-zoom-out {
+#openeconomy img.icon-zoom-out {
     background-position: -32px -32px;
 }
 
-img.icon-zoom-box {
+#openeconomy img.icon-zoom-box {
     background-position: -64px -32px;
 }
 
-img.icon-zoom-original {
+#openeconomy img.icon-zoom-original {
     background-position: -96px -32px;
 }
 
-img.smlbtnimg {
+#openeconomy img.smlbtnimg {
     height: 24px;
     width: 24px;
     background-image: url(/images/icons.png);
     border: none;
 }
 
-img.icon-seek-backwards {
+#openeconomy img.icon-seek-backwards {
     background-position: 0px -64px;
 }
 
-img.icon-seek-forwards {
+#openeconomy img.icon-seek-forwards {
     background-position: -32px -64px;
 }
 
-img.icon-start {
+#openeconomy img.icon-start {
     background-position: -64px -64px;
 }
 
-img.icon-stop {
+#openeconomy img.icon-stop {
     background-position: -96px -64px;
 }
 
-.hidden {
+#openeconomy .hidden {
     display: none;
 }
 
-rect.eventGrabber {
-    opacity: 0;
-    fill-opacity: 0
-}
-
-rect.zoomGrabber {
-    opacity: 0;
-    fill-opacity: 0;
-    cursor: crosshair;
-}
-
-rect.zoomRect {
-    fill-opacity: 0.1;
-    opacity: 1;
-    stroke-width: 2;
-    stroke: black;
-    cursor: crosshair;
-}
-
-.rotate {
+#openeconomy .rotate {
     /* From http://css-tricks.com/snippets/css/text-rotation/ */
     -webkit-transform: rotate(-90deg);
     -moz-transform: rotate(-90deg);
@@ -277,20 +236,10 @@ rect.zoomRect {
     font-size: 120%;
 }
 
-a:link {
+#openeconomy a:link {
     color: #FFF;
 }
 
-a:visited {
+#openeconomy a:visited {
     color: #99F;
-}
-
-#link {
-    width: 190px;
-    text-size: 10px;
-    -moz-user-select: text;
-    -khtml-user-select: text;
-    -webkit-user-select: text;
-    -ms-user-select: text;
-    user-select: text;
 }

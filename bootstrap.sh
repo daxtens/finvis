@@ -17,8 +17,10 @@ tar -xzf dump.tar.gz &&
 mongorestore dump &&
 rm -rf dump &&
 cd ..
+fab compile
 echo ""
 echo "Setup is mostly done."
 echo "Follow the instructions in backend/settings.py.example, save it as backend/settings.py."
 echo "Run 'vagrant ssh' then 'cd /vagrant/backend; python finvis.py'."
 echo "Then visit localhost:8080 in a browser."
+echo "Make sure you run 'fab compile' after you make changes to JS files."

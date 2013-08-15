@@ -558,7 +558,7 @@ function ViewObj(data, parent, position, category) {
   this.repositionItemsGivenParameters = function(
       list2Start, initialRadius, animate) {
 
-    var dendritic = (window.packing == 'dendritic' &&
+    var dendritic = (window.packing != 'oldstyle' &&
                          this.parent instanceof ViewObj);
 
 
@@ -682,7 +682,7 @@ function ViewObj(data, parent, position, category) {
   this.determineSizeGivenParameters = function(
       list2Start, initialRadius) {
 
-    var dendritic = (window.packing == 'dendritic' &&
+    var dendritic = (window.packing != 'oldstyle' &&
                          this.parent instanceof ViewObj);
 
 
@@ -1036,7 +1036,7 @@ ViewObj.prototype.reposition = function(animate) {
   // just apply it to children.
   obj.children().map(recenterChild);
 
-  recalcPackingEfficiency();
+  //recalcPackingEfficiency();
 };
 
 
