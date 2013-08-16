@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta property="og:title" content="The Open Economy">
+    <meta name="description" content="Visualise financial data with the Open Economy project. Explore government budgets and spending, comparing them with corporations and other financial entities.">
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
     <script type="text/javascript" src="/js/jquery.contextmenu.r2.js"></script>
