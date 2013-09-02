@@ -5,7 +5,7 @@ GETTING STARTED
 
 * Check out the git repository
 
-* Run ```vagrant up``` and follow the instructions.
+* Run ```vagrant up``` and follow the instructions. (OK there is one missing thing - it uses compiled JS assets but doesn't actually compile them. You have to install Google Closure Compiler and then do ```fab compile```. Sorry. FIXME)
 
 * Hack, watching your changes at localhost:8080
 
