@@ -118,7 +118,7 @@ ViewState.prototype.resizeToWindow = function() {
   // are we in a document or in a div? FIXME: this logic should go elsewhere
   if (this._svg[0][0].parentNode.tagName == 'BODY') {
     // included space for "authorised by"
-    this.height = (this._svg[0][0].parentNode.scrollHeight - 30);
+    this.height = (window.innerHeight - 30);
   } else {
     this.height = this._svg[0][0].parentNode.clientHeight;
   }
