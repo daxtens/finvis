@@ -7,7 +7,7 @@ mv /etc/apt/sources.list.new /etc/apt/sources.list
 apt-get update &&
 apt-get install -y mongodb &&
 apt-get install -y inkscape &&
-apt-get install -y python-pip python-dev fabric
+apt-get install -y python-pip python-dev fabric default-jre-headless
 
 
 cd /vagrant
