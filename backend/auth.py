@@ -46,16 +46,17 @@ def register():
     email_address = ''
     error = None
     if bottle.request.method == "POST":
-        try:
-            aaa.register(post_get('username'),
-                         post_get('password'),
-                         post_get('email_address'))
-            return bottle.template('views/registration_email_sent')
-        except Exception as e:
-            # store the form input
-            error = e.message
-            username = post_get('username')
-            email_address = post_get('email_address')
+        #try:
+        #    aaa.register(post_get('username'),
+        #                 post_get('password'),
+        #                 post_get('email_address'))
+        #    return bottle.template('views/registration_email_sent')
+        #except Exception as e:
+        #    # store the form input
+        #    error = e.message
+        #    username = post_get('username')
+        #    email_address = post_get('email_address')
+        error = 'Registrations are currently disabled.'
 
     return bottle.template('registration_form.tpl',
                            {'username': username,
